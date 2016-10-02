@@ -15,14 +15,20 @@ namespace TradeBot.Core.Gui
         private static extern IntPtr GetConsoleWindow();
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        private static extern IntPtr SetWindowPos(IntPtr windowHandle, int insertAfter, int x, int y, int width, int height, int flags);
+        private static extern IntPtr SetWindowPosition(IntPtr windowHandle, int insertAfter, int x, int y, int width, int height, int flags);
 
-        private static IntPtr WindowHandle
+        [DllImport("Kernel32", EntryPoint = "SetConsoleCtrlHandler")]
+        private static extern bool SetConsoleCloseHandler(WindowCloseHandler handler, bool add);
+
+        public delegate bool WindowCloseHandler(CloseReason closeReason);
+
+        public enum CloseReason
         {
-            get
-            {
-                return GetConsoleWindow();
-            }
+            C_EVENT = 0,
+            BREAK_EVENT = 1,
+            CLOSE_EVENT = 2,
+            LOGOFF_EVENT = 5,
+            SHUTDOWN_EVENT = 6
         }
 
         public static ConsoleColor BackgroundColor
@@ -40,7 +46,7 @@ namespace TradeBot.Core.Gui
 
         public static void SetWindowPositionAndSize(int x, int y, int width, int height)
         {
-            SetWindowPos(WindowHandle, 0, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+            SetWindowPosition(WindowHandle, 0, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
         public static void SetWindowSizeAndCenter(int width, int height)
@@ -48,6 +54,19 @@ namespace TradeBot.Core.Gui
             int x = (Screen.Width - width) / 2;
             int y = (Screen.Height - height) / 2;
             SetWindowPositionAndSize(x, y, width, height);
+        }
+
+        public static void SetWindowCloseHandler(WindowCloseHandler handler)
+        {
+            SetConsoleCloseHandler(handler, true);
+        }
+
+        private static IntPtr WindowHandle
+        {
+            get
+            {
+                return GetConsoleWindow();
+            }
         }
     }
 }

@@ -10,7 +10,6 @@
 # 3. Add the folder containing csc.exe to your PATH
 
 ./sort_resource_properties.sh
-./generate_resource_key_classes.sh
 ./generate_resource_classes.sh
 
 # Prevent the terminal from auto-closing

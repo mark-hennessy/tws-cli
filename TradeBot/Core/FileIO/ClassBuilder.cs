@@ -20,7 +20,7 @@ namespace TradeBot.Core.FileIO
         }
 
         /// <summary>
-        /// Appends a new line, declares a namespace, and opens a new scope for it.
+        /// Appends a namespace.
         /// </summary>
         /// <param name="namespaceName">the name of the namespace</param>
         public void AppendNamespace(string namespaceName)
@@ -30,7 +30,7 @@ namespace TradeBot.Core.FileIO
         }
 
         /// <summary>
-        /// Appends a new line, declares a static class, and opens a new scope for it.
+        /// Appends a static class.
         /// </summary>
         /// <param name="className">the name of the class</param>
         public void AppendStaticClass(string className)
@@ -40,67 +40,116 @@ namespace TradeBot.Core.FileIO
         }
 
         /// <summary>
-        /// Appends a string constant for each key in the given properties object. 
+        /// Appends a const field for each key in the given properties object. 
         /// Properties are sorted by key in ascending order.
         /// </summary>
-        /// <param name="properties">the properties object for which to append constants</param>
-        public void AppendKeyConstants(Properties properties)
+        /// <param name="properties">a properties object</param>
+        public void AppendConstFieldsForPropertyKeys(Properties properties)
         {
             properties.Keys
                 .OrderBy(k => k)
                 .ToList()
-                .ForEach(AppendKeyConstant);
+                .ForEach(AppendConstFieldForPropertyKey);
         }
 
         /// <summary>
-        /// Appends a string constant for the given key.
+        /// Appends a const field for the given key.
         /// </summary>
-        /// <param name="key">the key for which to append a constant</param>
-        public void AppendKeyConstant(string key)
+        /// <param name="key">a property key</param>
+        public void AppendConstFieldForPropertyKey(string key)
         {
-            AppendConstant(DataType.STRING, GetConstantVariableName(key), key);
+            AppendConstField(
+                DataType.STRING,
+                key.ToUpperForCode(),
+                key);
         }
 
         /// <summary>
-        /// Appends a constant for each value in the given properties object.
+        /// Appends a const field for each value in the given properties object.
         /// Data types are derived from the values.
         /// Properties are sorted by key in ascending order.
         /// </summary>
-        /// <param name="properties">the properties object for which to append constants</param>
-        public void AppendValueConstants(Properties properties)
+        /// <param name="properties">a properties object</param>
+        public void AppendConstFieldsForPropertyValues(Properties properties)
         {
             properties
                 .OrderBy(kvp => kvp.Key)
                 .ToList()
-                .ForEach(kvp => AppendValueConstant(kvp.Key, kvp.Value));
+                .ForEach(kvp => AppendConstFieldForPropertyValue(kvp.Key, kvp.Value));
         }
 
         /// <summary>
-        /// Appends a constant for the given value.
+        /// Appends a const field for the given value.
         /// The data type is derived from the value.
         /// </summary>
-        /// <param name="key">the key for the value</param>
-        /// <param name="value">the value for which to append a constant</param>
-        public void AppendValueConstant(string key, string value)
+        /// <param name="key">the property key</param>
+        /// <param name="value">the property value</param>
+        public void AppendConstFieldForPropertyValue(string key, string value)
         {
-            AppendConstant(DataTypeParser.ParseDataType(value), GetConstantVariableName(key), value);
+            AppendConstField(
+                DataTypeParser.ParseDataType(value),
+                key.ToUpperForCode(),
+                value);
         }
 
         /// <summary>
-        ///  Appends a constant field.
+        ///  Appends a const field.
         /// </summary>
-        /// <param name="dataType">the const data type</param>
-        /// <param name="name">the const name</param>
-        /// <param name="value">the const value</param>
-        public void AppendConstant(DataType dataType, string name, string value)
+        /// <param name="dataType">the field data type</param>
+        /// <param name="name">the field name</param>
+        /// <param name="value">the field value</param>
+        private void AppendConstField(DataType dataType, string name, string value)
         {
             if (dataType.Equals(DataType.STRING))
             {
-                // Add quotation marks around the string.
-                value = $"\"{value}\"";
+                value = value.SurroundWithQuotes();
             }
 
             AppendNewLine($"public const {dataType.AsString()} {name} = {value};");
+        }
+
+        /// <summary>
+        /// Appends a static property for each value in the given properties object.
+        /// Data types are derived from the values.
+        /// Properties are sorted by key in ascending order.
+        /// </summary>
+        /// <param name="properties">a properties object</param>
+        public void AppendStaticPropertiesForPropertyValues(Properties properties)
+        {
+            properties
+                .OrderBy(kvp => kvp.Key)
+                .ToList()
+                .ForEach(kvp => AppendStaticPropertyForPropertyValue(kvp.Key, kvp.Value));
+        }
+
+        /// <summary>
+        /// Appends a static property for the given value.
+        /// The data type is derived from the value.
+        /// </summary>
+        /// <param name="key">the property key</param>
+        /// <param name="value">the property value</param>
+        public void AppendStaticPropertyForPropertyValue(string key, string value)
+        {
+            AppendStaticProperty(
+                DataTypeParser.ParseDataType(value),
+                key.PascalCaseForCode(),
+                value);
+        }
+
+        /// <summary>
+        ///  Appends a static property.
+        /// </summary>
+        /// <param name="dataType">the property data type</param>
+        /// <param name="name">the property name</param>
+        /// <param name="value">the property value</param>
+        private void AppendStaticProperty(DataType dataType, string name, string value)
+        {
+            if (dataType.Equals(DataType.STRING))
+            {
+                value = value.SurroundWithQuotes();
+            }
+
+            AppendNewLine($"public static {dataType.AsString()} {name} {{ get; set; }} = {value};");
         }
 
         /// <summary>
@@ -147,11 +196,6 @@ namespace TradeBot.Core.FileIO
             }
 
             return stringBuilder.ToString();
-        }
-
-        private string GetConstantVariableName(string key)
-        {
-            return key.Replace('.', '_').ToUpper();
         }
     }
 }

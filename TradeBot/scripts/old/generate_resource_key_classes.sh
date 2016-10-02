@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script generates C# constants for property keys.
+# This script generates C# classes for property key constants.
 
 # Setup/Troubleshooting
 # ==
@@ -16,9 +16,9 @@ GEN_DIR="../Core/Resources/"
 csc /main:TradeBot.Core.FileIO.ResourceKeyClassGenerator /out:resource_key_class_generator.exe /recurse:../Core/FileIO/*.cs
 
 # Use the executable to generate files
-./resource_key_class_generator.exe StateKeys "${RES_DIR}state" > "${GEN_DIR}StateKeys.cs"
-#./resource_key_class_generator.exe PrefKeys "${RES_DIR}default.prefs" > "${GEN_DIR}PrefKeys.cs"
-#./resource_key_class_generator.exe MessageKeys "${RES_DIR}messages" > "${GEN_DIR}MessageKeys.cs"
+./resource_key_class_generator.exe AppStateKeys "${RES_DIR}app.state" > "${GEN_DIR}AppStateKeys.cs"
+./resource_key_class_generator.exe PrefKeys "${RES_DIR}default.prefs" > "${GEN_DIR}PrefKeys.cs"
+./resource_key_class_generator.exe MessageKeys "${RES_DIR}messages" > "${GEN_DIR}MessageKeys.cs"
 
 # Delete the executable
 rm -f resource_key_class_generator.exe

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script generates C# constants for property values.
+# This script generates C# classes for property values.
 
 # Setup/Troubleshooting
 # ==
@@ -16,9 +16,9 @@ GEN_DIR="../Core/Resources/"
 csc /main:TradeBot.Core.FileIO.ResourceClassGenerator /out:resource_class_generator.exe /recurse:../Core/FileIO/*.cs
 
 # Use the executable to generate files
-./resource_class_generator.exe Preferences "${RES_DIR}default.prefs" "${RES_DIR}user.prefs" > "${GEN_DIR}Preferences.cs"
-./resource_class_generator.exe Messages "${RES_DIR}messages" > "${GEN_DIR}Messages.cs"
-#./resource_class_generator.exe State "${RES_DIR}state" > "${GEN_DIR}State.cs"
+./resource_class_generator.exe Preferences true "${RES_DIR}default.prefs" "${RES_DIR}user.prefs" > "${GEN_DIR}Preferences.cs"
+./resource_class_generator.exe Messages true "${RES_DIR}messages" > "${GEN_DIR}Messages.cs"
+./resource_class_generator.exe AppState false "${RES_DIR}app.state" > "${GEN_DIR}AppState.cs"
 
 # Delete the executable
 rm -f resource_class_generator.exe

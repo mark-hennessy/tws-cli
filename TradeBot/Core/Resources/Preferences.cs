@@ -6,7 +6,6 @@ namespace TradeBot.Core.Resources
         public const string ACCOUNT_LIVE = "";
         public const string ACCOUNT_PAPER = "";
         public const bool SHOWINFOMESSAGES = true;
-        public const bool SHOWVERBOSEMENU = false;
         public const int TWSCLIENT_ID = 0;
         public const int TWSCLIENT_PORT = 7496;
         public const string TWSCLIENT_URL = "127.0.0.1";

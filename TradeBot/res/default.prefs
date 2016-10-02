@@ -1,7 +1,6 @@
 account.live=""
 account.paper=""
 showInfoMessages=true
-showVerboseMenu=true
 twsClient.id=0
 twsClient.port=7496
 twsClient.url="127.0.0.1"

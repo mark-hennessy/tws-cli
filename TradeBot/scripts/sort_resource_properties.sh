@@ -19,7 +19,7 @@ csc /main:TradeBot.Core.FileIO.ResourcePropertySorter /out:sorter.exe /recurse:.
 # Note that this will remove comments, empty lines, white-space formatting etc.
 ./sorter.exe "${RES_DIR}default.prefs"
 ./sorter.exe "${RES_DIR}user.prefs"
-./sorter.exe "${RES_DIR}state"
+./sorter.exe "${RES_DIR}app.state"
 ./sorter.exe "${RES_DIR}messages"
 
 # Delete the executable

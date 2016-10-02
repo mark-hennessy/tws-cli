@@ -5,6 +5,7 @@ using TradeBot.Core.Gui;
 using TradeBot.Core.MenuFramework;
 using TradeBot.Core.Resources;
 using TradeBot.Core.Tws;
+using static TradeBot.Core.Gui.Window;
 
 namespace TradeBot.Core
 {
@@ -13,19 +14,12 @@ namespace TradeBot.Core
         public static void Main(string[] args)
         {
             Program program = new Program();
-            program.Run();
-        }
-
-        public static Properties State { get; }
-
-        static Program()
-        {
-            State = new Properties();
-            State.Load(ResourceFiles.STATE_FILE);
+            program.Start();
         }
 
         private TwsClient twsClient;
         private Menu menu;
+        private bool exit;
 
         public Program()
         {
@@ -42,9 +36,10 @@ namespace TradeBot.Core
         private void InitializeConsole()
         {
             Console.Title = Preferences.WINDOW_TITLE;
-            Window.SetWindowSizeAndCenter(
+            SetWindowSizeAndCenter(
                 Preferences.WINDOW_SIZE_WIDTH,
                 Preferences.WINDOW_SIZE_HEIGHT);
+            SetWindowCloseHandler(OnWindowClose);
         }
 
         private void InitializeMenu()
@@ -52,64 +47,90 @@ namespace TradeBot.Core
             menu = new Menu();
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_FINDPOSITION_KEY,
-                Messages.MENU_OPTION_FINDPOSITION_DESCRIPTION,
+                Messages.MENUOPTION_COMMAND_FINDPOSITION_KEY,
+                Messages.MENUOPTION_COMMAND_FINDPOSITION_DESCRIPTION,
                 FindCommand);
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_BUYPOSITION_KEY,
-                Messages.MENU_OPTION_BUYPOSITION_DESCRIPTION,
+                Messages.MENUOPTION_COMMAND_BUYPOSITION_KEY,
+                Messages.MENUOPTION_COMMAND_BUYPOSITION_DESCRIPTION,
                 BuyPositionCommand);
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_SELLPOSITION_KEY,
-                Messages.MENU_OPTION_SELLPOSITION_DESCRIPTION,
+                Messages.MENUOPTION_COMMAND_SELLPOSITION_KEY,
+                Messages.MENUOPTION_COMMAND_SELLPOSITION_DESCRIPTION,
                 SellPositionCommand);
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_REVERSEPOSITION_KEY,
-                Messages.MENU_OPTION_REVERSEPOSITION_DESCRIPTION,
+                Messages.MENUOPTION_COMMAND_REVERSEPOSITION_KEY,
+                Messages.MENUOPTION_COMMAND_REVERSEPOSITION_DESCRIPTION,
                 ReversePositionCommand);
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_CLOSEPOSITION_KEY,
-                Messages.MENU_OPTION_CLOSEPOSITION_DESCRIPTION,
+                Messages.MENUOPTION_COMMAND_CLOSEPOSITION_KEY,
+                Messages.MENUOPTION_COMMAND_CLOSEPOSITION_DESCRIPTION,
                 ClosePositionCommand);
 
             menu.AddMenuOption(
-                Messages.MENU_OPTION_EXITAPPLICATION_KEY,
-                Messages.MENU_OPTION_EXITAPPLICATION_DESCRIPTION,
-                ExitApplicationCommand);
+                Messages.MENUOPTION_COMMAND_TOGGLEINFOMESSAGES_KEY,
+                Messages.MENUOPTION_COMMAND_TOGGLEINFOMESSAGES_DESCRIPTION,
+                ToggleInfoMessages);
 
-            menu.Verbose = Preferences.SHOWVERBOSEMENU;
-            if (!menu.Verbose)
-            {
-                menu.AddMenuOption(
-                    Messages.MENU_OPTION_TOGGLEMENUVERBOSITY_KEY,
-                    Messages.MENU_OPTION_TOGGLEMENUVERBOSITY_DESCRIPTION,
-                    HelpCommand);
-            }
+            menu.AddMenuOption(
+                Messages.MENUOPTION_COMMAND_SHOWMENU_KEY,
+                Messages.MENUOPTION_COMMAND_SHOWMENU_DESCRIPTION,
+                ShowMenu);
+
+            menu.AddMenuOption(
+                Messages.MENUOPTION_COMMAND_EXITAPPLICATION_KEY,
+                Messages.MENUOPTION_COMMAND_EXITAPPLICATION_DESCRIPTION,
+                ExitApplicationCommand);
         }
 
-        public void Run()
+        public void Start()
         {
             try
             {
                 twsClient.eConnect();
-                menu.Loop();
+                while (!exit)
+                {
+                    menu.PromptForMenuOption().Command();
+                }
             }
             catch (Exception e)
             {
-                Messenger.ShowMessage(e.StackTrace, MessageType.ERROR);
+                Messenger.ShowMessage(e.Message, MessageType.ERROR);
             }
             finally
             {
-                twsClient.eDisconnect();
+                Shutdown();
                 Messenger.PromptForKey(Messages.APP_INFO_PROGRAMEXITING);
             }
         }
 
-        private bool FindCommand()
+        private bool OnWindowClose(CloseReason reason)
+        {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
+        }
+
+        private void Shutdown()
+        {
+            PersistAppState();
+            twsClient.eDisconnect();
+        }
+
+        private void PersistAppState()
+        {
+            Properties appStateProperties = new Properties();
+            appStateProperties.Load(typeof(AppState));
+            appStateProperties.Save(ResourceFiles.APP_STATE_FILE);
+        }
+
+        private void FindCommand()
         {
             Contract contract = new Contract();
             contract.Symbol = "EUR";
@@ -118,39 +139,38 @@ namespace TradeBot.Core
             contract.Exchange = "IDEALPRO";
 
             twsClient.reqMktData(1, contract, "", false, null);
-
-            return true;
         }
 
-        private bool BuyPositionCommand()
+        private void BuyPositionCommand()
         {
-            return true;
         }
 
-        private bool SellPositionCommand()
+        private void SellPositionCommand()
         {
-            return true;
         }
 
-        private bool ReversePositionCommand()
+        private void ReversePositionCommand()
         {
-            return true;
         }
 
-        private bool ClosePositionCommand()
+        private void ClosePositionCommand()
         {
-            return true;
         }
 
-        private bool ExitApplicationCommand()
+        private void ToggleInfoMessages()
         {
-            return false;
+            AppState.ShowInfoMessages = !AppState.ShowInfoMessages;
+            Messenger.ShowMessage(Messages.MENUOPTION_COMMAND_TOGGLEINFOMESSAGES_STATE, AppState.ShowInfoMessages);
         }
 
-        private bool HelpCommand()
+        private void ShowMenu()
         {
-            menu.Verbose = !menu.Verbose;
-            return true;
+            Messenger.ShowMessage(menu.ToString());
+        }
+
+        private void ExitApplicationCommand()
+        {
+            exit = true;
         }
     }
 }

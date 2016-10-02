@@ -13,6 +13,18 @@ namespace TradeBot.Core.Gui
     {
         private static readonly object threadLock = new object();
 
+        public static string PromptForInput([Optional] string message)
+        {
+            ShowMessage(message);
+            return Console.ReadLine();
+        }
+
+        public static char PromptForKey([Optional] string message)
+        {
+            ShowMessage(message);
+            return Console.ReadKey().KeyChar;
+        }
+
         public static void ShowMessage(string message, params object[] args)
         {
             ShowMessage(message, MessageType.STANDARD, args);
@@ -31,11 +43,9 @@ namespace TradeBot.Core.Gui
                     ShowMessage(message, ConsoleColor.White, args);
                     break;
                 case MessageType.INFO:
-                    if (Preferences.SHOWINFOMESSAGES)
+                    if (AppState.ShowInfoMessages)
                     {
-#pragma warning disable CS0162 // Unreachable code detected
                         ShowMessage(message, ConsoleColor.DarkGray, args);
-#pragma warning restore CS0162 // Unreachable code detected
                     }
                     break;
                 case MessageType.SUCCESS:
@@ -54,27 +64,10 @@ namespace TradeBot.Core.Gui
                 ConsoleColor originalForgroundColor = Console.ForegroundColor;
                 Console.ForegroundColor = color;
 
-                Console.WriteLine(Environment.NewLine + string.Format(message, args));
+                Console.WriteLine(string.Format(message, args) + Environment.NewLine);
 
                 Console.ForegroundColor = originalForgroundColor;
             }
-        }
-
-        public static string PromptForInput([Optional] string message)
-        {
-            ShowPromptMessage(message);
-            return Console.ReadLine();
-        }
-
-        public static char PromptForKey([Optional] string message)
-        {
-            ShowPromptMessage(message);
-            return Console.ReadKey().KeyChar;
-        }
-
-        private static void ShowPromptMessage([Optional] string message)
-        {
-            ShowMessage(message);
         }
     }
 

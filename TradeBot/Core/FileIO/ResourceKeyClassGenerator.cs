@@ -21,7 +21,7 @@ namespace TradeBot.Core.FileIO
             ClassBuilder classBuilder = new ClassBuilder();
             classBuilder.AppendNamespace(thisNamespace);
             classBuilder.AppendStaticClass(className);
-            classBuilder.AppendKeyConstants(properties);
+            classBuilder.AppendConstFieldsForPropertyKeys(properties);
             Console.Write(classBuilder);
         }
     }

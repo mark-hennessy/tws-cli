@@ -98,15 +98,16 @@
     <Compile Include="Core\FileIO\ResourceKeyClassGenerator.cs" />
     <Compile Include="Core\FileIO\ResourceFiles.cs" />
     <Compile Include="Core\FileIO\Properties.cs" />
+    <Compile Include="Core\Resources\AppState.cs" />
     <Compile Include="Core\Resources\Messages.cs" />
     <Compile Include="Core\Resources\Preferences.cs" />
-    <Compile Include="Core\Resources\StateKeys.cs" />
     <Compile Include="Core\Tws\TwsResponseHandler.cs" />
     <Compile Include="Core\Gui\Screen.cs" />
     <Compile Include="Core\Gui\Messenger.cs" />
     <Compile Include="Core\MenuFramework\Menu.cs" />
     <Compile Include="Core\MenuFramework\MenuOption.cs" />
     <Compile Include="Core\Program.cs" />
+    <Compile Include="Core\FileIO\StringExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Util\StockMath.cs" />
     <Compile Include="Core\Tws\TwsClient.cs" />
@@ -116,10 +117,10 @@
     <None Include="App.config" />
     <None Include="res\default.prefs" />
     <None Include="res\messages" />
-    <None Include="res\state" />
+    <None Include="res\app.state" />
     <None Include="res\user.prefs" />
     <None Include="scripts\generate_resource_classes.sh" />
-    <None Include="scripts\generate_resource_key_classes.sh" />
+    <None Include="scripts\old\generate_resource_key_classes.sh" />
     <None Include="scripts\run_all.sh" />
     <None Include="scripts\sort_resource_properties.sh" />
   </ItemGroup>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace TradeBot.Core.FileIO
@@ -24,30 +25,9 @@ namespace TradeBot.Core.FileIO
             }
         }
 
-        public string GetString(string key)
+        public string Get(string key)
         {
             return propertyMap.ContainsKey(key) ? propertyMap[key] : null;
-        }
-
-        public int GetInt(string key)
-        {
-            return GetExoticType(key, int.Parse);
-        }
-
-        public double GetDouble(string key)
-        {
-            return GetExoticType(key, double.Parse);
-        }
-
-        public bool GetBool(string key)
-        {
-            return GetExoticType(key, bool.Parse);
-        }
-
-        public T GetExoticType<T>(string key, Func<string, T> parser)
-        {
-            string valueAsString = GetString(key);
-            return valueAsString != null ? parser(valueAsString) : default(T);
         }
 
         public void Set(string key, object value)
@@ -77,7 +57,7 @@ namespace TradeBot.Core.FileIO
         /// <summary>
         /// Loads properties from a file.
         /// This method can be called multiple times to load properties from multiple files.
-        /// Property values from the new file will overwrite values from the previous file.
+        /// If a property key already exists, then its value will be overwritten.
         /// </summary>
         /// <param name="path">the path to the file from which to load properties</param>
         public void Load(string path)
@@ -122,6 +102,29 @@ namespace TradeBot.Core.FileIO
         }
 
         /// <summary>
+        /// Loads properties and fields from a C# type using reflection.
+        /// This method can be called multiple times to load properties from multiple types.
+        /// If a property key already exists, then its value will be overwritten.
+        /// </summary>
+        /// <param name="type">the type from which to load properties</param>
+        public void Load(Type type)
+        {
+            foreach (FieldInfo field in type.GetFields())
+            {
+                string key = field.Name.ToLowerForFile();
+                string value = field.GetValue(null).ToString();
+                Set(key, value);
+            }
+
+            foreach (PropertyInfo property in type.GetProperties())
+            {
+                string key = property.Name.camelCaseForFile();
+                string value = property.GetValue(null).ToString();
+                Set(key, value);
+            }
+        }
+
+        /// <summary>
         /// Clears all properties from memory.
         /// Note that the actual properties file will not be cleared unless the Save method is called.
         /// </summary>
@@ -147,22 +150,12 @@ namespace TradeBot.Core.FileIO
             // Sort properties by key in ascending order to ensure property order is always consistent.
             foreach (string key in Keys.OrderBy(k => k))
             {
-                string format;
                 string value = propertyMap[key] ?? string.Empty;
                 if (DataTypeParser.ParseDataType(value).Equals(DataType.STRING))
                 {
-                    // Surround the string value with quotation marks.
-                    // This makes cases where the value starts with an equal sign easier to read.
-                    // Example: key="====" vs key=====
-                    // This also makes it easy to spot whitespace
-                    // Example: key=", " vs key=, 
-                    format = "{0}=\"{1}\"";
+                    value = value.SurroundWithQuotes();
                 }
-                else
-                {
-                    format = "{0}={1}";
-                }
-                stringBuilder.AppendFormat(format, key, value);
+                stringBuilder.AppendFormat("{0}={1}", key, value);
                 stringBuilder.AppendLine();
             }
             return stringBuilder.ToString();

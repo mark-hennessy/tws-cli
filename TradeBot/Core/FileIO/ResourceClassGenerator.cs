@@ -11,8 +11,9 @@ namespace TradeBot.Core.FileIO
         {
             string thisNamespace = ResourceFiles.NAMESPACE;
             string className = args[0];
+            bool constant = bool.Parse(args[1]);
             Properties properties = new Properties();
-            for (int i = 1; i < args.Length; i++)
+            for (int i = 2; i < args.Length; i++)
             {
                 string resourcePath = args[i];
                 properties.Load(resourcePath);
@@ -21,8 +22,18 @@ namespace TradeBot.Core.FileIO
             ClassBuilder classBuilder = new ClassBuilder();
             classBuilder.AppendNamespace(thisNamespace);
             classBuilder.AppendStaticClass(className);
-            classBuilder.AppendValueConstants(properties);
+
+            if (constant)
+            {
+                classBuilder.AppendConstFieldsForPropertyValues(properties);
+            }
+            else
+            {
+                classBuilder.AppendStaticPropertiesForPropertyValues(properties);
+            }
+
             Console.Write(classBuilder);
         }
+
     }
 }
