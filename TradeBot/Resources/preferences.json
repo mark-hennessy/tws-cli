@@ -4,7 +4,8 @@
   "clientId": 0,
   "clientPort": 7496,
   "clientUrl": "127.0.0.1",
+  "windowTitle": "TradeBot",
   "windowWidth": 800,
   "windowHeight": 600,
-  "windowTitle": "TradeBot"
+  "windowCentered":  true
 }

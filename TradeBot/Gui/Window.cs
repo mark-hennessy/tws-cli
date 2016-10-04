@@ -24,7 +24,7 @@ namespace TradeBot.Gui
 
         public enum CloseReason
         {
-            C_EVENT = 0,
+            CTRL_C_EVENT = 0,
             BREAK_EVENT = 1,
             CLOSE_EVENT = 2,
             LOGOFF_EVENT = 5,
@@ -44,29 +44,37 @@ namespace TradeBot.Gui
             }
         }
 
-        public static void SetWindowPositionAndSize(int x, int y, int width, int height)
-        {
-            SetWindowPosition(WindowHandle, 0, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
-        }
-
         public static void SetWindowSizeAndCenter(int width, int height)
         {
+            if (!OS.IsWindows())
+            {
+                return;
+            }
+
             int x = (Screen.Width - width) / 2;
             int y = (Screen.Height - height) / 2;
             SetWindowPositionAndSize(x, y, width, height);
         }
 
+        public static void SetWindowPositionAndSize(int x, int y, int width, int height)
+        {
+            if (!OS.IsWindows())
+            {
+                return;
+            }
+
+            SetWindowPosition(GetConsoleWindow(), 0, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
         public static void SetWindowCloseHandler(WindowCloseHandler handler)
         {
+            if (!OS.IsWindows())
+            {
+                return;
+            }
+
             SetConsoleCloseHandler(handler, true);
         }
 
-        private static IntPtr WindowHandle
-        {
-            get
-            {
-                return GetConsoleWindow();
-            }
-        }
     }
 }

@@ -119,6 +119,7 @@
     <Compile Include="Util\StockMath.cs" />
     <Compile Include="Tws\TwsClient.cs" />
     <Compile Include="Gui\Window.cs" />
+    <Compile Include="Gui\OS.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

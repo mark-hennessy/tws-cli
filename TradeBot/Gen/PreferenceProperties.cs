@@ -27,14 +27,17 @@ namespace TradeBot.Gen
         [JsonProperty("clientUrl")]
         public string ClientUrl { get; set; }
 
+        [JsonProperty("windowTitle")]
+        public string WindowTitle { get; set; }
+
         [JsonProperty("windowWidth")]
         public int WindowWidth { get; set; }
 
         [JsonProperty("windowHeight")]
         public int WindowHeight { get; set; }
 
-        [JsonProperty("windowTitle")]
-        public string WindowTitle { get; set; }
+        [JsonProperty("windowCentered")]
+        public bool WindowCentered { get; set; }
     }
 
 }

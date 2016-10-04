@@ -33,7 +33,10 @@ namespace TradeBot
         private void InitializeConsole()
         {
             Console.Title = Preferences.WindowTitle;
-            SetWindowSizeAndCenter(Preferences.WindowWidth, Preferences.WindowHeight);
+            if (Preferences.WindowCentered)
+            {
+                SetWindowSizeAndCenter(Preferences.WindowWidth, Preferences.WindowHeight);
+            }
             SetWindowCloseHandler(OnWindowClose);
         }
 
@@ -77,7 +80,10 @@ namespace TradeBot
             finally
             {
                 Shutdown();
-                IO.PromptForKey(Messages.AppExiting);
+                if (OS.IsWindows())
+                {
+                    IO.PromptForKey(Messages.AppExiting);
+                }
             }
         }
 

@@ -9,7 +9,7 @@ namespace TradeBot.Gui
     /// <summary>
     /// A helper class for console window input/output.
     /// </summary>
-    public class IO
+    public static class IO
     {
         private static readonly object threadLock = new object();
 

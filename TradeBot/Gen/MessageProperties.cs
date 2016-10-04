@@ -40,9 +40,6 @@ namespace TradeBot.Gen
     public class MessageProperties
     {
 
-        [JsonProperty("appInfoMessagesToggleStateFormat")]
-        public string AppInfoMessagesToggleStateFormat { get; set; }
-
         [JsonProperty("appStateSaved")]
         public string AppStateSaved { get; set; }
 
@@ -72,6 +69,9 @@ namespace TradeBot.Gen
 
         [JsonProperty("twsInfoMessageFormat")]
         public string TwsInfoMessageFormat { get; set; }
+
+        [JsonProperty("twsInfoMessageToggleStateFormat")]
+        public string TwsInfoMessageToggleStateFormat { get; set; }
 
         [JsonProperty("twsNextValidIdFormat")]
         public string TwsNextValidIdFormat { get; set; }
