@@ -1,9 +1,0 @@
-account.live=""
-account.paper=""
-showInfoMessages=true
-twsClient.id=0
-twsClient.port=7496
-twsClient.url="127.0.0.1"
-window.size.height=600
-window.size.width=800
-window.title="TradeBot"
