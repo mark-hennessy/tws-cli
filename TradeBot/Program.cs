@@ -32,9 +32,8 @@ namespace TradeBot
 
         private void InitializeConsole()
         {
-            WindowPreferences windowPrefs = Preferences.WindowPreferences;
-            Console.Title = windowPrefs.Title;
-            SetWindowSizeAndCenter(windowPrefs.Width, windowPrefs.Height);
+            Console.Title = Preferences.WindowTitle;
+            SetWindowSizeAndCenter(Preferences.WindowWidth, Preferences.WindowHeight);
             SetWindowCloseHandler(OnWindowClose);
         }
 
@@ -47,18 +46,18 @@ namespace TradeBot
         {
             menu = new Menu();
 
-            Action<IList<string>, Action> addMenuOption = (option, command)
-                => menu.AddMenuOption(option[0], option[1], command);
+            Action<IList<string>, Action> addMenuOption = (entry, command)
+                => menu.AddMenuOption(entry[0], entry[1], command);
 
-            MenuOptions optionOptions = Messages.MenuOptions;
-            addMenuOption(optionOptions.FindPosition, FindCommand);
-            addMenuOption(optionOptions.BuyPosition, BuyPositionCommand);
-            addMenuOption(optionOptions.SellPosition, SellPositionCommand);
-            addMenuOption(optionOptions.ReversePosition, ReversePositionCommand);
-            addMenuOption(optionOptions.ClosePosition, ClosePositionCommand);
-            addMenuOption(optionOptions.ToggleInfoMessages, ToggleInfoMessages);
-            addMenuOption(optionOptions.Help, HelpCommand);
-            addMenuOption(optionOptions.ExitApplication, ExitApplicationCommand);
+            MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
+            addMenuOption(menuOptionEntry.FindPosition, FindCommand);
+            addMenuOption(menuOptionEntry.BuyPosition, BuyPositionCommand);
+            addMenuOption(menuOptionEntry.SellPosition, SellPositionCommand);
+            addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
+            addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
+            addMenuOption(menuOptionEntry.ToggleInfoMessages, ToggleInfoMessages);
+            addMenuOption(menuOptionEntry.Help, HelpCommand);
+            addMenuOption(menuOptionEntry.ExitApplication, ExitApplicationCommand);
         }
 
         public void Start()
@@ -78,7 +77,7 @@ namespace TradeBot
             finally
             {
                 Shutdown();
-                IO.PromptForKey(Messages.AppMessages.ProgramExiting);
+                IO.PromptForKey(Messages.AppExiting);
             }
         }
 
@@ -127,7 +126,7 @@ namespace TradeBot
         private void ToggleInfoMessages()
         {
             State.ShowInfoMessages = !State.ShowInfoMessages;
-            IO.ShowMessage(Messages.AppMessages.InfoMessagesToggleStateFormat, State.ShowInfoMessages);
+            IO.ShowMessage(Messages.TwsInfoMessageToggleStateFormat, State.ShowInfoMessages);
         }
 
         private void HelpCommand()

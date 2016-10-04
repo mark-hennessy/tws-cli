@@ -12,9 +12,9 @@ namespace TradeBot.Tws
         public void eConnect()
         {
             eConnect(
-                Preferences.TwsClientInfo.Url,
-                Preferences.TwsClientInfo.Port,
-                Preferences.TwsClientInfo.Id);
+                Preferences.ClientUrl,
+                Preferences.ClientPort,
+                Preferences.ClientId);
         }
     }
 }

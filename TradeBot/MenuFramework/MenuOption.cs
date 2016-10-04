@@ -18,7 +18,7 @@ namespace TradeBot.MenuFramework
 
         public override string ToString()
         {
-            return string.Format(Messages.MenuMessages.MenuOptionFormat, Key, Description);
+            return string.Format(Messages.MenuOptionFormat, Key, Description);
         }
     }
 }

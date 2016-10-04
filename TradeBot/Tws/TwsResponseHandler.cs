@@ -37,7 +37,7 @@ namespace TradeBot.Tws
 
         public void connectionClosed()
         {
-            IO.ShowMessage(Messages.TwsMessages.ConnectionClosed, MessageType.ERROR);
+            IO.ShowMessage(Messages.TwsConnectionClosed, MessageType.ERROR);
         }
 
         public void contractDetails(int requestId, ContractDetails contractDetails)
@@ -52,7 +52,7 @@ namespace TradeBot.Tws
 
         public void currentTime(long time)
         {
-            IO.ShowMessage(Messages.TwsMessages.CurrentTimeFormat, MessageType.INFO, time);
+            IO.ShowMessage(Messages.TwsCurrentTimeFormat, MessageType.INFO, time);
         }
 
         public void deltaNeutralValidation(int requestId, UnderComp underComp)
@@ -72,23 +72,23 @@ namespace TradeBot.Tws
 
         public void error(string errorMessage)
         {
-            IO.ShowMessage(Messages.TwsMessages.ErrorMessageFormat, MessageType.ERROR, errorMessage);
+            IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
         }
 
         public void error(Exception exception)
         {
-            IO.ShowMessage(Messages.TwsMessages.ErrorMessageFormat, MessageType.ERROR, exception.Message);
+            IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, exception.Message);
         }
 
         public void error(int id, int errorCode, string errorMessage)
         {
             if (ignoredErrorCodes.Contains(errorCode))
             {
-                IO.ShowMessage(Messages.TwsMessages.InfoMessageFormat, MessageType.INFO, errorMessage);
+                IO.ShowMessage(Messages.TwsInfoMessageFormat, MessageType.INFO, errorMessage);
             }
             else
             {
-                IO.ShowMessage(Messages.TwsMessages.ErrorMessageFormat, MessageType.ERROR, errorMessage);
+                IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
             }
         }
 
@@ -119,14 +119,14 @@ namespace TradeBot.Tws
 
         public void managedAccounts(string accounts)
         {
-            IO.ShowMessage(Messages.TwsMessages.AccountIdFormat, MessageType.INFO, accounts);
-            if (accounts.Contains(Preferences.AccountInfo.Live))
+            IO.ShowMessage(Messages.TwsAccountIdFormat, MessageType.INFO, accounts);
+            if (accounts.Contains(Preferences.AccountLive))
             {
-                IO.ShowMessage(Messages.TwsMessages.AccountTypeLive, MessageType.ERROR);
+                IO.ShowMessage(Messages.TwsAccountTypeLive, MessageType.ERROR);
             }
-            if (accounts.Contains(Preferences.AccountInfo.Paper))
+            if (accounts.Contains(Preferences.AccountPaper))
             {
-                IO.ShowMessage(Messages.TwsMessages.AccountTypePaper, MessageType.SUCCESS);
+                IO.ShowMessage(Messages.TwsAccountTypePaper, MessageType.SUCCESS);
             }
         }
 
@@ -137,7 +137,7 @@ namespace TradeBot.Tws
 
         public void nextValidId(int orderId)
         {
-            IO.ShowMessage(Messages.TwsMessages.NextValidIdFormat, MessageType.INFO, orderId);
+            IO.ShowMessage(Messages.TwsNextValidIdFormat, MessageType.INFO, orderId);
         }
 
         public void openOrder(int orderId, Contract contract, Order order, OrderState orderState)
@@ -207,17 +207,17 @@ namespace TradeBot.Tws
 
         public void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
-            IO.ShowMessage(Messages.TwsMessages.TickPriceFormat, MessageType.INFO, tickerId, field, price, canAutoExecute);
+            IO.ShowMessage(Messages.TwsTickPriceFormat, MessageType.INFO, tickerId, field, price, canAutoExecute);
         }
 
         public void tickSize(int tickerId, int field, int size)
         {
-            IO.ShowMessage(Messages.TwsMessages.TickSizeFormat, MessageType.INFO, tickerId, field, size);
+            IO.ShowMessage(Messages.TwsTickSizeFormat, MessageType.INFO, tickerId, field, size);
         }
 
         public void tickSnapshotEnd(int tickerId)
         {
-            IO.ShowMessage(Messages.TwsMessages.TickSnapshotEndFormat, MessageType.INFO, tickerId);
+            IO.ShowMessage(Messages.TwsTickSnapshotEndFormat, MessageType.INFO, tickerId);
         }
 
         public void tickString(int tickerId, int field, string value)

@@ -48,15 +48,15 @@ namespace TradeBot.MenuFramework
 
         private void InvalidMenuOptionCommand()
         {
-            IO.ShowMessage(Messages.MenuMessages.InvalidEntry, MessageType.ERROR);
+            IO.ShowMessage(Messages.MenuOptionInvalidEntry, MessageType.ERROR);
         }
 
         public override string ToString()
         {
-            string menuOptionDivider = Messages.MenuMessages.MenuOptionDivider;
+            string menuOptionDivider = Messages.MenuOptionDivider;
 
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(Messages.MenuMessages.MenuTitle);
+            stringBuilder.Append(Messages.MenuTitle);
 
             var menuOptionsAsStrings = menuOptions
                 .Select(menuOption => menuOption.ToString());

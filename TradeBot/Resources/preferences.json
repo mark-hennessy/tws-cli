@@ -1,16 +1,10 @@
 {
-  "accountInfo": {
-    "live": "",
-    "paper": ""
-  },
-  "windowPreferences": {
-    "width": 800,
-    "height": 600,
-    "title": "TradeBot"
-  },
-  "twsClientInfo": {
-    "id": 0,
-    "port": 7496,
-    "url": "127.0.0.1"
-  }
+  "accountLive": "",
+  "accountPaper": "",
+  "clientId": 0,
+  "clientPort": 7496,
+  "clientUrl": "127.0.0.1",
+  "windowWidth": 800,
+  "windowHeight": 600,
+  "windowTitle": "TradeBot"
 }

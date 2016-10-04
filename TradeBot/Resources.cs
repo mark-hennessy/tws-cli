@@ -22,7 +22,7 @@ namespace TradeBot
         public static void SaveState()
         {
             File.WriteAllText(PropertyFiles.STATE_FILE, JsonConvert.SerializeObject(State));
-            IO.ShowMessage(Messages.AppMessages.StateSaved);
+            IO.ShowMessage(Messages.AppStateSaved);
         }
     }
 }

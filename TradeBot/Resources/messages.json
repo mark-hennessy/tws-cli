@@ -1,37 +1,31 @@
 {
-  "appMessages": {
-    "infoMessagesToggleStateFormat": "Show info: {0}",
-    "stateSaved":  "Saved application state to Resources/state.json",
-    "programExiting": "Goodbye! Press any key to exit..."
-  },
-  "twsMessages": {
-    "accountIdFormat": "Account: {0}",
-    "accountTypeLive": "Live Trading!",
-    "accountTypePaper": "Paper Trading!",
-    "connectionEstablished": "TWS Connection Established",
-    "connectionClosed": "TWS Connection Closed",
-    "currentTimeFormat": "Current Time: {0}",
-    "errorMessageFormat": "Error: {0}",
-    "infoMessageFormat": "Info: {0}",
-    "nextValidIdFormat": "Next Valid OrderId: {0}",
-    "tickPriceFormat": "Tick Price: tickerId={0}, field={1}, price={2}, canAutoExecute={3}",
-    "tickSizeFormat": "Tick Size: tickerId={0}, field={1}, size={2}",
-    "tickSnapshotEndFormat": "Tick Snapshot End: tickerId={0}"
-  },
-  "menuMessages": {
-    "menuTitle": "====================\nMenu\n====================\n",
-    "invalidEntry": "No such menu option. Please try again.",
-    "menuOptionFormat":  "{0} - {1}",
-    "menuOptionDivider": "\n"
-  },
-  "menuOptions": {
-    "findPosition": ["f", "Find Position"],
-    "buyPosition": ["b", "Buy Position"],
-    "sellPosition": ["s", "Sell Position"],
-    "reversePosition": ["r", "Reverse Position"],
-    "closePosition": ["c", "Close Position"],
-    "toggleInfoMessages": ["i", "Show/Hide Info Messages"],
-    "help": ["?", "Help"],
-    "exitApplication": ["q", "Save and Exit"]
+  "appStateSaved": "Saved application state to Resources/state.json",
+  "appExiting": "Goodbye! Press any key to exit...",
+  "twsAccountIdFormat": "Account: {0}",
+  "twsAccountTypeLive": "Live Trading!",
+  "twsAccountTypePaper": "Paper Trading!",
+  "twsConnectionEstablished": "TWS Connection Established",
+  "twsConnectionClosed": "TWS Connection Closed",
+  "twsCurrentTimeFormat": "Current Time: {0}",
+  "twsErrorMessageFormat": "Error: {0}",
+  "twsInfoMessageFormat": "Info: {0}",
+  "twsInfoMessageToggleStateFormat": "Show info: {0}",
+  "twsNextValidIdFormat": "Next Valid OrderId: {0}",
+  "twsTickPriceFormat": "Tick Price: tickerId={0}, field={1}, price={2}, canAutoExecute={3}",
+  "twsTickSizeFormat": "Tick Size: tickerId={0}, field={1}, size={2}",
+  "twsTickSnapshotEndFormat": "Tick Snapshot End: tickerId={0}",
+  "menuTitle": "====================\nMenu\n====================\n",
+  "menuOptionInvalidEntry": "No such menu option. Please try again.",
+  "menuOptionFormat": "{0} - {1}",
+  "menuOptionDivider": "\n",
+  "menuOptionEntries": {
+    "findPosition": [ "f", "Find Position" ],
+    "buyPosition": [ "b", "Buy Position" ],
+    "sellPosition": [ "s", "Sell Position" ],
+    "reversePosition": [ "r", "Reverse Position" ],
+    "closePosition": [ "c", "Close Position" ],
+    "toggleInfoMessages": [ "i", "Show/Hide Info Messages" ],
+    "help": [ "?", "Help" ],
+    "exitApplication": [ "q", "Save and Exit" ]
   }
 }

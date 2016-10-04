@@ -9,76 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace TradeBot.Gen
 {
 
-    public class AppMessages
-    {
-
-        [JsonProperty("infoMessagesToggleStateFormat")]
-        public string InfoMessagesToggleStateFormat { get; set; }
-
-        [JsonProperty("stateSaved")]
-        public string StateSaved { get; set; }
-
-        [JsonProperty("programExiting")]
-        public string ProgramExiting { get; set; }
-    }
-
-    public class TwsMessages
-    {
-
-        [JsonProperty("accountIdFormat")]
-        public string AccountIdFormat { get; set; }
-
-        [JsonProperty("accountTypeLive")]
-        public string AccountTypeLive { get; set; }
-
-        [JsonProperty("accountTypePaper")]
-        public string AccountTypePaper { get; set; }
-
-        [JsonProperty("connectionEstablished")]
-        public string ConnectionEstablished { get; set; }
-
-        [JsonProperty("connectionClosed")]
-        public string ConnectionClosed { get; set; }
-
-        [JsonProperty("currentTimeFormat")]
-        public string CurrentTimeFormat { get; set; }
-
-        [JsonProperty("errorMessageFormat")]
-        public string ErrorMessageFormat { get; set; }
-
-        [JsonProperty("infoMessageFormat")]
-        public string InfoMessageFormat { get; set; }
-
-        [JsonProperty("nextValidIdFormat")]
-        public string NextValidIdFormat { get; set; }
-
-        [JsonProperty("tickPriceFormat")]
-        public string TickPriceFormat { get; set; }
-
-        [JsonProperty("tickSizeFormat")]
-        public string TickSizeFormat { get; set; }
-
-        [JsonProperty("tickSnapshotEndFormat")]
-        public string TickSnapshotEndFormat { get; set; }
-    }
-
-    public class MenuMessages
-    {
-
-        [JsonProperty("menuTitle")]
-        public string MenuTitle { get; set; }
-
-        [JsonProperty("invalidEntry")]
-        public string InvalidEntry { get; set; }
-
-        [JsonProperty("menuOptionFormat")]
-        public string MenuOptionFormat { get; set; }
-
-        [JsonProperty("menuOptionDivider")]
-        public string MenuOptionDivider { get; set; }
-    }
-
-    public class MenuOptions
+    public class MenuOptionEntries
     {
 
         [JsonProperty("findPosition")]
@@ -109,17 +40,65 @@ namespace TradeBot.Gen
     public class MessageProperties
     {
 
-        [JsonProperty("appMessages")]
-        public AppMessages AppMessages { get; set; }
+        [JsonProperty("appInfoMessagesToggleStateFormat")]
+        public string AppInfoMessagesToggleStateFormat { get; set; }
 
-        [JsonProperty("twsMessages")]
-        public TwsMessages TwsMessages { get; set; }
+        [JsonProperty("appStateSaved")]
+        public string AppStateSaved { get; set; }
 
-        [JsonProperty("menuMessages")]
-        public MenuMessages MenuMessages { get; set; }
+        [JsonProperty("appExiting")]
+        public string AppExiting { get; set; }
 
-        [JsonProperty("menuOptions")]
-        public MenuOptions MenuOptions { get; set; }
+        [JsonProperty("twsAccountIdFormat")]
+        public string TwsAccountIdFormat { get; set; }
+
+        [JsonProperty("twsAccountTypeLive")]
+        public string TwsAccountTypeLive { get; set; }
+
+        [JsonProperty("twsAccountTypePaper")]
+        public string TwsAccountTypePaper { get; set; }
+
+        [JsonProperty("twsConnectionEstablished")]
+        public string TwsConnectionEstablished { get; set; }
+
+        [JsonProperty("twsConnectionClosed")]
+        public string TwsConnectionClosed { get; set; }
+
+        [JsonProperty("twsCurrentTimeFormat")]
+        public string TwsCurrentTimeFormat { get; set; }
+
+        [JsonProperty("twsErrorMessageFormat")]
+        public string TwsErrorMessageFormat { get; set; }
+
+        [JsonProperty("twsInfoMessageFormat")]
+        public string TwsInfoMessageFormat { get; set; }
+
+        [JsonProperty("twsNextValidIdFormat")]
+        public string TwsNextValidIdFormat { get; set; }
+
+        [JsonProperty("twsTickPriceFormat")]
+        public string TwsTickPriceFormat { get; set; }
+
+        [JsonProperty("twsTickSizeFormat")]
+        public string TwsTickSizeFormat { get; set; }
+
+        [JsonProperty("twsTickSnapshotEndFormat")]
+        public string TwsTickSnapshotEndFormat { get; set; }
+
+        [JsonProperty("menuTitle")]
+        public string MenuTitle { get; set; }
+
+        [JsonProperty("menuOptionInvalidEntry")]
+        public string MenuOptionInvalidEntry { get; set; }
+
+        [JsonProperty("menuOptionFormat")]
+        public string MenuOptionFormat { get; set; }
+
+        [JsonProperty("menuOptionDivider")]
+        public string MenuOptionDivider { get; set; }
+
+        [JsonProperty("menuOptionEntries")]
+        public MenuOptionEntries MenuOptionEntries { get; set; }
     }
 
 }

@@ -154,7 +154,6 @@
     <Content Include="Resources\Icons\uptrend_icon.ico" />
     <Content Include="References\TWSLib.dll" />
     <Content Include="Resources\readme.txt" />
-    <Content Include="todo.txt" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

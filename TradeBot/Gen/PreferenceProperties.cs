@@ -9,53 +9,32 @@ using Newtonsoft.Json.Linq;
 namespace TradeBot.Gen
 {
 
-    public class AccountInfo
-    {
-
-        [JsonProperty("live")]
-        public string Live { get; set; }
-
-        [JsonProperty("paper")]
-        public string Paper { get; set; }
-    }
-
-    public class WindowPreferences
-    {
-
-        [JsonProperty("width")]
-        public int Width { get; set; }
-
-        [JsonProperty("height")]
-        public int Height { get; set; }
-
-        [JsonProperty("title")]
-        public string Title { get; set; }
-    }
-
-    public class TwsClientInfo
-    {
-
-        [JsonProperty("id")]
-        public int Id { get; set; }
-
-        [JsonProperty("port")]
-        public int Port { get; set; }
-
-        [JsonProperty("url")]
-        public string Url { get; set; }
-    }
-
     public class PreferenceProperties
     {
 
-        [JsonProperty("accountInfo")]
-        public AccountInfo AccountInfo { get; set; }
+        [JsonProperty("accountLive")]
+        public string AccountLive { get; set; }
 
-        [JsonProperty("windowPreferences")]
-        public WindowPreferences WindowPreferences { get; set; }
+        [JsonProperty("accountPaper")]
+        public string AccountPaper { get; set; }
 
-        [JsonProperty("twsClientInfo")]
-        public TwsClientInfo TwsClientInfo { get; set; }
+        [JsonProperty("clientId")]
+        public int ClientId { get; set; }
+
+        [JsonProperty("clientPort")]
+        public int ClientPort { get; set; }
+
+        [JsonProperty("clientUrl")]
+        public string ClientUrl { get; set; }
+
+        [JsonProperty("windowWidth")]
+        public int WindowWidth { get; set; }
+
+        [JsonProperty("windowHeight")]
+        public int WindowHeight { get; set; }
+
+        [JsonProperty("windowTitle")]
+        public string WindowTitle { get; set; }
     }
 
 }
