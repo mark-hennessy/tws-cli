@@ -61,4 +61,4 @@ rm -f $EXE
 
 # Prevent the terminal from auto-closing on Windows.
 # Comment out if debugging the script.
-# read -rsp $'Press any key to continue...\n' -n1
+#read -rsp $'Press any key to continue...\n' -n1

@@ -28,5 +28,6 @@ bld/
 # Mac specific files
 .DS_Store
 
-# Misc
+# Project specific
+tws_api/
 *.exe

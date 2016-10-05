@@ -14,6 +14,9 @@ namespace TradeBot.Gen
 
         [JsonProperty("showInfoMessages")]
         public bool ShowInfoMessages { get; set; }
+
+        [JsonProperty("selectedTicker")]
+        public string SelectedTicker { get; set; }
     }
 
 }

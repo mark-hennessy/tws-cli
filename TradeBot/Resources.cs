@@ -8,9 +8,9 @@ namespace TradeBot
 {
     public static class Resources
     {
-        public static StateProperties State { get; private set; }
-        public static PreferenceProperties Preferences { get; private set; }
-        public static MessageProperties Messages { get; private set; }
+        public static StateProperties State { get; }
+        public static PreferenceProperties Preferences { get; }
+        public static MessageProperties Messages { get; }
 
         static Resources()
         {
@@ -19,10 +19,11 @@ namespace TradeBot
             Messages = JsonConvert.DeserializeObject<MessageProperties>(File.ReadAllText(PropertyFiles.MESSAGES_FILE));
         }
 
-        public static void SaveState()
+        public static void PersistState()
         {
-            File.WriteAllText(PropertyFiles.STATE_FILE, JsonConvert.SerializeObject(State));
-            IO.ShowMessage(Messages.AppStateSaved);
+            string path = PropertyFiles.STATE_FILE;
+            File.WriteAllText(path, JsonConvert.SerializeObject(State));
+            IO.ShowMessage(Messages.StateSavedFormat, path);
         }
     }
 }

@@ -95,7 +95,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="TWSLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\TWSLib.dll</HintPath>
+      <HintPath>References\TWSLib.dll</HintPath>
     </Reference>
     <Reference Include="Xamasoft.JsonClassGenerator, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -103,12 +103,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Gen\MessageProperties.cs" />
     <Compile Include="Gen\PreferenceProperties.cs" />
     <Compile Include="Gen\StateProperties.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="Tws\PriceInfo.cs" />
+    <Compile Include="Tws\StockContract.cs" />
+    <Compile Include="Tws\TwsApiConstants.cs" />
     <Compile Include="Tws\TwsResponseHandler.cs" />
     <Compile Include="Gui\Screen.cs" />
     <Compile Include="Gui\IO.cs" />
@@ -152,8 +157,8 @@
     <Content Include="References\JsonClassGenerator\Newtonsoft.Json.dll" />
     <Content Include="References\JsonClassGenerator\System.Data.Entity.Design.PluralizationServices.dll" />
     <Content Include="References\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll" />
-    <Content Include="Resources\Icons\uptrend_icon.ico" />
     <Content Include="References\TWSLib.dll" />
+    <Content Include="Resources\Icons\uptrend_icon.ico" />
     <Content Include="Resources\readme.txt" />
   </ItemGroup>
   <ItemGroup />

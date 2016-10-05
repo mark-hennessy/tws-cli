@@ -5,7 +5,8 @@ namespace TradeBot.Tws
 {
     public class TwsClient : EClientSocket
     {
-        public TwsClient() : base(new TwsResponseHandler())
+        public TwsClient(TwsResponseHandler handler)
+            : base(handler)
         {
         }
 

@@ -1,268 +1,269 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using TradeBot.Extensions;
 using TradeBot.Gui;
-using static TradeBot.Resources;
 
 namespace TradeBot.Tws
 {
-    public class TwsResponseHandler : EWrapper
+    public abstract class TwsResponseHandler : EWrapper
     {
-        private IList<int> ignoredErrorCodes = new List<int> { 2104, 2106 };
-
-        public void accountDownloadEnd(string account)
+        public virtual void accountDownloadEnd(string account)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(account);
         }
 
-        public void accountSummary(int requestId, string account, string tag, string value, string currency)
+        public virtual void accountSummary(int requestId, string account, string tag, string value, string currency)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, account, tag, value, currency);
         }
 
-        public void accountSummaryEnd(int requestId)
+        public virtual void accountSummaryEnd(int requestId)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId);
         }
 
-        public void bondContractDetails(int requestId, ContractDetails contract)
+        public virtual void bondContractDetails(int requestId, ContractDetails contract)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, contract);
         }
 
-        public void commissionReport(CommissionReport commissionReport)
+        public virtual void commissionReport(CommissionReport commissionReport)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(commissionReport);
         }
 
-        public void connectionClosed()
+        public virtual void connectionClosed()
         {
-            IO.ShowMessage(Messages.TwsConnectionClosed, MessageType.ERROR);
+            ShowMethodDebugInfo();
         }
 
-        public void contractDetails(int requestId, ContractDetails contractDetails)
+        public virtual void contractDetails(int requestId, ContractDetails contractDetails)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, contractDetails);
         }
 
-        public void contractDetailsEnd(int requestId)
+        public virtual void contractDetailsEnd(int requestId)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId);
         }
 
-        public void currentTime(long time)
+        public virtual void currentTime(long time)
         {
-            IO.ShowMessage(Messages.TwsCurrentTimeFormat, MessageType.INFO, time);
+            ShowMethodDebugInfo(time);
         }
 
-        public void deltaNeutralValidation(int requestId, UnderComp underComp)
+        public virtual void deltaNeutralValidation(int requestId, UnderComp underComp)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, underComp);
         }
 
-        public void displayGroupList(int requestId, string groups)
+        public virtual void displayGroupList(int requestId, string groups)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, groups);
         }
 
-        public void displayGroupUpdated(int requestId, string contractInfo)
+        public virtual void displayGroupUpdated(int requestId, string contractInfo)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, contractInfo);
         }
 
-        public void error(string errorMessage)
+        public virtual void error(Exception exception)
         {
-            IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
+            ShowMethodDebugInfo(exception);
         }
 
-        public void error(Exception exception)
+        public virtual void error(string errorMessage)
         {
-            IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, exception.Message);
+            ShowMethodDebugInfo(errorMessage);
         }
 
-        public void error(int id, int errorCode, string errorMessage)
+        public virtual void error(int id, int errorCode, string errorMessage)
         {
-            if (ignoredErrorCodes.Contains(errorCode))
-            {
-                IO.ShowMessage(Messages.TwsInfoMessageFormat, MessageType.INFO, errorMessage);
-            }
-            else
-            {
-                IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
-            }
+            ShowMethodDebugInfo(id, errorCode, errorMessage);
         }
 
-        public void execDetails(int requestId, Contract contract, Execution execution)
+        public virtual void execDetails(int requestId, Contract contract, Execution execution)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, contract, execution);
         }
 
-        public void execDetailsEnd(int requestId)
+        public virtual void execDetailsEnd(int requestId)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId);
         }
 
-        public void fundamentalData(int requestId, string data)
+        public virtual void fundamentalData(int requestId, string data)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, data);
         }
 
-        public void historicalData(int requestId, string date, double open, double high, double low, double close, int volume, int count, double WAP, bool hasGaps)
+        public virtual void historicalData(int requestId, string date, double open, double high, double low, double close, int volume, int count, double WAP, bool hasGaps)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, date, open, high, low, close, volume, count, WAP, hasGaps);
         }
 
-        public void historicalDataEnd(int requestId, string start, string end)
+        public virtual void historicalDataEnd(int requestId, string start, string end)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, start, end);
         }
 
-        public void managedAccounts(string accounts)
+        public virtual void managedAccounts(string accounts)
         {
-            IO.ShowMessage(Messages.TwsAccountIdFormat, MessageType.INFO, accounts);
-            if (accounts.Contains(Preferences.AccountLive))
-            {
-                IO.ShowMessage(Messages.TwsAccountTypeLive, MessageType.ERROR);
-            }
-            if (accounts.Contains(Preferences.AccountPaper))
-            {
-                IO.ShowMessage(Messages.TwsAccountTypePaper, MessageType.SUCCESS);
-            }
+            ShowMethodDebugInfo(accounts);
         }
 
-        public void marketDataType(int requestId, int marketDataType)
+        public virtual void marketDataType(int requestId, int marketDataType)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, marketDataType);
         }
 
-        public void nextValidId(int orderId)
+        public virtual void nextValidId(int nextValidOrderId)
         {
-            IO.ShowMessage(Messages.TwsNextValidIdFormat, MessageType.INFO, orderId);
+            ShowMethodDebugInfo(nextValidOrderId);
         }
 
-        public void openOrder(int orderId, Contract contract, Order order, OrderState orderState)
+        public virtual void openOrder(int orderId, Contract contract, Order order, OrderState orderState)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(orderId, contract, order, orderState);
         }
 
-        public void openOrderEnd()
+        public virtual void openOrderEnd()
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo();
         }
 
-        public void orderStatus(int orderId, string status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld)
+        public virtual void orderStatus(int orderId, string status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
         }
 
-        public void position(string account, Contract contract, int position, double averageCost)
+        public virtual void position(string account, Contract contract, int position, double averageCost)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(account, contract, position, averageCost);
         }
 
-        public void positionEnd()
+        public virtual void positionEnd()
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo();
         }
 
-        public void realtimeBar(int requestId, long time, double open, double high, double low, double close, long volume, double WAP, int count)
+        public virtual void realtimeBar(int requestId, long time, double open, double high, double low, double close, long volume, double WAP, int count)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, time, open, high, low, close, volume, WAP, count);
         }
 
-        public void receiveFA(int faDataType, string faXmlData)
+        public virtual void receiveFA(int faDataType, string faXmlData)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(faDataType, faXmlData);
         }
 
-        public void scannerData(int requestId, int rank, ContractDetails contractDetails, string distance, string benchmark, string projection, string legsStr)
+        public virtual void scannerData(int requestId, int rank, ContractDetails contractDetails, string distance, string benchmark, string projection, string legsStr)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId, rank, contractDetails, distance, benchmark, projection, legsStr);
         }
 
-        public void scannerDataEnd(int requestId)
+        public virtual void scannerDataEnd(int requestId)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(requestId);
         }
 
-        public void scannerParameters(string xml)
+        public virtual void scannerParameters(string xml)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(xml);
         }
 
-        public void tickEFP(int tickerId, int tickType, double basisPoints, string formattedBasisPoints, double impliedFuture, int holdDays, string futureExpiry, double dividendImpact, double dividendsToExpiry)
+        public virtual void tickEFP(int tickerId, int tickType, double basisPoints, string formattedBasisPoints, double impliedFuture, int holdDays, string futureExpiry, double dividendImpact, double dividendsToExpiry)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureExpiry, dividendImpact, dividendsToExpiry);
         }
 
-        public void tickGeneric(int tickerId, int field, double value)
+        public virtual void tickGeneric(int tickerId, int field, double value)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, TickType.getField(field), value);
         }
 
-        public void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+        public virtual void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, TickType.getField(field), impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
         }
 
-        public void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public virtual void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
-            IO.ShowMessage(Messages.TwsTickPriceFormat, MessageType.INFO, tickerId, field, price, canAutoExecute);
+            ShowMethodDebugInfo(tickerId, TickType.getField(field), price, canAutoExecute);
         }
 
-        public void tickSize(int tickerId, int field, int size)
+        public virtual void tickSize(int tickerId, int field, int size)
         {
-            IO.ShowMessage(Messages.TwsTickSizeFormat, MessageType.INFO, tickerId, field, size);
+            ShowMethodDebugInfo(tickerId, TickType.getField(field), size);
         }
 
-        public void tickSnapshotEnd(int tickerId)
+        public virtual void tickSnapshotEnd(int tickerId)
         {
-            IO.ShowMessage(Messages.TwsTickSnapshotEndFormat, MessageType.INFO, tickerId);
+            ShowMethodDebugInfo(tickerId);
         }
 
-        public void tickString(int tickerId, int field, string value)
+        public virtual void tickString(int tickerId, int field, string value)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, TickType.getField(field), value);
         }
 
-        public void updateAccountTime(string timestamp)
+        public virtual void updateAccountTime(string timestamp)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(timestamp);
         }
 
-        public void updateAccountValue(string key, string value, string currency, string accountName)
+        public virtual void updateAccountValue(string key, string value, string currency, string accountName)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(key, value, currency, accountName);
         }
 
-        public void updateMktDepth(int tickerId, int position, int operation, int side, double price, int size)
+        public virtual void updateMktDepth(int tickerId, int position, int operation, int side, double price, int size)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, position, operation, side, price, size);
         }
 
-        public void updateMktDepthL2(int tickerId, int position, string marketMaker, int operation, int side, double price, int size)
+        public virtual void updateMktDepthL2(int tickerId, int position, string marketMaker, int operation, int side, double price, int size)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(tickerId, position, marketMaker, operation, side, price, size);
         }
 
-        public void updateNewsBulletin(int messageId, int messageType, string message, string origExchange)
+        public virtual void updateNewsBulletin(int messageId, int messageType, string message, string origExchange)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(messageId, messageType, message, origExchange);
         }
 
-        public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string accountName)
+        public virtual void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string accountName)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(contract, position, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
         }
 
-        public void verifyCompleted(bool isSuccessful, string errorText)
+        public virtual void verifyCompleted(bool isSuccessful, string errorText)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(isSuccessful, errorText);
         }
 
-        public void verifyMessageAPI(string apiData)
+        public virtual void verifyMessageAPI(string apiData)
         {
-            throw new NotImplementedException();
+            ShowMethodDebugInfo(apiData);
+        }
+
+        protected void ShowMethodDebugInfo(params object[] parameterValues)
+        {
+            StackTrace stackTrace = new StackTrace();
+            MethodBase callingMethod = stackTrace.GetFrame(1).GetMethod();
+
+            var parameterNameValuePairs = callingMethod.GetParameters()
+                .Select((p, i) => new KeyValuePair<string, object>(p.Name, parameterValues[i]));
+
+            IO.ShowMessage(
+                "{0} : {1}",
+                MessageType.INFO,
+                callingMethod.Name,
+                parameterNameValuePairs.ToPrettyString());
         }
     }
 }

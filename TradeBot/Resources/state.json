@@ -1,3 +1,4 @@
 {
-  "showInfoMessages":  true
+  "showInfoMessages": true,
+  "selectedTicker": "GOOG"
 }

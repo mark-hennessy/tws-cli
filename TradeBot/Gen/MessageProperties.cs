@@ -12,8 +12,11 @@ namespace TradeBot.Gen
     public class MenuOptionEntries
     {
 
-        [JsonProperty("findPosition")]
-        public IList<string> FindPosition { get; set; }
+        [JsonProperty("selectTicker")]
+        public IList<string> SelectTicker { get; set; }
+
+        [JsonProperty("deselectCurrentTicker")]
+        public IList<string> DeselectCurrentTicker { get; set; }
 
         [JsonProperty("buyPosition")]
         public IList<string> BuyPosition { get; set; }
@@ -30,6 +33,9 @@ namespace TradeBot.Gen
         [JsonProperty("toggleInfoMessages")]
         public IList<string> ToggleInfoMessages { get; set; }
 
+        [JsonProperty("misc")]
+        public IList<string> Misc { get; set; }
+
         [JsonProperty("help")]
         public IList<string> Help { get; set; }
 
@@ -40,50 +46,29 @@ namespace TradeBot.Gen
     public class MessageProperties
     {
 
-        [JsonProperty("appStateSaved")]
-        public string AppStateSaved { get; set; }
+        [JsonProperty("titleDivider")]
+        public string TitleDivider { get; set; }
 
-        [JsonProperty("appExiting")]
-        public string AppExiting { get; set; }
+        [JsonProperty("titleTicker")]
+        public string TitleTicker { get; set; }
 
-        [JsonProperty("twsAccountIdFormat")]
-        public string TwsAccountIdFormat { get; set; }
+        [JsonProperty("titleLastFormat")]
+        public string TitleLastFormat { get; set; }
 
-        [JsonProperty("twsAccountTypeLive")]
-        public string TwsAccountTypeLive { get; set; }
+        [JsonProperty("titleBidAskFormat")]
+        public string TitleBidAskFormat { get; set; }
 
-        [JsonProperty("twsAccountTypePaper")]
-        public string TwsAccountTypePaper { get; set; }
+        [JsonProperty("titleOpenFormat")]
+        public string TitleOpenFormat { get; set; }
 
-        [JsonProperty("twsConnectionEstablished")]
-        public string TwsConnectionEstablished { get; set; }
+        [JsonProperty("titleCloseFormat")]
+        public string TitleCloseFormat { get; set; }
 
-        [JsonProperty("twsConnectionClosed")]
-        public string TwsConnectionClosed { get; set; }
+        [JsonProperty("titleVolumeFormat")]
+        public string TitleVolumeFormat { get; set; }
 
-        [JsonProperty("twsCurrentTimeFormat")]
-        public string TwsCurrentTimeFormat { get; set; }
-
-        [JsonProperty("twsErrorMessageFormat")]
-        public string TwsErrorMessageFormat { get; set; }
-
-        [JsonProperty("twsInfoMessageFormat")]
-        public string TwsInfoMessageFormat { get; set; }
-
-        [JsonProperty("twsInfoMessageToggleStateFormat")]
-        public string TwsInfoMessageToggleStateFormat { get; set; }
-
-        [JsonProperty("twsNextValidIdFormat")]
-        public string TwsNextValidIdFormat { get; set; }
-
-        [JsonProperty("twsTickPriceFormat")]
-        public string TwsTickPriceFormat { get; set; }
-
-        [JsonProperty("twsTickSizeFormat")]
-        public string TwsTickSizeFormat { get; set; }
-
-        [JsonProperty("twsTickSnapshotEndFormat")]
-        public string TwsTickSnapshotEndFormat { get; set; }
+        [JsonProperty("titleAvgVolumeFormat")]
+        public string TitleAvgVolumeFormat { get; set; }
 
         [JsonProperty("menuTitle")]
         public string MenuTitle { get; set; }
@@ -99,6 +84,36 @@ namespace TradeBot.Gen
 
         [JsonProperty("menuOptionEntries")]
         public MenuOptionEntries MenuOptionEntries { get; set; }
+
+        [JsonProperty("accountTypeLive")]
+        public string AccountTypeLive { get; set; }
+
+        [JsonProperty("accountTypePaper")]
+        public string AccountTypePaper { get; set; }
+
+        [JsonProperty("errorMessageFormat")]
+        public string ErrorMessageFormat { get; set; }
+
+        [JsonProperty("selectTickerPrompt")]
+        public string SelectTickerPrompt { get; set; }
+
+        [JsonProperty("selectedCurrentTickerFormat")]
+        public string SelectedCurrentTickerFormat { get; set; }
+
+        [JsonProperty("deselectedCurrentTickerFormat")]
+        public string DeselectedCurrentTickerFormat { get; set; }
+
+        [JsonProperty("canceledDueToEmptyInput")]
+        public string CanceledDueToEmptyInput { get; set; }
+
+        [JsonProperty("showInfoToggleFormat")]
+        public string ShowInfoToggleFormat { get; set; }
+
+        [JsonProperty("stateSavedFormat")]
+        public string StateSavedFormat { get; set; }
+
+        [JsonProperty("exiting")]
+        public string Exiting { get; set; }
     }
 
 }

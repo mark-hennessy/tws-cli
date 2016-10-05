@@ -27,9 +27,6 @@ namespace TradeBot.Gen
         [JsonProperty("clientUrl")]
         public string ClientUrl { get; set; }
 
-        [JsonProperty("windowTitle")]
-        public string WindowTitle { get; set; }
-
         [JsonProperty("windowWidth")]
         public int WindowWidth { get; set; }
 
