@@ -12,11 +12,14 @@ namespace TradeBot.Gen
     public class StateProperties
     {
 
-        [JsonProperty("showInfoMessages")]
-        public bool ShowInfoMessages { get; set; }
+        [JsonProperty("ticker")]
+        public string Ticker { get; set; }
 
-        [JsonProperty("selectedTicker")]
-        public string SelectedTicker { get; set; }
+        [JsonProperty("shares")]
+        public int? Shares { get; set; }
+
+        [JsonProperty("hideInfoMessages")]
+        public bool? HideInfoMessages { get; set; }
     }
 
 }

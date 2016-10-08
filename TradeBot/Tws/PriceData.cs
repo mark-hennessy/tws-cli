@@ -2,11 +2,11 @@
 
 namespace TradeBot.Tws
 {
-    public class PriceInfo
+    public class PriceData
     {
         private IDictionary<int, double> priceInfoDictionary;
 
-        public PriceInfo()
+        public PriceData()
         {
             priceInfoDictionary = new Dictionary<int, double>();
         }

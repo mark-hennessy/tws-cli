@@ -12,11 +12,20 @@ namespace TradeBot.Gen
     public class MenuOptionEntries
     {
 
-        [JsonProperty("selectTicker")]
-        public IList<string> SelectTicker { get; set; }
+        [JsonProperty("loadState")]
+        public IList<string> LoadState { get; set; }
 
-        [JsonProperty("deselectCurrentTicker")]
-        public IList<string> DeselectCurrentTicker { get; set; }
+        [JsonProperty("setTicker")]
+        public IList<string> SetTicker { get; set; }
+
+        [JsonProperty("clearTicker")]
+        public IList<string> ClearTicker { get; set; }
+
+        [JsonProperty("setPositionSize")]
+        public IList<string> SetPositionSize { get; set; }
+
+        [JsonProperty("setPositionSizeFromCash")]
+        public IList<string> SetPositionSizeFromCash { get; set; }
 
         [JsonProperty("buyPosition")]
         public IList<string> BuyPosition { get; set; }
@@ -46,11 +55,14 @@ namespace TradeBot.Gen
     public class MessageProperties
     {
 
-        [JsonProperty("titleDivider")]
-        public string TitleDivider { get; set; }
+        [JsonProperty("appName")]
+        public string AppName { get; set; }
 
         [JsonProperty("titleTicker")]
         public string TitleTicker { get; set; }
+
+        [JsonProperty("titlePositionSize")]
+        public string TitlePositionSize { get; set; }
 
         [JsonProperty("titleLastFormat")]
         public string TitleLastFormat { get; set; }
@@ -67,8 +79,11 @@ namespace TradeBot.Gen
         [JsonProperty("titleVolumeFormat")]
         public string TitleVolumeFormat { get; set; }
 
-        [JsonProperty("titleAvgVolumeFormat")]
-        public string TitleAvgVolumeFormat { get; set; }
+        [JsonProperty("titleAverageVolumeFormat")]
+        public string TitleAverageVolumeFormat { get; set; }
+
+        [JsonProperty("titleDivider")]
+        public string TitleDivider { get; set; }
 
         [JsonProperty("menuTitle")]
         public string MenuTitle { get; set; }
@@ -91,29 +106,53 @@ namespace TradeBot.Gen
         [JsonProperty("accountTypePaper")]
         public string AccountTypePaper { get; set; }
 
-        [JsonProperty("errorMessageFormat")]
-        public string ErrorMessageFormat { get; set; }
+        [JsonProperty("loadedState")]
+        public string LoadedState { get; set; }
 
-        [JsonProperty("selectTickerPrompt")]
-        public string SelectTickerPrompt { get; set; }
+        [JsonProperty("setTickerPrompt")]
+        public string SetTickerPrompt { get; set; }
 
-        [JsonProperty("selectedCurrentTickerFormat")]
-        public string SelectedCurrentTickerFormat { get; set; }
+        [JsonProperty("setSharesPrompt")]
+        public string SetSharesPrompt { get; set; }
 
-        [JsonProperty("deselectedCurrentTickerFormat")]
-        public string DeselectedCurrentTickerFormat { get; set; }
+        [JsonProperty("setCashPrompt")]
+        public string SetCashPrompt { get; set; }
 
-        [JsonProperty("canceledDueToEmptyInput")]
-        public string CanceledDueToEmptyInput { get; set; }
+        [JsonProperty("tickerSetFormat")]
+        public string TickerSetFormat { get; set; }
 
-        [JsonProperty("showInfoToggleFormat")]
-        public string ShowInfoToggleFormat { get; set; }
+        [JsonProperty("tickerClearedFormat")]
+        public string TickerClearedFormat { get; set; }
+
+        [JsonProperty("positionSizeSetFormat")]
+        public string PositionSizeSetFormat { get; set; }
+
+        [JsonProperty("hideInfoMessagesSetFormat")]
+        public string HideInfoMessagesSetFormat { get; set; }
 
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }
 
         [JsonProperty("exiting")]
         public string Exiting { get; set; }
+
+        [JsonProperty("invalidIntegerInput")]
+        public string InvalidIntegerInput { get; set; }
+
+        [JsonProperty("invalidDecimalInput")]
+        public string InvalidDecimalInput { get; set; }
+
+        [JsonProperty("invalidNonEmptyStringInput")]
+        public string InvalidNonEmptyStringInput { get; set; }
+
+        [JsonProperty("tickerNotSetError")]
+        public string TickerNotSetError { get; set; }
+
+        [JsonProperty("priceDataUnavailableError")]
+        public string PriceDataUnavailableError { get; set; }
+
+        [JsonProperty("twsErrorFormat")]
+        public string TwsErrorFormat { get; set; }
     }
 
 }

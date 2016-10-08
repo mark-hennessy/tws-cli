@@ -14,8 +14,8 @@ namespace TradeBot.Tws
         {
             eConnect(
                 Preferences.ClientUrl,
-                Preferences.ClientPort,
-                Preferences.ClientId);
+                Preferences.ClientPort.Value,
+                Preferences.ClientId.Value);
         }
     }
 }

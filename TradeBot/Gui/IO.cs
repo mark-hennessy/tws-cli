@@ -19,7 +19,7 @@ namespace TradeBot.Gui
             return Console.ReadLine();
         }
 
-        public static char PromptForKey([Optional] string message)
+        public static char PromptForChar([Optional] string message)
         {
             ShowMessage(message);
             return Console.ReadKey().KeyChar;
@@ -43,7 +43,7 @@ namespace TradeBot.Gui
                     ShowMessage(message, ConsoleColor.White, args);
                     break;
                 case MessageType.INFO:
-                    if (State.ShowInfoMessages)
+                    if (State.HideInfoMessages ?? false)
                     {
                         ShowMessage(message, ConsoleColor.DarkGray, args);
                     }

@@ -1,6 +1,7 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
+using TradeBot.Extensions;
 using TradeBot.Gen;
 using TradeBot.Gui;
 using TradeBot.MenuFramework;
@@ -51,9 +52,15 @@ namespace TradeBot
 
         private void InitializeConsole()
         {
-            if (Preferences.WindowCentered)
+            Console.Title = Messages.AppName;
+            if (Preferences.WindowCentered ?? false)
             {
-                SetWindowSizeAndCenter(Preferences.WindowWidth, Preferences.WindowHeight);
+                if (Preferences.WindowWidth.HasValue && Preferences.WindowHeight.HasValue)
+                {
+                    SetWindowSizeAndCenter(
+                        Preferences.WindowWidth.Value,
+                        Preferences.WindowHeight.Value);
+                }
             }
             SetWindowCloseHandler(OnWindowClose);
         }
@@ -71,8 +78,11 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
-            addMenuOption(menuOptionEntry.SelectTicker, SelectTickerCommand);
-            addMenuOption(menuOptionEntry.DeselectCurrentTicker, DeselectCurrentTickerCommand);
+            addMenuOption(menuOptionEntry.LoadState, LoadStateCommand);
+            addMenuOption(menuOptionEntry.SetTicker, SetTickerCommand);
+            addMenuOption(menuOptionEntry.ClearTicker, ClearTickerCommand);
+            addMenuOption(menuOptionEntry.SetPositionSize, SetPositionSizeCommand);
+            addMenuOption(menuOptionEntry.SetPositionSizeFromCash, SetPositionSizeFromCashCommand);
             addMenuOption(menuOptionEntry.BuyPosition, BuyPositionCommand);
             addMenuOption(menuOptionEntry.SellPosition, SellPositionCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
@@ -105,18 +115,13 @@ namespace TradeBot
                 Shutdown();
                 if (OS.IsWindows())
                 {
-                    IO.PromptForKey(Messages.Exiting);
+                    IO.PromptForChar(Messages.Exiting);
                 }
             }
         }
 
         private void OnConnectionEstablished()
         {
-            string selectedTicker = State.SelectedTicker;
-            if (!string.IsNullOrWhiteSpace(selectedTicker))
-            {
-                SelectTicker(selectedTicker);
-            }
         }
 
         private bool OnWindowClose(CloseReason reason)
@@ -134,25 +139,36 @@ namespace TradeBot
             client.eDisconnect();
         }
 
-        private void SelectTickerCommand()
+        private void LoadStateCommand()
         {
-            string ticker = IO.PromptForInput(Messages.SelectTickerPrompt);
-            ExecuteIfInputNotEmpty(() => SelectTicker(ticker), ticker);
+            LoadPersistedState();
+            IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
+            SetTicker(State.Ticker);
+            SetShares(State.Shares);
         }
 
-        private void SelectTicker(string ticker)
+        private void SetTickerCommand()
         {
-            DeselectCurrentTicker();
-            SetSelectedTickerState(ticker);
-            client.reqMktData(selectedContract.Id, selectedContract, "", false, null);
+            string ticker = IO.PromptForInput(Messages.SetTickerPrompt);
+            SetTicker(ticker);
         }
 
-        private void DeselectCurrentTickerCommand()
+        private void SetTicker(string ticker)
         {
-            DeselectCurrentTicker();
+            ValidateNotNullOrWhiteSpace(ticker, () =>
+            {
+                ClearTicker();
+                SetSelectedTickerState(ticker);
+                client.reqMktData(selectedContract.Id, selectedContract, "", false, null);
+            });
         }
 
-        private void DeselectCurrentTicker()
+        private void ClearTickerCommand()
+        {
+            ClearTicker();
+        }
+
+        private void ClearTicker()
         {
             if (selectedContract == null)
             {
@@ -161,6 +177,31 @@ namespace TradeBot
 
             client.cancelMktData(selectedContract.Id);
             ClearSelectedTickerState();
+        }
+
+        private void SetPositionSizeFromCashCommand()
+        {
+            ValidateTickerSetAndPriceDataAvailable(() =>
+            {
+                string cashString = IO.PromptForInput(Messages.SetCashPrompt);
+                double? cash = cashString.ToDouble();
+                ValidateHasValue(cash, () =>
+                {
+                    double sharePrice = selectedContract.PriceData[TickType.LAST];
+                    int shares = (int)Math.Floor(cash.Value / sharePrice);
+                    SetShares(shares);
+                });
+            });
+        }
+
+        private void SetPositionSizeCommand()
+        {
+            ValidateTickerSetAndPriceDataAvailable(() =>
+            {
+                string sharesString = IO.PromptForInput(Messages.SetSharesPrompt);
+                int? shares = sharesString.ToInt();
+                SetShares(shares);
+            });
         }
 
         private void BuyPositionCommand()
@@ -181,8 +222,8 @@ namespace TradeBot
 
         private void ToggleInfoMessagesCommand()
         {
-            State.ShowInfoMessages = !State.ShowInfoMessages;
-            IO.ShowMessage(Messages.ShowInfoToggleFormat, State.ShowInfoMessages);
+            State.HideInfoMessages = !State.HideInfoMessages;
+            IO.ShowMessage(Messages.HideInfoMessagesSetFormat, State.HideInfoMessages);
         }
 
         private void MiscCommand()
@@ -234,7 +275,7 @@ namespace TradeBot
 
         public override void error(string errorMessage)
         {
-            IO.ShowMessage(Messages.ErrorMessageFormat, MessageType.ERROR, errorMessage);
+            IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
         }
 
         public override void error(int id, int errorCode, string errorMessage)
@@ -244,7 +285,7 @@ namespace TradeBot
                 return;
             }
 
-            IO.ShowMessage(Messages.ErrorMessageFormat, MessageType.ERROR, errorMessage);
+            IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
 
             switch (errorCode)
             {
@@ -259,9 +300,8 @@ namespace TradeBot
             ticker = ticker.ToUpper();
             selectedContract = new StockContract(ticker);
             contracts.Add(selectedContract.Id, selectedContract);
-            State.SelectedTicker = ticker;
-
-            IO.ShowMessage(Messages.SelectedCurrentTickerFormat, selectedContract.Symbol);
+            State.Ticker = ticker;
+            IO.ShowMessage(Messages.TickerSetFormat, selectedContract.Symbol);
         }
 
         private void ClearSelectedTickerState()
@@ -269,17 +309,30 @@ namespace TradeBot
             string ticker = selectedContract.Symbol;
             contracts.Remove(selectedContract.Id);
             selectedContract = null;
-            State.SelectedTicker = null;
+            State.Ticker = null;
+            State.Shares = null;
             Console.Title = string.Empty;
+            IO.ShowMessage(Messages.TickerClearedFormat, ticker);
+        }
 
-            IO.ShowMessage(Messages.DeselectedCurrentTickerFormat, ticker);
+        private void SetShares(int? shares)
+        {
+            ValidateTickerSetAndPriceDataAvailable(() =>
+            {
+                ValidateHasValue(shares, () =>
+                {
+                    selectedContract.PositionSize = shares.Value;
+                    State.Shares = shares;
+                    IO.ShowMessage(Messages.PositionSizeSetFormat, shares);
+                });
+            });
         }
 
         private void UpdatePriceInfo(int tickerId, int field, double value)
         {
             if (contracts.ContainsKey(tickerId))
             {
-                contracts[tickerId].PriceInfo[field] = value;
+                contracts[tickerId].PriceData[field] = value;
             }
         }
 
@@ -290,23 +343,84 @@ namespace TradeBot
                 return;
             }
 
-            PriceInfo priceInfo = selectedContract.PriceInfo;
+            PriceData priceInfo = selectedContract.PriceData;
             IList<string> infoStrings = new List<string>();
+            string appName = Messages.AppName;
+            if (!string.IsNullOrWhiteSpace(appName))
+            {
+                infoStrings.Add(appName);
+            }
             infoStrings.Add(string.Format(Messages.TitleTicker, selectedContract.Symbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceInfo[TickType.LAST]));
+            infoStrings.Add(string.Format(Messages.TitlePositionSize, selectedContract.PositionSize));
             infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceInfo[TickType.BID], priceInfo[TickType.ASK]));
             infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceInfo[TickType.OPEN]));
             infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceInfo[TickType.CLOSE]));
             infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceInfo[TickType.VOLUME]));
-            infoStrings.Add(string.Format(Messages.TitleAvgVolumeFormat, priceInfo[TickType.AVG_VOLUME]));
+            infoStrings.Add(string.Format(Messages.TitleAverageVolumeFormat, priceInfo[TickType.AVG_VOLUME]));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
-        private void ExecuteIfInputNotEmpty(Action action, string input)
+        private void ValidateTickerSetAndPriceDataAvailable(Action action)
         {
-            if (string.IsNullOrWhiteSpace(input))
+            ValidateTickerSet(() =>
             {
-                IO.ShowMessage(Messages.CanceledDueToEmptyInput);
+                ValidatePriceDataAvailable(() =>
+                {
+                    action();
+                });
+            });
+        }
+
+        private void ValidateTickerSet(Action action)
+        {
+            if (selectedContract == null)
+            {
+                IO.ShowMessage(Messages.TickerNotSetError, MessageType.ERROR);
+                return;
+            }
+
+            action();
+        }
+
+        private void ValidatePriceDataAvailable(Action action)
+        {
+            if (selectedContract == null || selectedContract.PriceData[TickType.LAST] <= 0)
+            {
+                IO.ShowMessage(Messages.PriceDataUnavailableError, MessageType.ERROR);
+                return;
+            }
+
+            action();
+        }
+
+        private void ValidateNotNullOrWhiteSpace(string str, Action action)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                IO.ShowMessage(Messages.InvalidNonEmptyStringInput, MessageType.ERROR);
+                return;
+            }
+
+            action();
+        }
+
+        private void ValidateHasValue(int? nullable, Action action)
+        {
+            if (!nullable.HasValue)
+            {
+                IO.ShowMessage(Messages.InvalidIntegerInput, MessageType.ERROR);
+                return;
+            }
+
+            action();
+        }
+
+        private void ValidateHasValue(double? nullable, Action action)
+        {
+            if (!nullable.HasValue)
+            {
+                IO.ShowMessage(Messages.InvalidDecimalInput, MessageType.ERROR);
                 return;
             }
 

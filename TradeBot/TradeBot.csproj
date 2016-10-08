@@ -111,7 +111,7 @@
     <Compile Include="Gen\StateProperties.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Resources.cs" />
-    <Compile Include="Tws\PriceInfo.cs" />
+    <Compile Include="Tws\PriceData.cs" />
     <Compile Include="Tws\StockContract.cs" />
     <Compile Include="Tws\TwsApiConstants.cs" />
     <Compile Include="Tws\TwsResponseHandler.cs" />
@@ -121,7 +121,6 @@
     <Compile Include="MenuFramework\MenuOption.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\StockMath.cs" />
     <Compile Include="Tws\TwsClient.cs" />
     <Compile Include="Gui\Window.cs" />
     <Compile Include="Gui\OS.cs" />

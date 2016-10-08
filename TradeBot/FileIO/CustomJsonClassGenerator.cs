@@ -25,6 +25,7 @@ namespace TradeBot.FileIO
             generator.UseNestedClasses = false;
             generator.UseProperties = true;
             generator.UsePascalCase = true;
+            generator.AlwaysUseNullableValues = true;
             generator.GenerateClasses();
         }
     }

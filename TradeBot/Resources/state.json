@@ -1,4 +1,5 @@
 {
-  "showInfoMessages": true,
-  "selectedTicker": "GOOG"
+  "ticker": "GOOG",
+  "shares": 10,
+  "hideInfoMessages": false
 }

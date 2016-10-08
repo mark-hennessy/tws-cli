@@ -6,6 +6,20 @@ namespace TradeBot.Extensions
 {
     public static class StringExtensions
     {
+        public static int? ToInt(this string str)
+        {
+            int result;
+            bool validInput = int.TryParse(str, out result);
+            return validInput ? result : default(int?);
+        }
+
+        public static double? ToDouble(this string str)
+        {
+            double result;
+            bool validInput = double.TryParse(str, out result);
+            return validInput ? result : default(double?);
+        }
+
         public static string ToPrettyString(this object obj)
         {
             var keyValuePairs = obj.GetType().GetProperties()

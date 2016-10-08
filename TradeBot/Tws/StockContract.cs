@@ -14,12 +14,14 @@ namespace TradeBot.Tws
             SecType = SecurityTypeConst.STOCK;
             Currency = CurrencyConst.USD;
             Exchange = ExchangeConst.SMART;
-            PriceInfo = new PriceInfo();
+            PriceData = new PriceData();
         }
 
         public int Id { get; }
 
-        public PriceInfo PriceInfo { get; }
+        public PriceData PriceData { get; }
+
+        public int PositionSize { get; set; }
 
         public override string ToString()
         {
