@@ -21,8 +21,6 @@ namespace TradeBot.Tws
 
         public PriceData PriceData { get; }
 
-        public int PositionSize { get; set; }
-
         public override string ToString()
         {
             return this.ToPrettyString();

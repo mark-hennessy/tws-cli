@@ -15,8 +15,8 @@ namespace TradeBot.Gen
         [JsonProperty("ticker")]
         public string Ticker { get; set; }
 
-        [JsonProperty("shares")]
-        public int? Shares { get; set; }
+        [JsonProperty("stepSize")]
+        public int? StepSize { get; set; }
 
         [JsonProperty("hideDebugMessages")]
         public bool? HideDebugMessages { get; set; }

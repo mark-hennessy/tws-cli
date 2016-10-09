@@ -21,11 +21,11 @@ namespace TradeBot.Gen
         [JsonProperty("clearTicker")]
         public IList<string> ClearTicker { get; set; }
 
-        [JsonProperty("setPositionSize")]
-        public IList<string> SetPositionSize { get; set; }
+        [JsonProperty("setStepSize")]
+        public IList<string> SetStepSize { get; set; }
 
-        [JsonProperty("setPositionSizeFromCash")]
-        public IList<string> SetPositionSizeFromCash { get; set; }
+        [JsonProperty("setStepSizeFromCash")]
+        public IList<string> SetStepSizeFromCash { get; set; }
 
         [JsonProperty("buy")]
         public IList<string> Buy { get; set; }
@@ -66,6 +66,9 @@ namespace TradeBot.Gen
 
         [JsonProperty("titleTicker")]
         public string TitleTicker { get; set; }
+
+        [JsonProperty("titleStepSize")]
+        public string TitleStepSize { get; set; }
 
         [JsonProperty("titlePositionSize")]
         public string TitlePositionSize { get; set; }
@@ -124,14 +127,17 @@ namespace TradeBot.Gen
         [JsonProperty("loadedState")]
         public string LoadedState { get; set; }
 
+        [JsonProperty("pressAnyKeyToExit")]
+        public string PressAnyKeyToExit { get; set; }
+
         [JsonProperty("selectTickerPrompt")]
         public string SelectTickerPrompt { get; set; }
 
-        [JsonProperty("positionSizePrompt")]
-        public string PositionSizePrompt { get; set; }
+        [JsonProperty("stepSizePrompt")]
+        public string StepSizePrompt { get; set; }
 
-        [JsonProperty("positionSizeFromCashPrompt")]
-        public string PositionSizeFromCashPrompt { get; set; }
+        [JsonProperty("stepSizeFromCashPrompt")]
+        public string StepSizeFromCashPrompt { get; set; }
 
         [JsonProperty("tickerSelectedFormat")]
         public string TickerSelectedFormat { get; set; }
@@ -139,8 +145,8 @@ namespace TradeBot.Gen
         [JsonProperty("tickerClearedFormat")]
         public string TickerClearedFormat { get; set; }
 
-        [JsonProperty("positionSizeSetFormat")]
-        public string PositionSizeSetFormat { get; set; }
+        [JsonProperty("stepSizeSetFormat")]
+        public string StepSizeSetFormat { get; set; }
 
         [JsonProperty("hideDebugMessagesFormat")]
         public string HideDebugMessagesFormat { get; set; }
@@ -148,26 +154,26 @@ namespace TradeBot.Gen
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }
 
-        [JsonProperty("pressAnyKeyToExit")]
-        public string PressAnyKeyToExit { get; set; }
+        [JsonProperty("invalidIntegerInputError")]
+        public string InvalidIntegerInputError { get; set; }
 
-        [JsonProperty("invalidIntegerInput")]
-        public string InvalidIntegerInput { get; set; }
+        [JsonProperty("invalidDecimalInputError")]
+        public string InvalidDecimalInputError { get; set; }
 
-        [JsonProperty("invalidDecimalInput")]
-        public string InvalidDecimalInput { get; set; }
-
-        [JsonProperty("invalidNonEmptyStringInput")]
-        public string InvalidNonEmptyStringInput { get; set; }
+        [JsonProperty("invalidNonEmptyStringInputError")]
+        public string InvalidNonEmptyStringInputError { get; set; }
 
         [JsonProperty("tickerNotSelectedError")]
         public string TickerNotSelectedError { get; set; }
 
+        [JsonProperty("stepSizeNotSetError")]
+        public string StepSizeNotSetError { get; set; }
+
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
 
-        [JsonProperty("twsDisconnected")]
-        public string TwsDisconnected { get; set; }
+        [JsonProperty("twsDisconnectedError")]
+        public string TwsDisconnectedError { get; set; }
 
         [JsonProperty("twsErrorFormat")]
         public string TwsErrorFormat { get; set; }

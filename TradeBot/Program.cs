@@ -78,8 +78,8 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.LoadState, LoadStateCommand);
             addMenuOption(menuOptionEntry.SetTicker, SetTickerCommand);
             addMenuOption(menuOptionEntry.ClearTicker, ClearTickerCommand);
-            addMenuOption(menuOptionEntry.SetPositionSize, SetPositionSizeCommand);
-            addMenuOption(menuOptionEntry.SetPositionSizeFromCash, SetPositionSizeFromCashCommand);
+            addMenuOption(menuOptionEntry.SetStepSize, SetStepSizeCommand);
+            addMenuOption(menuOptionEntry.SetStepSizeFromCash, SetStepSizeFromCashCommand);
             addMenuOption(menuOptionEntry.Buy, BuyCommand);
             addMenuOption(menuOptionEntry.Sell, SellCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
@@ -145,8 +145,16 @@ namespace TradeBot
         {
             LoadPersistedState();
             IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
-            SetTicker(State.Ticker);
-            SetPositionSize(State.Shares);
+            string ticker = State.Ticker;
+            if (!string.IsNullOrWhiteSpace(ticker))
+            {
+                SetTicker(ticker);
+            }
+            int? stepSize = State.StepSize;
+            if (stepSize.HasValue)
+            {
+                SetStepSize(stepSize.Value);
+            }
         }
 
         private void SetTickerCommand()
@@ -181,27 +189,30 @@ namespace TradeBot
             ClearSelectedTickerState();
         }
 
-        private void SetPositionSizeCommand()
+        private void SetStepSizeCommand()
         {
-            ValidateTickerSetAndPriceDataAvailable(() =>
+            string stepSizeString = IO.PromptForInput(Messages.StepSizePrompt);
+            int? stepSize = stepSizeString.ToInt();
+            ValidateHasValue(stepSize, () =>
             {
-                string positionSizeString = IO.PromptForInput(Messages.PositionSizePrompt);
-                int? positionSize = positionSizeString.ToInt();
-                SetPositionSize(positionSize);
+                SetStepSize(stepSize.Value);
             });
         }
 
-        private void SetPositionSizeFromCashCommand()
+        private void SetStepSizeFromCashCommand()
         {
-            ValidateTickerSetAndPriceDataAvailable(() =>
+            ValidateTickerSet(() =>
             {
-                string cashString = IO.PromptForInput(Messages.PositionSizeFromCashPrompt);
-                double? cash = cashString.ToDouble();
-                ValidateHasValue(cash, () =>
+                ValidatePriceDataAvailable(() =>
                 {
-                    double sharePrice = selectedContract.PriceData[TickType.LAST];
-                    int positionSize = (int)Math.Floor(cash.Value / sharePrice);
-                    SetPositionSize(positionSize);
+                    string cashString = IO.PromptForInput(Messages.StepSizeFromCashPrompt);
+                    double? cash = cashString.ToDouble();
+                    ValidateHasValue(cash, () =>
+                    {
+                        double sharePrice = selectedContract.PriceData[TickType.LAST];
+                        int stepSize = (int)Math.Floor(cash.Value / sharePrice);
+                        SetStepSize(stepSize);
+                    });
                 });
             });
         }
@@ -267,7 +278,7 @@ namespace TradeBot
 
         public override void connectionClosed()
         {
-            IO.ShowMessage(Messages.TwsDisconnected, MessageType.ERROR);
+            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
         }
 
         public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
@@ -328,23 +339,16 @@ namespace TradeBot
             contracts.Remove(selectedContract.Id);
             selectedContract = null;
             State.Ticker = null;
-            State.Shares = null;
+            State.StepSize = null;
             Console.Title = string.Empty;
             IO.ShowMessage(Messages.TickerClearedFormat, ticker);
         }
 
-        private void SetPositionSize(int? positionSize)
+        private void SetStepSize(int stepSize)
         {
-            ValidateTickerSetAndPriceDataAvailable(() =>
-            {
-                ValidateHasValue(positionSize, () =>
-                {
-                    int size = Math.Abs(positionSize.Value);
-                    selectedContract.PositionSize = size;
-                    State.Shares = size;
-                    IO.ShowMessage(Messages.PositionSizeSetFormat, size);
-                });
-            });
+            stepSize = Math.Abs(stepSize);
+            State.StepSize = stepSize;
+            IO.ShowMessage(Messages.StepSizeSetFormat, stepSize);
         }
 
         private void UpdatePriceInfo(int tickerId, int field, double value)
@@ -371,7 +375,8 @@ namespace TradeBot
             }
             infoStrings.Add(string.Format(Messages.TitleTicker, selectedContract.Symbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceInfo[TickType.LAST]));
-            infoStrings.Add(string.Format(Messages.TitlePositionSize, selectedContract.PositionSize));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, State.StepSize));
+            infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
             infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceInfo[TickType.BID], priceInfo[TickType.ASK]));
             infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceInfo[TickType.OPEN]));
             infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceInfo[TickType.CLOSE]));
@@ -380,13 +385,16 @@ namespace TradeBot
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
-        private void ValidateTickerSetAndPriceDataAvailable(Action action)
+        private void ValidateTickerAndStepSizeSetAndPriceDataAvailable(Action action)
         {
             ValidateTickerSet(() =>
             {
-                ValidatePriceDataAvailable(() =>
+                ValidateStepSizeSet(() =>
                 {
-                    action();
+                    ValidatePriceDataAvailable(() =>
+                    {
+                        action();
+                    });
                 });
             });
         }
@@ -396,6 +404,18 @@ namespace TradeBot
             if (selectedContract == null)
             {
                 IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.ERROR);
+                return;
+            }
+
+            action();
+        }
+
+        private void ValidateStepSizeSet(Action action)
+        {
+            int? stepSize = State.StepSize;
+            if (!stepSize.HasValue || stepSize.Value <= 0)
+            {
+                IO.ShowMessage(Messages.StepSizeNotSetError, MessageType.ERROR);
                 return;
             }
 
@@ -417,7 +437,7 @@ namespace TradeBot
         {
             if (string.IsNullOrWhiteSpace(str))
             {
-                IO.ShowMessage(Messages.InvalidNonEmptyStringInput, MessageType.ERROR);
+                IO.ShowMessage(Messages.InvalidNonEmptyStringInputError, MessageType.ERROR);
                 return;
             }
 
@@ -428,7 +448,7 @@ namespace TradeBot
         {
             if (!nullable.HasValue)
             {
-                IO.ShowMessage(Messages.InvalidIntegerInput, MessageType.ERROR);
+                IO.ShowMessage(Messages.InvalidIntegerInputError, MessageType.ERROR);
                 return;
             }
 
@@ -439,7 +459,7 @@ namespace TradeBot
         {
             if (!nullable.HasValue)
             {
-                IO.ShowMessage(Messages.InvalidDecimalInput, MessageType.ERROR);
+                IO.ShowMessage(Messages.InvalidDecimalInputError, MessageType.ERROR);
                 return;
             }
 

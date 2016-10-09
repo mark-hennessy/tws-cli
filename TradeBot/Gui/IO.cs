@@ -16,7 +16,7 @@ namespace TradeBot.Gui
         public static string PromptForInput([Optional] string message)
         {
             ShowMessage(message);
-            return Console.ReadLine();
+            return Console.ReadLine() ?? string.Empty;
         }
 
         public static char PromptForChar([Optional] string message)
