@@ -25,7 +25,8 @@ namespace TradeBot
 
         private IList<int> ignoredErrorCodes;
         private IDictionary<int, StockContract> contracts;
-        private StockContract selectedContract;
+        private StockContract currentContract;
+        private StockOrder pendingOrder;
         private int nextValidOrderId;
         private bool shouldExitApplication;
 
@@ -165,11 +166,11 @@ namespace TradeBot
 
         private void SetTicker(string ticker)
         {
-            ValidateNotNullOrWhiteSpace(ticker, () =>
+            IfNotNullOrWhiteSpace(ticker, () =>
             {
                 ClearTicker();
                 SetSelectedTickerState(ticker);
-                client.reqMktData(selectedContract.Id, selectedContract, "", false, null);
+                client.reqMktData(currentContract.Id, currentContract, "", false, null);
             });
         }
 
@@ -180,12 +181,12 @@ namespace TradeBot
 
         private void ClearTicker()
         {
-            if (selectedContract == null)
+            if (currentContract == null)
             {
                 return;
             }
 
-            client.cancelMktData(selectedContract.Id);
+            client.cancelMktData(currentContract.Id);
             ClearSelectedTickerState();
         }
 
@@ -193,7 +194,7 @@ namespace TradeBot
         {
             string stepSizeString = IO.PromptForInput(Messages.StepSizePrompt);
             int? stepSize = stepSizeString.ToInt();
-            ValidateHasValue(stepSize, () =>
+            IfHasValue(stepSize, () =>
             {
                 SetStepSize(stepSize.Value);
             });
@@ -201,15 +202,15 @@ namespace TradeBot
 
         private void SetStepSizeFromCashCommand()
         {
-            ValidateTickerSet(() =>
+            IfTickerSet(() =>
             {
-                ValidatePriceDataAvailable(() =>
+                IfPriceDataAvailable(() =>
                 {
                     string cashString = IO.PromptForInput(Messages.StepSizeFromCashPrompt);
                     double? cash = cashString.ToDouble();
-                    ValidateHasValue(cash, () =>
+                    IfHasValue(cash, () =>
                     {
-                        double sharePrice = selectedContract.PriceData[TickType.LAST];
+                        double sharePrice = currentContract.PriceData[TickType.LAST];
                         int stepSize = (int)Math.Floor(cash.Value / sharePrice);
                         SetStepSize(stepSize);
                     });
@@ -219,22 +220,53 @@ namespace TradeBot
 
         private void BuyCommand()
         {
+            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            {
+                IfPendingOrderDoesNotExist(() =>
+                {
+                    pendingOrder = new StockOrder();
+                    pendingOrder.OrderType = "foo";
+                    client.placeOrder(pendingOrder.Id, currentContract, pendingOrder);
+                });
+            });
         }
 
         private void SellCommand()
         {
+            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            {
+                IfPendingOrderDoesNotExist(() =>
+                {
+                });
+            });
         }
 
         private void ReversePositionCommand()
         {
+            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            {
+                IfPendingOrderDoesNotExist(() =>
+                {
+                });
+            });
         }
 
         private void ClosePositionCommand()
         {
+            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            {
+                IfPendingOrderDoesNotExist(() =>
+                {
+                });
+            });
         }
 
         private void CancelOrderCommand()
         {
+            IfPendingOrderExists(() =>
+            {
+                client.cancelOrder(pendingOrder.OrderId);
+            });
         }
 
         private void ToggleDebugMessagesCommand()
@@ -327,17 +359,17 @@ namespace TradeBot
         private void SetSelectedTickerState(string ticker)
         {
             ticker = ticker.ToUpper();
-            selectedContract = new StockContract(ticker);
-            contracts.Add(selectedContract.Id, selectedContract);
+            currentContract = new StockContract(ticker);
+            contracts.Add(currentContract.Id, currentContract);
             State.Ticker = ticker;
-            IO.ShowMessage(Messages.TickerSelectedFormat, selectedContract.Symbol);
+            IO.ShowMessage(Messages.TickerSelectedFormat, currentContract.Symbol);
         }
 
         private void ClearSelectedTickerState()
         {
-            string ticker = selectedContract.Symbol;
-            contracts.Remove(selectedContract.Id);
-            selectedContract = null;
+            string ticker = currentContract.Symbol;
+            contracts.Remove(currentContract.Id);
+            currentContract = null;
             State.Ticker = null;
             State.StepSize = null;
             Console.Title = string.Empty;
@@ -361,19 +393,19 @@ namespace TradeBot
 
         private void UpdateWindowTitleIfNecessary(int tickerId)
         {
-            if (tickerId != selectedContract.Id)
+            if (tickerId != currentContract.Id)
             {
                 return;
             }
 
-            PriceData priceInfo = selectedContract.PriceData;
+            PriceData priceInfo = currentContract.PriceData;
             IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
             if (!string.IsNullOrWhiteSpace(appName))
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTicker, selectedContract.Symbol));
+            infoStrings.Add(string.Format(Messages.TitleTicker, currentContract.Symbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceInfo[TickType.LAST]));
             infoStrings.Add(string.Format(Messages.TitleStepSize, State.StepSize));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
@@ -385,85 +417,118 @@ namespace TradeBot
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
-        private void ValidateTickerAndStepSizeSetAndPriceDataAvailable(Action action)
+        private void IfTickerSet(Action action)
         {
-            ValidateTickerSet(() =>
+            if (currentContract != null)
             {
-                ValidateStepSizeSet(() =>
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.VALIDATION_ERROR);
+            }
+
+        }
+
+        private void IfStepSizeSet(Action action)
+        {
+            int? stepSize = State.StepSize;
+            if (stepSize.HasValue && stepSize.Value > 0)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.StepSizeNotSetError, MessageType.VALIDATION_ERROR);
+            }
+
+        }
+
+        private void IfPriceDataAvailable(Action action)
+        {
+            if (currentContract != null && currentContract.PriceData[TickType.LAST] > 0)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.PriceDataUnavailableError, MessageType.VALIDATION_ERROR);
+            }
+        }
+
+        private void IfPendingOrderExists(Action action)
+        {
+            if (pendingOrder != null)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.PendingOrderNotFoundError, MessageType.VALIDATION_ERROR);
+            }
+        }
+
+        private void IfPendingOrderDoesNotExist(Action action)
+        {
+            if (pendingOrder == null)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.PendingOrderFoundError, MessageType.VALIDATION_ERROR);
+            }
+
+        }
+
+        private void IfNotNullOrWhiteSpace(string str, Action action)
+        {
+            if (!string.IsNullOrWhiteSpace(str))
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.InvalidNonEmptyStringInputError, MessageType.VALIDATION_ERROR);
+            }
+        }
+
+        private void IfHasValue(int? nullable, Action action)
+        {
+            if (nullable.HasValue)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.InvalidIntegerInputError, MessageType.VALIDATION_ERROR);
+            }
+        }
+
+        private void IfHasValue(double? nullable, Action action)
+        {
+            if (nullable.HasValue)
+            {
+                action();
+            }
+            else
+            {
+                IO.ShowMessage(Messages.InvalidDecimalInputError, MessageType.VALIDATION_ERROR);
+            }
+        }
+
+        private void IfTickerAndStepSizeSetAndPriceDataAvailable(Action action)
+        {
+            IfTickerSet(() =>
+            {
+                IfStepSizeSet(() =>
                 {
-                    ValidatePriceDataAvailable(() =>
+                    IfPriceDataAvailable(() =>
                     {
                         action();
                     });
                 });
             });
-        }
-
-        private void ValidateTickerSet(Action action)
-        {
-            if (selectedContract == null)
-            {
-                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.ERROR);
-                return;
-            }
-
-            action();
-        }
-
-        private void ValidateStepSizeSet(Action action)
-        {
-            int? stepSize = State.StepSize;
-            if (!stepSize.HasValue || stepSize.Value <= 0)
-            {
-                IO.ShowMessage(Messages.StepSizeNotSetError, MessageType.ERROR);
-                return;
-            }
-
-            action();
-        }
-
-        private void ValidatePriceDataAvailable(Action action)
-        {
-            if (selectedContract == null || selectedContract.PriceData[TickType.LAST] <= 0)
-            {
-                IO.ShowMessage(Messages.PriceDataUnavailableError, MessageType.ERROR);
-                return;
-            }
-
-            action();
-        }
-
-        private void ValidateNotNullOrWhiteSpace(string str, Action action)
-        {
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                IO.ShowMessage(Messages.InvalidNonEmptyStringInputError, MessageType.ERROR);
-                return;
-            }
-
-            action();
-        }
-
-        private void ValidateHasValue(int? nullable, Action action)
-        {
-            if (!nullable.HasValue)
-            {
-                IO.ShowMessage(Messages.InvalidIntegerInputError, MessageType.ERROR);
-                return;
-            }
-
-            action();
-        }
-
-        private void ValidateHasValue(double? nullable, Action action)
-        {
-            if (!nullable.HasValue)
-            {
-                IO.ShowMessage(Messages.InvalidDecimalInputError, MessageType.ERROR);
-                return;
-            }
-
-            action();
         }
     }
 }

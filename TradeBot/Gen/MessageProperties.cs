@@ -172,6 +172,12 @@ namespace TradeBot.Gen
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
 
+        [JsonProperty("pendingOrderFoundError")]
+        public string PendingOrderFoundError { get; set; }
+
+        [JsonProperty("pendingOrderNotFoundError")]
+        public string PendingOrderNotFoundError { get; set; }
+
         [JsonProperty("twsDisconnectedError")]
         public string TwsDisconnectedError { get; set; }
 

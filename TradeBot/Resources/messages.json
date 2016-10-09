@@ -55,8 +55,10 @@
   "invalidDecimalInputError": "Invalid input, expected a decimal",
   "invalidNonEmptyStringInputError": "Invalid input, expected non-empty text",
   "tickerNotSelectedError": "No ticker selected",
-  "stepSizeNotSetError" :  "No step size set",
+  "stepSizeNotSetError": "No step size set",
   "priceDataUnavailableError": "Price data is unavailable for the selected ticker",
+  "pendingOrderFoundError": "Another order is already pending. Please wait or cancel the pending order",
+  "pendingOrderNotFoundError": "No pending order to act on",
   "twsDisconnectedError": "Connection to TWS closed",
   "twsErrorFormat": "Error: {0}"
 }

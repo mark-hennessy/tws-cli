@@ -4,7 +4,7 @@ using static TradeBot.Resources;
 
 namespace TradeBot.Gui
 {
-    public enum MessageType { STANDARD, SUCCESS, ERROR, DEBUG }
+    public enum MessageType { STANDARD, SUCCESS, ERROR, VALIDATION_ERROR, DEBUG }
 
     /// <summary>
     /// A helper class for console window input/output.
@@ -52,6 +52,7 @@ namespace TradeBot.Gui
                     ShowMessage(message, ConsoleColor.Green, args);
                     break;
                 case MessageType.ERROR:
+                case MessageType.VALIDATION_ERROR:
                     ShowMessage(message, ConsoleColor.Red, args);
                     break;
             }
