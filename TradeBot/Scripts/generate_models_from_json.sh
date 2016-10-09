@@ -44,12 +44,12 @@ NAMESPACE="TradeBot.Gen"
   ## Use the executable to generate files
 
   # For Windows
-  ./$EXE "${RES_DIR}state.json" "${GEN_DIR}StateProperties.cs" ${NAMESPACE}
+  ./$EXE "${RES_DIR}state.json" "${GEN_DIR}StateProperties.cs" ${NAMESPACE} true
   ./$EXE "${RES_DIR}messages.json" "${GEN_DIR}MessageProperties.cs" ${NAMESPACE}
   ./$EXE "${RES_DIR}preferences.json" "${GEN_DIR}PreferenceProperties.cs" ${NAMESPACE}
 
   # For Mac/Unix
-  mono ./$EXE "${RES_DIR}state.json" "${GEN_DIR}StateProperties.cs" ${NAMESPACE}
+  mono ./$EXE "${RES_DIR}state.json" "${GEN_DIR}StateProperties.cs" ${NAMESPACE} true
   mono ./$EXE "${RES_DIR}messages.json" "${GEN_DIR}MessageProperties.cs" ${NAMESPACE}
   mono ./$EXE "${RES_DIR}preferences.json" "${GEN_DIR}PreferenceProperties.cs" ${NAMESPACE}
 

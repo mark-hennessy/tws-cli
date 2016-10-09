@@ -53,14 +53,11 @@ namespace TradeBot
         private void InitializeConsole()
         {
             Console.Title = Messages.AppName;
-            if (Preferences.WindowCentered ?? false)
+            if (Preferences.CenterWindow)
             {
-                if (Preferences.WindowWidth.HasValue && Preferences.WindowHeight.HasValue)
-                {
-                    SetWindowSizeAndCenter(
-                        Preferences.WindowWidth.Value,
-                        Preferences.WindowHeight.Value);
-                }
+                SetWindowSizeAndCenter(
+                    Preferences.WindowWidth,
+                    Preferences.WindowHeight);
             }
             SetWindowCloseHandler(OnWindowClose);
         }

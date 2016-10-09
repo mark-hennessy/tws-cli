@@ -6,5 +6,5 @@
   "clientUrl": "127.0.0.1",
   "windowWidth": 900,
   "windowHeight": 600,
-  "windowCentered":  true
+  "centerWindow":  true
 }

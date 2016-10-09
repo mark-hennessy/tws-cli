@@ -139,9 +139,6 @@ namespace TradeBot.Gen
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }
 
-        [JsonProperty("twsDisconnected")]
-        public string TwsDisconnected { get; set; }
-
         [JsonProperty("pressAnyKeyToExit")]
         public string PressAnyKeyToExit { get; set; }
 
@@ -159,6 +156,9 @@ namespace TradeBot.Gen
 
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
+
+        [JsonProperty("twsDisconnected")]
+        public string TwsDisconnected { get; set; }
 
         [JsonProperty("twsErrorFormat")]
         public string TwsErrorFormat { get; set; }

@@ -19,22 +19,22 @@ namespace TradeBot.Gen
         public string AccountPaper { get; set; }
 
         [JsonProperty("clientId")]
-        public int? ClientId { get; set; }
+        public int ClientId { get; set; }
 
         [JsonProperty("clientPort")]
-        public int? ClientPort { get; set; }
+        public int ClientPort { get; set; }
 
         [JsonProperty("clientUrl")]
         public string ClientUrl { get; set; }
 
         [JsonProperty("windowWidth")]
-        public int? WindowWidth { get; set; }
+        public int WindowWidth { get; set; }
 
         [JsonProperty("windowHeight")]
-        public int? WindowHeight { get; set; }
+        public int WindowHeight { get; set; }
 
-        [JsonProperty("windowCentered")]
-        public bool? WindowCentered { get; set; }
+        [JsonProperty("centerWindow")]
+        public bool CenterWindow { get; set; }
     }
 
 }
