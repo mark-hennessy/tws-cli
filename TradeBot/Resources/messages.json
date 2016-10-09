@@ -11,7 +11,7 @@
   "titleDivider": "        ",
 
   "menuTitle": "====================\nMenu\n====================\n",
-  "menuOptionInvalidEntry": "No such menu option. Please try again.",
+  "menuOptionInvalidEntry": "No such menu option. Please try again",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionDivider": "\n",
   "menuOptionEntries": {
@@ -30,25 +30,28 @@
     "exitApplication": [ "q", "Save and exit" ]
   },
 
-  "accountTypeLive": "Live Trading!",
-  "accountTypePaper": "Paper Trading!",
-  "loadedState": "Loaded saved state!",
+  "welcomeMessage": "Welcome to TradeBot. Enter '?' to show the menu",
+  "twsConnected": "\nConnection to TWS established",
+  "accountTypeLive": "Live Trading",
+  "accountTypePaper": "Paper Trading",
+  "loadedState": "Loaded saved state",
 
-  "setTickerPrompt": "Ticker: ",
+  "selectTickerPrompt": "Ticker: ",
   "setSharesPrompt": "Shares: ",
   "setCashPrompt": "Cash: ",
 
-  "tickerSetFormat": "Set ticker: {0}",
+  "tickerSelectedFormat": "Selected ticker: {0}",
   "tickerClearedFormat": "Cleared ticker: {0}",
   "positionSizeSetFormat": "Position size set to {0} shares",
   "hideInfoMessagesSetFormat": "Hide info messages set to: {0}",
   "stateSavedFormat": "Application state saved to {0}",
-  "exiting": "Goodbye! Press any key to exit...",
+  "pressAnyKeyToExit": "Goodbye! Press any key to exit...",
 
   "invalidIntegerInput": "Invalid input, expected an integer",
   "invalidDecimalInput": "Invalid input, expected a decimal",
   "invalidNonEmptyStringInput": "Invalid input, expected non-empty text",
-  "tickerNotSetError": "No ticker set",
-  "priceDataUnavailableError": "Price data unavailable",
+  "tickerNotSelectedError": "No ticker selected",
+  "priceDataUnavailableError": "Position size can't be set because price data is unavailable",
+  "twsDisconnected": "Connection to TWS closed",
   "twsErrorFormat": "Error: {0}"
 }

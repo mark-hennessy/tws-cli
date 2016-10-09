@@ -100,6 +100,12 @@ namespace TradeBot.Gen
         [JsonProperty("menuOptionEntries")]
         public MenuOptionEntries MenuOptionEntries { get; set; }
 
+        [JsonProperty("welcomeMessage")]
+        public string WelcomeMessage { get; set; }
+
+        [JsonProperty("twsConnected")]
+        public string TwsConnected { get; set; }
+
         [JsonProperty("accountTypeLive")]
         public string AccountTypeLive { get; set; }
 
@@ -109,8 +115,8 @@ namespace TradeBot.Gen
         [JsonProperty("loadedState")]
         public string LoadedState { get; set; }
 
-        [JsonProperty("setTickerPrompt")]
-        public string SetTickerPrompt { get; set; }
+        [JsonProperty("selectTickerPrompt")]
+        public string SelectTickerPrompt { get; set; }
 
         [JsonProperty("setSharesPrompt")]
         public string SetSharesPrompt { get; set; }
@@ -118,8 +124,8 @@ namespace TradeBot.Gen
         [JsonProperty("setCashPrompt")]
         public string SetCashPrompt { get; set; }
 
-        [JsonProperty("tickerSetFormat")]
-        public string TickerSetFormat { get; set; }
+        [JsonProperty("tickerSelectedFormat")]
+        public string TickerSelectedFormat { get; set; }
 
         [JsonProperty("tickerClearedFormat")]
         public string TickerClearedFormat { get; set; }
@@ -133,8 +139,11 @@ namespace TradeBot.Gen
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }
 
-        [JsonProperty("exiting")]
-        public string Exiting { get; set; }
+        [JsonProperty("twsDisconnected")]
+        public string TwsDisconnected { get; set; }
+
+        [JsonProperty("pressAnyKeyToExit")]
+        public string PressAnyKeyToExit { get; set; }
 
         [JsonProperty("invalidIntegerInput")]
         public string InvalidIntegerInput { get; set; }
@@ -145,8 +154,8 @@ namespace TradeBot.Gen
         [JsonProperty("invalidNonEmptyStringInput")]
         public string InvalidNonEmptyStringInput { get; set; }
 
-        [JsonProperty("tickerNotSetError")]
-        public string TickerNotSetError { get; set; }
+        [JsonProperty("tickerNotSelectedError")]
+        public string TickerNotSelectedError { get; set; }
 
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }

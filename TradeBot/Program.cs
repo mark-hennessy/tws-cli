@@ -95,6 +95,8 @@ namespace TradeBot
 
         public void Start()
         {
+            IO.ShowMessage(Messages.WelcomeMessage);
+
             try
             {
                 client.eConnect();
@@ -115,13 +117,14 @@ namespace TradeBot
                 Shutdown();
                 if (OS.IsWindows())
                 {
-                    IO.PromptForChar(Messages.Exiting);
+                    IO.PromptForChar(Messages.PressAnyKeyToExit);
                 }
             }
         }
 
         private void OnConnectionEstablished()
         {
+            IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
         }
 
         private bool OnWindowClose(CloseReason reason)
@@ -135,8 +138,8 @@ namespace TradeBot
 
         private void Shutdown()
         {
-            PersistState();
             client.eDisconnect();
+            PersistState();
         }
 
         private void LoadStateCommand()
@@ -149,7 +152,7 @@ namespace TradeBot
 
         private void SetTickerCommand()
         {
-            string ticker = IO.PromptForInput(Messages.SetTickerPrompt);
+            string ticker = IO.PromptForInput(Messages.SelectTickerPrompt);
             SetTicker(ticker);
         }
 
@@ -252,6 +255,11 @@ namespace TradeBot
             }
         }
 
+        public override void connectionClosed()
+        {
+            IO.ShowMessage(Messages.TwsDisconnected, MessageType.ERROR);
+        }
+
         public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
             UpdatePriceInfo(tickerId, field, price);
@@ -301,7 +309,7 @@ namespace TradeBot
             selectedContract = new StockContract(ticker);
             contracts.Add(selectedContract.Id, selectedContract);
             State.Ticker = ticker;
-            IO.ShowMessage(Messages.TickerSetFormat, selectedContract.Symbol);
+            IO.ShowMessage(Messages.TickerSelectedFormat, selectedContract.Symbol);
         }
 
         private void ClearSelectedTickerState()
@@ -376,7 +384,7 @@ namespace TradeBot
         {
             if (selectedContract == null)
             {
-                IO.ShowMessage(Messages.TickerNotSetError, MessageType.ERROR);
+                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.ERROR);
                 return;
             }
 

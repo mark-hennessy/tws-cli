@@ -28,7 +28,7 @@ namespace TradeBot
         {
             string path = PropertyFiles.STATE_FILE;
             File.WriteAllText(path, JsonConvert.SerializeObject(State));
-            IO.ShowMessage(Messages.StateSavedFormat, path);
+            IO.ShowMessage(Messages.StateSavedFormat, MessageType.SUCCESS, path);
         }
     }
 }
