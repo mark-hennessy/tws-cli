@@ -97,6 +97,9 @@ namespace TradeBot.Gen
         [JsonProperty("menuOptionFormat")]
         public string MenuOptionFormat { get; set; }
 
+        [JsonProperty("menuOptionLongestKey")]
+        public string MenuOptionLongestKey { get; set; }
+
         [JsonProperty("menuOptionDivider")]
         public string MenuOptionDivider { get; set; }
 

@@ -14,6 +14,7 @@
   "menuOptionInvalidEntry": "No such menu option. Please try again",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionDivider": "\n",
+  "menuOptionLongestKey": "cls",
   "menuOptionEntries": {
     "loadState": [ "l", "Load saved state" ],
     "setTicker": [ "t", "Set ticker" ],
@@ -26,7 +27,7 @@
     "closePosition": [ "c", "Close position" ],
     "toggleDebugMessages": [ "d", "Show/hide debug messages" ],
     "misc": [ "/", "Execute misc. test code" ],
-    "clearScreen" : [ "z", "Clear screen"],
+    "clearScreen": [ "cls", "Clear screen" ],
     "help": [ "?", "Help" ],
     "exitApplication": [ "q", "Save and exit" ]
   },

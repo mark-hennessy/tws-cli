@@ -18,7 +18,8 @@ namespace TradeBot.MenuFramework
 
         public override string ToString()
         {
-            return string.Format(Messages.MenuOptionFormat, Key, Description);
+            string paddedKey = Key.PadRight(Messages.MenuOptionLongestKey.Length);
+            return string.Format(Messages.MenuOptionFormat, paddedKey, Description);
         }
     }
 }
