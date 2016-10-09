@@ -41,9 +41,9 @@ namespace TradeBot.MenuFramework
 
         private MenuOption getMenuOption(string key)
         {
-            return menuOptionMap.ContainsKey(key)
-                    ? menuOptionMap[key]
-                    : NULL_MENU_OPTION;
+            return key != null && menuOptionMap.ContainsKey(key)
+                ? menuOptionMap[key]
+                : NULL_MENU_OPTION;
         }
 
         private void InvalidMenuOptionCommand()

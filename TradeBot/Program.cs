@@ -86,6 +86,7 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
             addMenuOption(menuOptionEntry.ToggleDebugMessages, ToggleDebugMessagesCommand);
             addMenuOption(menuOptionEntry.Misc, MiscCommand);
+            addMenuOption(menuOptionEntry.ClearScreen, ClearScreenCommand);
             addMenuOption(menuOptionEntry.Help, HelpCommand);
             addMenuOption(menuOptionEntry.ExitApplication, ExitApplicationCommand);
         }
@@ -230,6 +231,11 @@ namespace TradeBot
 
         private void MiscCommand()
         {
+        }
+
+        private void ClearScreenCommand()
+        {
+            Console.Clear();
         }
 
         private void HelpCommand()

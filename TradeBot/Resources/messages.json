@@ -26,6 +26,7 @@
     "closePosition": [ "c", "Close position" ],
     "toggleDebugMessages": [ "d", "Show/hide debug messages" ],
     "misc": [ "/", "Execute misc. test code" ],
+    "clearScreen" : [ "z", "Clear screen"],
     "help": [ "?", "Help" ],
     "exitApplication": [ "q", "Save and exit" ]
   },

@@ -45,6 +45,9 @@ namespace TradeBot.Gen
         [JsonProperty("misc")]
         public IList<string> Misc { get; set; }
 
+        [JsonProperty("clearScreen")]
+        public IList<string> ClearScreen { get; set; }
+
         [JsonProperty("help")]
         public IList<string> Help { get; set; }
 
