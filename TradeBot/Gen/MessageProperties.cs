@@ -27,17 +27,20 @@ namespace TradeBot.Gen
         [JsonProperty("setPositionSizeFromCash")]
         public IList<string> SetPositionSizeFromCash { get; set; }
 
-        [JsonProperty("buyPosition")]
-        public IList<string> BuyPosition { get; set; }
+        [JsonProperty("buy")]
+        public IList<string> Buy { get; set; }
 
-        [JsonProperty("sellPosition")]
-        public IList<string> SellPosition { get; set; }
+        [JsonProperty("sell")]
+        public IList<string> Sell { get; set; }
 
         [JsonProperty("reversePosition")]
         public IList<string> ReversePosition { get; set; }
 
         [JsonProperty("closePosition")]
         public IList<string> ClosePosition { get; set; }
+
+        [JsonProperty("cancelOrder")]
+        public IList<string> CancelOrder { get; set; }
 
         [JsonProperty("toggleDebugMessages")]
         public IList<string> ToggleDebugMessages { get; set; }
@@ -97,11 +100,11 @@ namespace TradeBot.Gen
         [JsonProperty("menuOptionFormat")]
         public string MenuOptionFormat { get; set; }
 
-        [JsonProperty("menuOptionLongestKey")]
-        public string MenuOptionLongestKey { get; set; }
-
         [JsonProperty("menuOptionDivider")]
         public string MenuOptionDivider { get; set; }
+
+        [JsonProperty("menuOptionLongestKey")]
+        public string MenuOptionLongestKey { get; set; }
 
         [JsonProperty("menuOptionEntries")]
         public MenuOptionEntries MenuOptionEntries { get; set; }
@@ -124,11 +127,11 @@ namespace TradeBot.Gen
         [JsonProperty("selectTickerPrompt")]
         public string SelectTickerPrompt { get; set; }
 
-        [JsonProperty("setSharesPrompt")]
-        public string SetSharesPrompt { get; set; }
+        [JsonProperty("positionSizePrompt")]
+        public string PositionSizePrompt { get; set; }
 
-        [JsonProperty("setCashPrompt")]
-        public string SetCashPrompt { get; set; }
+        [JsonProperty("positionSizeFromCashPrompt")]
+        public string PositionSizeFromCashPrompt { get; set; }
 
         [JsonProperty("tickerSelectedFormat")]
         public string TickerSelectedFormat { get; set; }

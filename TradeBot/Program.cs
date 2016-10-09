@@ -80,10 +80,11 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.ClearTicker, ClearTickerCommand);
             addMenuOption(menuOptionEntry.SetPositionSize, SetPositionSizeCommand);
             addMenuOption(menuOptionEntry.SetPositionSizeFromCash, SetPositionSizeFromCashCommand);
-            addMenuOption(menuOptionEntry.BuyPosition, BuyPositionCommand);
-            addMenuOption(menuOptionEntry.SellPosition, SellPositionCommand);
+            addMenuOption(menuOptionEntry.Buy, BuyCommand);
+            addMenuOption(menuOptionEntry.Sell, SellCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
             addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
+            addMenuOption(menuOptionEntry.CancelOrder, CancelOrderCommand);
             addMenuOption(menuOptionEntry.ToggleDebugMessages, ToggleDebugMessagesCommand);
             addMenuOption(menuOptionEntry.Misc, MiscCommand);
             addMenuOption(menuOptionEntry.ClearScreen, ClearScreenCommand);
@@ -145,7 +146,7 @@ namespace TradeBot
             LoadPersistedState();
             IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
             SetTicker(State.Ticker);
-            SetShares(State.Shares);
+            SetPositionSize(State.Shares);
         }
 
         private void SetTickerCommand()
@@ -180,36 +181,36 @@ namespace TradeBot
             ClearSelectedTickerState();
         }
 
-        private void SetPositionSizeFromCashCommand()
-        {
-            ValidateTickerSetAndPriceDataAvailable(() =>
-            {
-                string cashString = IO.PromptForInput(Messages.SetCashPrompt);
-                double? cash = cashString.ToDouble();
-                ValidateHasValue(cash, () =>
-                {
-                    double sharePrice = selectedContract.PriceData[TickType.LAST];
-                    int shares = (int)Math.Floor(cash.Value / sharePrice);
-                    SetShares(shares);
-                });
-            });
-        }
-
         private void SetPositionSizeCommand()
         {
             ValidateTickerSetAndPriceDataAvailable(() =>
             {
-                string sharesString = IO.PromptForInput(Messages.SetSharesPrompt);
-                int? shares = sharesString.ToInt();
-                SetShares(shares);
+                string positionSizeString = IO.PromptForInput(Messages.PositionSizePrompt);
+                int? positionSize = positionSizeString.ToInt();
+                SetPositionSize(positionSize);
             });
         }
 
-        private void BuyPositionCommand()
+        private void SetPositionSizeFromCashCommand()
+        {
+            ValidateTickerSetAndPriceDataAvailable(() =>
+            {
+                string cashString = IO.PromptForInput(Messages.PositionSizeFromCashPrompt);
+                double? cash = cashString.ToDouble();
+                ValidateHasValue(cash, () =>
+                {
+                    double sharePrice = selectedContract.PriceData[TickType.LAST];
+                    int positionSize = (int)Math.Floor(cash.Value / sharePrice);
+                    SetPositionSize(positionSize);
+                });
+            });
+        }
+
+        private void BuyCommand()
         {
         }
 
-        private void SellPositionCommand()
+        private void SellCommand()
         {
         }
 
@@ -218,6 +219,10 @@ namespace TradeBot
         }
 
         private void ClosePositionCommand()
+        {
+        }
+
+        private void CancelOrderCommand()
         {
         }
 
@@ -328,15 +333,16 @@ namespace TradeBot
             IO.ShowMessage(Messages.TickerClearedFormat, ticker);
         }
 
-        private void SetShares(int? shares)
+        private void SetPositionSize(int? positionSize)
         {
             ValidateTickerSetAndPriceDataAvailable(() =>
             {
-                ValidateHasValue(shares, () =>
+                ValidateHasValue(positionSize, () =>
                 {
-                    selectedContract.PositionSize = shares.Value;
-                    State.Shares = shares;
-                    IO.ShowMessage(Messages.PositionSizeSetFormat, shares);
+                    int size = Math.Abs(positionSize.Value);
+                    selectedContract.PositionSize = size;
+                    State.Shares = size;
+                    IO.ShowMessage(Messages.PositionSizeSetFormat, size);
                 });
             });
         }
