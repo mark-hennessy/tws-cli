@@ -24,7 +24,7 @@
     "sellPosition": [ "s", "Sell position" ],
     "reversePosition": [ "r", "Reverse position" ],
     "closePosition": [ "c", "Close position" ],
-    "toggleInfoMessages": [ "i", "Show/hide info messages" ],
+    "toggleDebugMessages": [ "d", "Show/hide debug messages" ],
     "misc": [ "/", "Execute misc. test code" ],
     "help": [ "?", "Help" ],
     "exitApplication": [ "q", "Save and exit" ]
@@ -43,7 +43,7 @@
   "tickerSelectedFormat": "Selected ticker: {0}",
   "tickerClearedFormat": "Cleared ticker: {0}",
   "positionSizeSetFormat": "Position size set to {0} shares",
-  "hideInfoMessagesSetFormat": "Hide info messages set to: {0}",
+  "hideDebugMessagesFormat": "Hide debug messages set to: {0}",
   "stateSavedFormat": "Application state saved to {0}",
   "pressAnyKeyToExit": "Goodbye! Press any key to exit...",
 

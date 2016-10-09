@@ -39,8 +39,8 @@ namespace TradeBot.Gen
         [JsonProperty("closePosition")]
         public IList<string> ClosePosition { get; set; }
 
-        [JsonProperty("toggleInfoMessages")]
-        public IList<string> ToggleInfoMessages { get; set; }
+        [JsonProperty("toggleDebugMessages")]
+        public IList<string> ToggleDebugMessages { get; set; }
 
         [JsonProperty("misc")]
         public IList<string> Misc { get; set; }
@@ -133,8 +133,8 @@ namespace TradeBot.Gen
         [JsonProperty("positionSizeSetFormat")]
         public string PositionSizeSetFormat { get; set; }
 
-        [JsonProperty("hideInfoMessagesSetFormat")]
-        public string HideInfoMessagesSetFormat { get; set; }
+        [JsonProperty("hideDebugMessagesFormat")]
+        public string HideDebugMessagesFormat { get; set; }
 
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }

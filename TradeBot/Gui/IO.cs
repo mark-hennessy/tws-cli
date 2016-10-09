@@ -4,7 +4,7 @@ using static TradeBot.Resources;
 
 namespace TradeBot.Gui
 {
-    public enum MessageType { STANDARD, INFO, ERROR, SUCCESS }
+    public enum MessageType { STANDARD, SUCCESS, ERROR, DEBUG }
 
     /// <summary>
     /// A helper class for console window input/output.
@@ -42,8 +42,8 @@ namespace TradeBot.Gui
                 case MessageType.STANDARD:
                     ShowMessage(message, ConsoleColor.White, args);
                     break;
-                case MessageType.INFO:
-                    if (State.HideInfoMessages ?? false)
+                case MessageType.DEBUG:
+                    if (State.HideDebugMessages ?? false)
                     {
                         ShowMessage(message, ConsoleColor.DarkGray, args);
                     }

@@ -261,7 +261,7 @@ namespace TradeBot.Tws
 
             IO.ShowMessage(
                 "{0} : {1}",
-                MessageType.INFO,
+                MessageType.DEBUG,
                 callingMethod.Name,
                 parameterNameValuePairs.ToPrettyString());
         }

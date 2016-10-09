@@ -84,7 +84,7 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.SellPosition, SellPositionCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
             addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
-            addMenuOption(menuOptionEntry.ToggleInfoMessages, ToggleInfoMessagesCommand);
+            addMenuOption(menuOptionEntry.ToggleDebugMessages, ToggleDebugMessagesCommand);
             addMenuOption(menuOptionEntry.Misc, MiscCommand);
             addMenuOption(menuOptionEntry.Help, HelpCommand);
             addMenuOption(menuOptionEntry.ExitApplication, ExitApplicationCommand);
@@ -220,10 +220,12 @@ namespace TradeBot
         {
         }
 
-        private void ToggleInfoMessagesCommand()
+        private void ToggleDebugMessagesCommand()
         {
-            State.HideInfoMessages = !State.HideInfoMessages;
-            IO.ShowMessage(Messages.HideInfoMessagesSetFormat, State.HideInfoMessages);
+            bool hideDebugMessages = State.HideDebugMessages ?? false;
+            bool toggledValue = !hideDebugMessages;
+            State.HideDebugMessages = toggledValue;
+            IO.ShowMessage(Messages.HideDebugMessagesFormat, toggledValue);
         }
 
         private void MiscCommand()

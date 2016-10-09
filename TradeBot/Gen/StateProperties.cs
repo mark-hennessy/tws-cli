@@ -18,8 +18,8 @@ namespace TradeBot.Gen
         [JsonProperty("shares")]
         public int? Shares { get; set; }
 
-        [JsonProperty("hideInfoMessages")]
-        public bool? HideInfoMessages { get; set; }
+        [JsonProperty("hideDebugMessages")]
+        public bool? HideDebugMessages { get; set; }
     }
 
 }

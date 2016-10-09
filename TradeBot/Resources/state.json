@@ -1,5 +1,5 @@
 {
   "ticker": "GOOG",
   "shares": 10,
-  "hideInfoMessages": false
+  "hideDebugMessages": false
 }
