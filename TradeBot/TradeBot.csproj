@@ -112,7 +112,7 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Tws\PriceData.cs" />
-    <Compile Include="Tws\StockOrder.cs" />
+    <Compile Include="Tws\LimitOrder.cs" />
     <Compile Include="Tws\StockContract.cs" />
     <Compile Include="Tws\TwsApiConstants.cs" />
     <Compile Include="Tws\TwsResponseHandler.cs" />

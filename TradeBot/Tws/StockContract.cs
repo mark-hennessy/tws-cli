@@ -11,9 +11,9 @@ namespace TradeBot.Tws
         {
             Id = nextId++;
             Symbol = ticker;
-            SecType = SecurityTypeConst.STOCK;
-            Currency = CurrencyConst.USD;
-            Exchange = ExchangeConst.SMART;
+            SecType = SecurityTypes.STK.ToString();
+            Currency = Currencies.USD.ToString();
+            Exchange = Exchanges.SMART.ToString();
             PriceData = new PriceData();
         }
 

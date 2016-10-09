@@ -26,7 +26,7 @@ namespace TradeBot
         private IList<int> ignoredErrorCodes;
         private IDictionary<int, StockContract> contracts;
         private StockContract currentContract;
-        private StockOrder pendingOrder;
+        private LimitOrder pendingOrder;
         private int nextValidOrderId;
         private bool shouldExitApplication;
 
@@ -220,23 +220,23 @@ namespace TradeBot
 
         private void BuyCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
-            {
-                IfPendingOrderDoesNotExist(() =>
-                {
-                    pendingOrder = new StockOrder();
-                    pendingOrder.OrderType = "foo";
-                    client.placeOrder(pendingOrder.Id, currentContract, pendingOrder);
-                });
-            });
+            PlaceOrder(OrderActions.BUY);
         }
 
         private void SellCommand()
+        {
+            PlaceOrder(OrderActions.SELL);
+        }
+
+        private void PlaceOrder(OrderActions action)
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
                 IfPendingOrderDoesNotExist(() =>
                 {
+                    int orderId = GenerateOrderId();
+                    pendingOrder = new LimitOrder(action, State.StepSize.Value, 127.46);
+                    client.placeOrder(orderId, currentContract, pendingOrder);
                 });
             });
         }
@@ -389,6 +389,11 @@ namespace TradeBot
             {
                 contracts[tickerId].PriceData[field] = value;
             }
+        }
+
+        private int GenerateOrderId()
+        {
+            return nextValidOrderId++;
         }
 
         private void UpdateWindowTitleIfNecessary(int tickerId)

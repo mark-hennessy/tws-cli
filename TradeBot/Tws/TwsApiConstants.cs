@@ -1,27 +1,58 @@
 ﻿namespace TradeBot.Tws
 {
-    public static class SecurityTypeConst
+    public enum SecurityTypes
     {
-        public const string STOCK = "STK";
-        public const string OPTION = "OPT";
-        public const string FUTURE = "FUT";
-        public const string INDEX = "IND";
-        public const string FUTURE_ON_AN_OPTION = "FOP";
-        public const string FOREX_PAIR = "CASH";
-        public const string COMBO_ORDER = "BAG";
-        public const string WARRANT = "WAR";
-        public const string NEWS_EVENTS_FOR_UNDERLYING_CONTRACTS = "NEWS";
+        // Stock
+        STK,
+        // Option
+        OPT,
+        // Future
+        FUT,
+        // Index
+        IND,
+        // Future on an option
+        FOP,
+        // Forex pair
+        CASH,
+        // Combo order
+        BAG,
+        // Warrant
+        WAR,
+        // News events for underlying contracts
+        NEWS
     }
 
-    public static class CurrencyConst
+    // Additional order types are documented here:
+    // https://www.interactivebrokers.com/en/software/api/apiguide/tables/supported_order_types.htm
+    public enum OrderTypes
     {
-        public const string USD = "USD";
-        public const string GBP = "GBP";
+        LMT,
+        MKT
     }
 
-    public static class ExchangeConst
+    public enum TimeInForce
     {
-        public const string SMART = "SMART";
+        DAY,
+        GTC
+    }
+
+    public enum OrderActions
+    {
+        BUY,
+        SELL,
+        // No idea what this is for...
+        SSHORT
+    }
+
+    public enum Currencies
+    {
+        USD,
+        GBP
+    }
+
+    public enum Exchanges
+    {
+        SMART
     }
 
     public static class ErrorCodes
