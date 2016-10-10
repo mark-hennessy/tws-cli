@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using static TradeBot.GlobalProperties;
 
 namespace TradeBot.Gui
 {
@@ -11,8 +12,6 @@ namespace TradeBot.Gui
     public static class IO
     {
         private static readonly object threadLock = new object();
-
-        public static bool ShowDebugMessages { get; set; }
 
         public static string PromptForInput([Optional] string message)
         {
@@ -44,7 +43,7 @@ namespace TradeBot.Gui
                     ShowMessage(message, ConsoleColor.White, args);
                     break;
                 case MessageType.DEBUG:
-                    if (ShowDebugMessages)
+                    if (Preferences.ShowDebugMessages)
                     {
                         ShowMessage(message, ConsoleColor.DarkGray, args);
                     }

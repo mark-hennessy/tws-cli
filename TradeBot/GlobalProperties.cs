@@ -1,5 +1,5 @@
 ﻿using TradeBot.FileIO;
-using TradeBot.Gen;
+using TradeBot.Generated;
 
 namespace TradeBot
 {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TradeBot.Gen
+namespace TradeBot.Generated
 {
 
     public class MenuOptionEntries
@@ -38,9 +38,6 @@ namespace TradeBot.Gen
 
         [JsonProperty("closePosition")]
         public IList<string> ClosePosition { get; set; }
-
-        [JsonProperty("toggleDebugMessages")]
-        public IList<string> ToggleDebugMessages { get; set; }
 
         [JsonProperty("misc")]
         public IList<string> Misc { get; set; }
@@ -118,9 +115,6 @@ namespace TradeBot.Gen
         [JsonProperty("accountTypePaper")]
         public string AccountTypePaper { get; set; }
 
-        [JsonProperty("loadedState")]
-        public string LoadedState { get; set; }
-
         [JsonProperty("pressAnyKeyToExit")]
         public string PressAnyKeyToExit { get; set; }
 
@@ -142,11 +136,11 @@ namespace TradeBot.Gen
         [JsonProperty("stepSizeSetFormat")]
         public string StepSizeSetFormat { get; set; }
 
-        [JsonProperty("showDebugMessagesFormat")]
-        public string ShowDebugMessagesFormat { get; set; }
+        [JsonProperty("loadedStateFormat")]
+        public string LoadedStateFormat { get; set; }
 
-        [JsonProperty("stateSavedFormat")]
-        public string StateSavedFormat { get; set; }
+        [JsonProperty("savedStateFormat")]
+        public string SavedStateFormat { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }

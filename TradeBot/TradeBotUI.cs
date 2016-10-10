@@ -1,10 +1,10 @@
-using IBApi;
+﻿using IBApi;
 using System;
 using System.Collections.Generic;
-using TradeBot.Collections;
+using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
-using TradeBot.Gen;
+using TradeBot.Generated;
 using TradeBot.Gui;
 using TradeBot.MenuFramework;
 using TradeBot.Tws;
@@ -13,12 +13,13 @@ using static TradeBot.Gui.Window;
 
 namespace TradeBot
 {
-    public class Program : TwsResponseHandler
+    public class TradeBotUI
     {
         public static void Main(string[] args)
         {
-            Program program = new Program();
-            program.Start();
+            TradeBotService service = new TradeBotService();
+            TradeBotUI program = new TradeBotUI(service);
+            program.Loop();
         }
 
         private readonly IList<int> ignoredErrorCodes = new List<int>()
@@ -29,39 +30,40 @@ namespace TradeBot
             ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
         };
 
+        private TradeBotService service;
         private Menu menu;
-        private TwsClient client;
-        private AppState state;
-        private PriceDataStore priceDatabase;
-        private IDictionary<int, Order> recentOrders;
-        private Contract currentContract;
 
-        private int currentTickerId;
-        private int nextValidOrderId;
         private bool shouldExitApplication;
 
-        public Program()
+        public TradeBotUI(TradeBotService service)
         {
-            client = new TwsClient(this);
-            state = new AppState();
-            priceDatabase = new PriceDataStore();
-            recentOrders = new Dictionary<int, Order>();
+            this.service = service;
 
+            InitializeEventHandlers();
             InitializeConsole();
             InitializeMenu();
         }
 
         #region Initialization
+        private void InitializeEventHandlers()
+        {
+            Window.SetWindowCloseHandler(OnWindowClose);
+
+            service.PropertyValueChanged += OnPropertyValueChanged;
+            service.ConnectionClosed += OnConnectionClosed;
+            service.PriceDataUpdated += OnPriceDataUpdated;
+            service.ErrorOccured += OnError;
+        }
+
         private void InitializeConsole()
         {
             Console.Title = Messages.AppName;
             if (Preferences.CenterWindow)
             {
-                SetWindowSizeAndCenter(
+                Window.SetWindowSizeAndCenter(
                     Preferences.WindowWidth,
                     Preferences.WindowHeight);
             }
-            SetWindowCloseHandler(OnWindowClose);
         }
 
         private void InitializeMenu()
@@ -81,7 +83,6 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.Sell, SellCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
             addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
-            addMenuOption(menuOptionEntry.ToggleDebugMessages, ToggleDebugMessagesCommand);
             addMenuOption(menuOptionEntry.Misc, MiscCommand);
             addMenuOption(menuOptionEntry.ClearScreen, ClearScreenCommand);
             addMenuOption(menuOptionEntry.Help, HelpCommand);
@@ -89,73 +90,15 @@ namespace TradeBot
         }
         #endregion
 
-        #region Events
-        private void OnConnectionEstablished()
-        {
-            IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
-            LoadState();
-        }
-
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
-        }
-        #endregion
-
-        #region Properties
-        public string TickerSymbol
-        {
-            get
-            {
-                return state.TickerSymbol;
-            }
-            set
-            {
-                state.TickerSymbol = value?.ToUpper();
-            }
-        }
-
-        public int StepSize
-        {
-            get
-            {
-                return state.StepSize ?? -1;
-            }
-            set
-            {
-                state.StepSize = Math.Abs(value);
-            }
-        }
-
-        public bool ShowDebugMessages
-        {
-            get
-            {
-                return state.ShowDebugMessages ?? false;
-            }
-            set
-            {
-                state.ShowDebugMessages = value;
-                IO.ShowDebugMessages = value;
-            }
-        }
-        #endregion
-
         #region Public methods
-        public void Start()
+        public void Loop()
         {
             IO.ShowMessage(Messages.WelcomeMessage);
 
             try
             {
-                client.eConnect();
-                // It's safe to call OnConnectionEstablished here because eConnect is 
-                // a synchronous operation that will throw an exception if it fails. 
-                OnConnectionEstablished();
+                service.Connect();
+                LoadState();
                 while (!shouldExitApplication)
                 {
                     menu.PromptForMenuOption().Command();
@@ -187,13 +130,13 @@ namespace TradeBot
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             IfNotNullOrWhiteSpace(tickerSymbol, () =>
             {
-                RequestMarketData(tickerSymbol);
+                service.RequestMarketData(tickerSymbol);
             });
         }
 
         private void CancelMarketDataCommand()
         {
-            CancelMarketData();
+            service.CancelMarketData();
         }
 
         private void SetStepSizeCommand()
@@ -202,7 +145,7 @@ namespace TradeBot
             int? stepSize = stepSizeString.ToInt();
             IfHasValue(stepSize, () =>
             {
-                SetStepSize(stepSize.Value);
+                service.StepSize = stepSize.Value;
             });
         }
 
@@ -216,7 +159,7 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        SetStepSizeFromCash(cash.Value);
+                        service.SetStepSizeFromCash(cash.Value);
                     });
                 });
             });
@@ -226,7 +169,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                PlaceOrder(OrderActions.BUY, StepSize, GetPrice(TickType.ASK));
+                service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetCurrentTickerPrice(TickType.ASK));
             });
         }
 
@@ -234,13 +177,12 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                PlaceOrder(OrderActions.SELL, StepSize, GetPrice(TickType.BID));
+                service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetCurrentTickerPrice(TickType.BID));
             });
         }
 
         private void ReversePositionCommand()
         {
-            client.reqPositions();
             //IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             //{
             //});
@@ -251,11 +193,6 @@ namespace TradeBot
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
             });
-        }
-
-        private void ToggleDebugMessagesCommand()
-        {
-            ToggleDebugMessages();
         }
 
         private void MiscCommand()
@@ -278,49 +215,81 @@ namespace TradeBot
         }
         #endregion
 
-        #region TWS callbacks
-        public override void managedAccounts(string accounts)
+        #region Event handlers
+        private bool OnWindowClose(CloseReason reason)
         {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
+        }
+
+        private void OnPropertyValueChanged(object sender, PropertyValueChangedEventArgs eventArgs)
+        {
+            switch (eventArgs.PropertyName)
+            {
+                case nameof(service.ManagedAccounts):
+                    OnManagedAccountsSet(eventArgs);
+                    break;
+                case nameof(service.TickerSymbol):
+                    OnTickerChanged(eventArgs);
+                    break;
+                case nameof(service.StepSize):
+                    OnStepSizeChanged(eventArgs);
+                    break;
+            }
+        }
+
+        private void OnManagedAccountsSet(PropertyValueChangedEventArgs eventArgs)
+        {
+            string accounts = service.ManagedAccounts;
+
             if (accounts.Contains(Preferences.AccountLive))
             {
                 IO.ShowMessage(Messages.AccountTypeLive, MessageType.ERROR);
             }
-            else if (accounts.Contains(Preferences.AccountPaper))
+
+            if (accounts.Contains(Preferences.AccountPaper))
             {
                 IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
             }
         }
 
-        public override void nextValidId(int nextValidOrderId)
+        private void OnTickerChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            this.nextValidOrderId = nextValidOrderId;
-        }
-
-        public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
-        {
-            priceDatabase[tickerId][field] = price;
-            if (tickerId == currentTickerId)
+            string oldValue = eventArgs.OldValue as string;
+            if (!string.IsNullOrWhiteSpace(oldValue))
             {
-                UpdateWindowTitle(tickerId);
+                IO.ShowMessage(Messages.TickerClearedFormat, oldValue);
+            }
+            string newValue = eventArgs.NewValue as string;
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                IO.ShowMessage(Messages.TickerSelectedFormat, newValue);
+            }
+            else
+            {
+                Console.Title = string.Empty;
             }
         }
 
-        public override void tickSize(int tickerId, int field, int size)
+        private void OnStepSizeChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            priceDatabase[tickerId][field] = size;
+            IO.ShowMessage(Messages.StepSizeSetFormat, eventArgs.NewValue);
         }
 
-        public override void error(Exception exception)
+        private void OnConnectionClosed()
         {
-            error(exception.Message);
+            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
         }
 
-        public override void error(string errorMessage)
+        private void OnPriceDataUpdated(PriceData priceData)
         {
-            IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+            UpdateConsoleTitle(priceData);
         }
 
-        public override void error(int id, int errorCode, string errorMessage)
+        private void OnError(int id, int errorCode, string errorMessage)
         {
             if (ignoredErrorCodes.Contains(errorCode))
             {
@@ -328,127 +297,39 @@ namespace TradeBot
             }
 
             IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
-
-            switch (errorCode)
-            {
-                case ErrorCodes.TICKER_NOT_FOUND:
-                    ClearCurrentContract();
-                    break;
-            }
-        }
-
-        public override void connectionClosed()
-        {
-            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
         }
         #endregion
 
-        #region Helper methods
-        private void LoadState()
+        #region Private helper methods
+        private void Shutdown()
         {
-            state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
-            IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
-
-            if (!string.IsNullOrWhiteSpace(TickerSymbol))
-            {
-                RequestMarketData(TickerSymbol);
-            }
-
-            SetStepSize(StepSize);
-
-            IO.ShowDebugMessages = ShowDebugMessages;
+            service.Disconnect();
+            SaveState();
         }
 
         private void SaveState()
         {
-            string path = PropertyFiles.STATE_FILE;
-            PropertySerializer.Serialize(state, path);
-            IO.ShowMessage(Messages.StateSavedFormat, MessageType.SUCCESS, path);
+            service.SaveState();
+            IO.ShowMessage(Messages.SavedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
         }
 
-        private void Shutdown()
+        private void LoadState()
         {
-            client.eDisconnect();
-            SaveState();
+            IO.ShowMessage(Messages.LoadedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
+            service.LoadState();
         }
 
-        private void RequestMarketData(string tickerSymbol)
+        private void UpdateConsoleTitle(PriceData priceData)
         {
-            CancelMarketData();
-
-            currentTickerId++;
-            currentContract = ContractFactory.CreateStockContract(tickerSymbol);
-            client.reqMktData(currentTickerId, currentContract, "", false, null);
-            TickerSymbol = tickerSymbol;
-
-            IO.ShowMessage(Messages.TickerSelectedFormat, TickerSymbol);
-        }
-
-        private void CancelMarketData()
-        {
-            if (currentContract != null)
-            {
-                client.cancelMktData(currentTickerId);
-                priceDatabase.RemovePriceData(currentTickerId);
-            }
-            ClearCurrentContract();
-        }
-
-        private void ClearCurrentContract()
-        {
-            if (currentContract != null)
-            {
-                IO.ShowMessage(Messages.TickerClearedFormat, currentContract.Symbol);
-            }
-            currentContract = null;
-            TickerSymbol = null;
-            Console.Title = string.Empty;
-        }
-
-        private void SetStepSize(int stepSize)
-        {
-            StepSize = stepSize;
-
-            IO.ShowMessage(Messages.StepSizeSetFormat, stepSize);
-        }
-
-        private void SetStepSizeFromCash(double cash)
-        {
-            double sharePrice = GetPrice(TickType.LAST);
-            int stepSize = (int)Math.Floor(cash / sharePrice);
-            SetStepSize(stepSize);
-        }
-
-        private double GetPrice(int tickType)
-        {
-            return priceDatabase[currentTickerId][tickType];
-        }
-
-        private void PlaceOrder(OrderActions action, int totalQuantity, double price)
-        {
-            int orderId = nextValidOrderId++;
-            Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
-            client.placeOrder(orderId, currentContract, order);
-        }
-
-        private void ToggleDebugMessages()
-        {
-            ShowDebugMessages = !ShowDebugMessages;
-            IO.ShowMessage(Messages.ShowDebugMessagesFormat, ShowDebugMessages);
-        }
-
-        private void UpdateWindowTitle(int tickerId)
-        {
-            var priceData = priceDatabase[tickerId];
             IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
             if (!string.IsNullOrWhiteSpace(appName))
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTicker, TickerSymbol));
+            infoStrings.Add(string.Format(Messages.TitleTicker, service.TickerSymbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceData[TickType.LAST]));
-            infoStrings.Add(string.Format(Messages.TitleStepSize, StepSize));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
             infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceData[TickType.BID], priceData[TickType.ASK]));
             infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceData[TickType.VOLUME]));
@@ -461,7 +342,7 @@ namespace TradeBot
         #region Validations
         private void IfTickerSet(Action action)
         {
-            if (currentContract != null)
+            if (service.TickerSymbol != null)
             {
                 action();
             }
@@ -474,7 +355,7 @@ namespace TradeBot
 
         private void IfStepSizeSet(Action action)
         {
-            if (StepSize > 0)
+            if (service.StepSize > 0)
             {
                 action();
             }
@@ -487,7 +368,7 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (GetPrice(TickType.LAST) > 0)
+            if (service.GetCurrentTickerPrice(TickType.LAST) > 0)
             {
                 action();
             }

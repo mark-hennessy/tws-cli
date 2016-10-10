@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TradeBot.Gen
+namespace TradeBot.Generated
 {
 
     public class AppState
@@ -17,9 +17,6 @@ namespace TradeBot.Gen
 
         [JsonProperty("stepSize")]
         public int? StepSize { get; set; }
-
-        [JsonProperty("showDebugMessages")]
-        public bool? ShowDebugMessages { get; set; }
     }
 
 }

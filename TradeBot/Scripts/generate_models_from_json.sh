@@ -29,8 +29,8 @@ cd "${DIR}"
 ASSEMBLY_DIR="../References/JsonClassGenerator/"
 EXE="${ASSEMBLY_DIR}model_generator.exe"
 RES_DIR="../Resources/"
-GEN_DIR="../Gen/"
-NAMESPACE="TradeBot.Gen"
+GEN_DIR="../Generated/"
+NAMESPACE="TradeBot.Generated"
 
 {
   ## Compile the files needed to output the executable

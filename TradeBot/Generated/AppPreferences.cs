@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TradeBot.Gen
+namespace TradeBot.Generated
 {
 
     public class AppPreferences
@@ -35,6 +35,9 @@ namespace TradeBot.Gen
 
         [JsonProperty("centerWindow")]
         public bool CenterWindow { get; set; }
+
+        [JsonProperty("showDebugMessages")]
+        public bool ShowDebugMessages { get; set; }
     }
 
 }

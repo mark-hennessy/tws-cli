@@ -69,7 +69,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TradeBot.Program</StartupObject>
+    <StartupObject>TradeBot.TradeBotUI</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\Icons\uptrend_icon.ico</ApplicationIcon>
@@ -103,25 +103,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Collections\PriceData.cs" />
+    <Compile Include="Events\PropertyValueChanged.cs" />
+    <Compile Include="Tws\PriceData.cs" />
     <Compile Include="FileIO\PropertySerializer.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="GlobalProperties.cs" />
-    <Compile Include="Gen\AppMessages.cs" />
-    <Compile Include="Gen\AppPreferences.cs" />
-    <Compile Include="Gen\AppState.cs" />
+    <Compile Include="Generated\AppMessages.cs" />
+    <Compile Include="Generated\AppPreferences.cs" />
+    <Compile Include="Generated\AppState.cs" />
+    <Compile Include="TradeBotUI.cs" />
     <Compile Include="Tws\ContractFactory.cs" />
     <Compile Include="Tws\OrderFactory.cs" />
-    <Compile Include="Collections\PriceDataStore.cs" />
+    <Compile Include="Tws\PriceDataStore.cs" />
     <Compile Include="Tws\TwsApiConstants.cs" />
     <Compile Include="Tws\TwsResponseHandler.cs" />
     <Compile Include="Gui\Screen.cs" />
     <Compile Include="Gui\IO.cs" />
     <Compile Include="MenuFramework\Menu.cs" />
     <Compile Include="MenuFramework\MenuOption.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="TradeBotService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tws\TwsClient.cs" />
     <Compile Include="Gui\Window.cs" />

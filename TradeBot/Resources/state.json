@@ -1,5 +1,4 @@
 {
   "tickerSymbol": "GOOG",
-  "stepSize": 10,
-  "showDebugMessages": true
+  "stepSize": 10
 }
