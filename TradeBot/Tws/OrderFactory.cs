@@ -1,0 +1,27 @@
+﻿using IBApi;
+
+namespace TradeBot.Tws
+{
+    public static class OrderFactory
+    {
+        public static int NextValidOrderId { get; set; }
+
+        public static Order CreateLimitOrder(OrderActions action, int totalQuantity, double limitPrice)
+        {
+            Order order = new Order();
+            order.Action = action.ToString();
+            order.OrderType = OrderTypes.LMT.ToString();
+            order.TotalQuantity = totalQuantity;
+            order.LmtPrice = limitPrice;
+            order.Tif = TimeInForce.DAY.ToString();
+            order.Transmit = true;
+            order.OutsideRth = true;
+            return order;
+        }
+
+        public static int GenerateOrderId()
+        {
+            return NextValidOrderId++;
+        }
+    }
+}

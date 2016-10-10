@@ -1,6 +1,7 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
+using TradeBot.Collections;
 using TradeBot.Extensions;
 using TradeBot.Gen;
 using TradeBot.Gui;
@@ -20,14 +21,15 @@ namespace TradeBot
         }
 
 
-        private TwsClient client;
-        private Menu menu;
 
         private IList<int> ignoredErrorCodes;
-        private IDictionary<int, StockContract> contracts;
-        private StockContract currentContract;
-        private LimitOrder pendingOrder;
-        private int nextValidOrderId;
+        private IDictionary<int, Order> recentOrders;
+        private PriceDataStore priceDatabase;
+        private Contract currentContract;
+
+        private TwsClient client;
+        private Menu menu;
+        private int currentTickerId;
         private bool shouldExitApplication;
 
         public Program()
@@ -48,7 +50,8 @@ namespace TradeBot
                 ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
             };
 
-            contracts = new Dictionary<int, StockContract>();
+            recentOrders = new Dictionary<int, Order>();
+            priceDatabase = new PriceDataStore();
         }
 
         private void InitializeConsole()
@@ -76,16 +79,15 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
-            addMenuOption(menuOptionEntry.LoadState, LoadStateCommand);
-            addMenuOption(menuOptionEntry.SetTicker, SetTickerCommand);
-            addMenuOption(menuOptionEntry.ClearTicker, ClearTickerCommand);
+            addMenuOption(menuOptionEntry.LoadSavedState, LoadSavedStateCommand);
+            addMenuOption(menuOptionEntry.RequestMarketData, RequestMarketDataCommand);
+            addMenuOption(menuOptionEntry.CancelMarketData, CancelMarketDataCommand);
             addMenuOption(menuOptionEntry.SetStepSize, SetStepSizeCommand);
             addMenuOption(menuOptionEntry.SetStepSizeFromCash, SetStepSizeFromCashCommand);
             addMenuOption(menuOptionEntry.Buy, BuyCommand);
             addMenuOption(menuOptionEntry.Sell, SellCommand);
             addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
             addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
-            addMenuOption(menuOptionEntry.CancelOrder, CancelOrderCommand);
             addMenuOption(menuOptionEntry.ToggleDebugMessages, ToggleDebugMessagesCommand);
             addMenuOption(menuOptionEntry.Misc, MiscCommand);
             addMenuOption(menuOptionEntry.ClearScreen, ClearScreenCommand);
@@ -142,14 +144,15 @@ namespace TradeBot
             PersistState();
         }
 
-        private void LoadStateCommand()
+        private void LoadSavedStateCommand()
         {
             LoadPersistedState();
             IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
-            string ticker = State.Ticker;
+
+            string ticker = State.TickerSymbol;
             if (!string.IsNullOrWhiteSpace(ticker))
             {
-                SetTicker(ticker);
+                RequestMarketData(ticker);
             }
             int? stepSize = State.StepSize;
             if (stepSize.HasValue)
@@ -158,36 +161,40 @@ namespace TradeBot
             }
         }
 
-        private void SetTickerCommand()
+        private void RequestMarketDataCommand()
         {
-            string ticker = IO.PromptForInput(Messages.SelectTickerPrompt);
-            SetTicker(ticker);
+            string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
+            RequestMarketData(tickerSymbol);
         }
 
-        private void SetTicker(string ticker)
+        private void RequestMarketData(string tickerSymbol)
         {
-            IfNotNullOrWhiteSpace(ticker, () =>
+            IfNotNullOrWhiteSpace(tickerSymbol, () =>
             {
-                ClearTicker();
-                SetSelectedTickerState(ticker);
-                client.reqMktData(currentContract.Id, currentContract, "", false, null);
+                CancelMarketData();
+
+                currentTickerId++;
+                currentContract = ContractFactory.CreateStockContract(tickerSymbol);
+                client.reqMktData(currentTickerId, currentContract, "", false, null);
+                State.TickerSymbol = tickerSymbol;
+
+                IO.ShowMessage(Messages.TickerSelectedFormat, currentContract.Symbol);
             });
         }
 
-        private void ClearTickerCommand()
+        private void CancelMarketDataCommand()
         {
-            ClearTicker();
+            CancelMarketData();
         }
 
-        private void ClearTicker()
+        private void CancelMarketData()
         {
-            if (currentContract == null)
+            if (currentContract != null)
             {
-                return;
+                client.cancelMktData(currentTickerId);
+                priceDatabase.RemovePriceData(currentTickerId);
             }
-
-            client.cancelMktData(currentContract.Id);
-            ClearSelectedTickerState();
+            ClearCurrentContract();
         }
 
         private void SetStepSizeCommand()
@@ -210,7 +217,7 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        double sharePrice = currentContract.PriceData[TickType.LAST];
+                        double sharePrice = priceDatabase.GetPriceData(currentContract.ConId)[TickType.LAST];
                         int stepSize = (int)Math.Floor(cash.Value / sharePrice);
                         SetStepSize(stepSize);
                     });
@@ -232,12 +239,11 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                IfPendingOrderDoesNotExist(() =>
-                {
-                    int orderId = GenerateOrderId();
-                    pendingOrder = new LimitOrder(action, State.StepSize.Value, 127.46);
-                    client.placeOrder(orderId, currentContract, pendingOrder);
-                });
+                int totalQuantity = State.StepSize.Value;
+                double askPrice = 127.46;
+                int orderId = OrderFactory.GenerateOrderId();
+                Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, askPrice);
+                client.placeOrder(orderId, currentContract, order);
             });
         }
 
@@ -245,9 +251,6 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                IfPendingOrderDoesNotExist(() =>
-                {
-                });
             });
         }
 
@@ -255,17 +258,6 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                IfPendingOrderDoesNotExist(() =>
-                {
-                });
-            });
-        }
-
-        private void CancelOrderCommand()
-        {
-            IfPendingOrderExists(() =>
-            {
-                client.cancelOrder(pendingOrder.OrderId);
             });
         }
 
@@ -274,6 +266,7 @@ namespace TradeBot
             bool hideDebugMessages = State.HideDebugMessages ?? false;
             bool toggledValue = !hideDebugMessages;
             State.HideDebugMessages = toggledValue;
+
             IO.ShowMessage(Messages.HideDebugMessagesFormat, toggledValue);
         }
 
@@ -315,18 +308,21 @@ namespace TradeBot
 
         public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
-            UpdatePriceInfo(tickerId, field, price);
-            UpdateWindowTitleIfNecessary(tickerId);
+            priceDatabase[tickerId][field] = price;
+            if (tickerId == currentTickerId)
+            {
+                UpdateWindowTitle(tickerId);
+            }
         }
 
         public override void tickSize(int tickerId, int field, int size)
         {
-            UpdatePriceInfo(tickerId, field, size);
+            priceDatabase[tickerId][field] = size;
         }
 
         public override void nextValidId(int nextValidOrderId)
         {
-            this.nextValidOrderId = nextValidOrderId;
+            OrderFactory.NextValidOrderId = nextValidOrderId;
         }
 
         public override void error(Exception exception)
@@ -351,59 +347,33 @@ namespace TradeBot
             switch (errorCode)
             {
                 case ErrorCodes.TICKER_NOT_FOUND:
-                    ClearSelectedTickerState();
+                    ClearCurrentContract();
                     break;
             }
         }
 
-        private void SetSelectedTickerState(string ticker)
+        private void ClearCurrentContract()
         {
-            ticker = ticker.ToUpper();
-            currentContract = new StockContract(ticker);
-            contracts.Add(currentContract.Id, currentContract);
-            State.Ticker = ticker;
-            IO.ShowMessage(Messages.TickerSelectedFormat, currentContract.Symbol);
-        }
-
-        private void ClearSelectedTickerState()
-        {
-            string ticker = currentContract.Symbol;
-            contracts.Remove(currentContract.Id);
+            if (currentContract != null)
+            {
+                IO.ShowMessage(Messages.TickerClearedFormat, currentContract.Symbol);
+            }
             currentContract = null;
-            State.Ticker = null;
-            State.StepSize = null;
             Console.Title = string.Empty;
-            IO.ShowMessage(Messages.TickerClearedFormat, ticker);
+            State.TickerSymbol = null;
         }
 
         private void SetStepSize(int stepSize)
         {
             stepSize = Math.Abs(stepSize);
             State.StepSize = stepSize;
+
             IO.ShowMessage(Messages.StepSizeSetFormat, stepSize);
         }
 
-        private void UpdatePriceInfo(int tickerId, int field, double value)
+        private void UpdateWindowTitle(int tickerId)
         {
-            if (contracts.ContainsKey(tickerId))
-            {
-                contracts[tickerId].PriceData[field] = value;
-            }
-        }
-
-        private int GenerateOrderId()
-        {
-            return nextValidOrderId++;
-        }
-
-        private void UpdateWindowTitleIfNecessary(int tickerId)
-        {
-            if (tickerId != currentContract.Id)
-            {
-                return;
-            }
-
-            PriceData priceInfo = currentContract.PriceData;
+            var priceData = priceDatabase.GetPriceData(tickerId);
             IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
             if (!string.IsNullOrWhiteSpace(appName))
@@ -411,14 +381,13 @@ namespace TradeBot
                 infoStrings.Add(appName);
             }
             infoStrings.Add(string.Format(Messages.TitleTicker, currentContract.Symbol));
-            infoStrings.Add(string.Format(Messages.TitleLastFormat, priceInfo[TickType.LAST]));
-            infoStrings.Add(string.Format(Messages.TitleStepSize, State.StepSize));
+            infoStrings.Add(string.Format(Messages.TitleLastFormat, priceData[TickType.LAST]));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, State.StepSize ?? -1));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
-            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceInfo[TickType.BID], priceInfo[TickType.ASK]));
-            infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceInfo[TickType.OPEN]));
-            infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceInfo[TickType.CLOSE]));
-            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceInfo[TickType.VOLUME]));
-            infoStrings.Add(string.Format(Messages.TitleAverageVolumeFormat, priceInfo[TickType.AVG_VOLUME]));
+            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceData[TickType.BID], priceData[TickType.ASK]));
+            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceData[TickType.VOLUME]));
+            infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceData[TickType.CLOSE]));
+            infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceData[TickType.OPEN]));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
@@ -451,7 +420,7 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (currentContract != null && currentContract.PriceData[TickType.LAST] > 0)
+            if (currentContract != null && priceDatabase.GetPriceData(currentContract.ConId)[TickType.LAST] > 0)
             {
                 action();
             }
@@ -459,31 +428,6 @@ namespace TradeBot
             {
                 IO.ShowMessage(Messages.PriceDataUnavailableError, MessageType.VALIDATION_ERROR);
             }
-        }
-
-        private void IfPendingOrderExists(Action action)
-        {
-            if (pendingOrder != null)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.PendingOrderNotFoundError, MessageType.VALIDATION_ERROR);
-            }
-        }
-
-        private void IfPendingOrderDoesNotExist(Action action)
-        {
-            if (pendingOrder == null)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.PendingOrderFoundError, MessageType.VALIDATION_ERROR);
-            }
-
         }
 
         private void IfNotNullOrWhiteSpace(string str, Action action)

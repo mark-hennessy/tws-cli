@@ -103,7 +103,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Collections\PriceData.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Gen\MessageProperties.cs" />
@@ -111,9 +111,9 @@
     <Compile Include="Gen\StateProperties.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Resources.cs" />
-    <Compile Include="Tws\PriceData.cs" />
-    <Compile Include="Tws\LimitOrder.cs" />
-    <Compile Include="Tws\StockContract.cs" />
+    <Compile Include="Tws\ContractFactory.cs" />
+    <Compile Include="Tws\OrderFactory.cs" />
+    <Compile Include="Collections\PriceDataStore.cs" />
     <Compile Include="Tws\TwsApiConstants.cs" />
     <Compile Include="Tws\TwsResponseHandler.cs" />
     <Compile Include="Gui\Screen.cs" />

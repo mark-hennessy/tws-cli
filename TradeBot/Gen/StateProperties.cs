@@ -12,8 +12,8 @@ namespace TradeBot.Gen
     public class StateProperties
     {
 
-        [JsonProperty("ticker")]
-        public string Ticker { get; set; }
+        [JsonProperty("tickerSymbol")]
+        public string TickerSymbol { get; set; }
 
         [JsonProperty("stepSize")]
         public int? StepSize { get; set; }
