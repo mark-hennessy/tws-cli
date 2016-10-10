@@ -1,5 +1,5 @@
 ﻿using IBApi;
-using static TradeBot.Resources;
+using static TradeBot.GlobalProperties;
 
 namespace TradeBot.Tws
 {

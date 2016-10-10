@@ -1,5 +1,5 @@
 using System;
-using static TradeBot.Resources;
+using static TradeBot.GlobalProperties;
 
 namespace TradeBot.MenuFramework
 {

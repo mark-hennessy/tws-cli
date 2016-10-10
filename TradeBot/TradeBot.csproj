@@ -104,13 +104,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\PriceData.cs" />
+    <Compile Include="FileIO\PropertySerializer.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="GlobalProperties.cs" />
     <Compile Include="Gen\AppMessages.cs" />
     <Compile Include="Gen\AppPreferences.cs" />
     <Compile Include="Gen\AppState.cs" />
-    <Compile Include="Resources.cs" />
     <Compile Include="Tws\ContractFactory.cs" />
     <Compile Include="Tws\OrderFactory.cs" />
     <Compile Include="Collections\PriceDataStore.cs" />

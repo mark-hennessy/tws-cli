@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TradeBot.Gui;
-using static TradeBot.Resources;
+using static TradeBot.GlobalProperties;
 
 namespace TradeBot.MenuFramework
 {
