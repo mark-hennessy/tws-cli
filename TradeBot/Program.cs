@@ -30,6 +30,7 @@ namespace TradeBot
         private TwsClient client;
         private Menu menu;
         private int currentTickerId;
+        private int nextValidOrderId;
         private bool shouldExitApplication;
 
         public Program()
@@ -227,23 +228,21 @@ namespace TradeBot
 
         private void BuyCommand()
         {
-            PlaceOrder(OrderActions.BUY);
+            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            {
+                int totalQuantity = State.StepSize.Value;
+                double price = GetCurrentPrice(TickType.ASK);
+                PlaceOrder(OrderActions.BUY, totalQuantity, price);
+            });
         }
 
         private void SellCommand()
         {
-            PlaceOrder(OrderActions.SELL);
-        }
-
-        private void PlaceOrder(OrderActions action)
-        {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
                 int totalQuantity = State.StepSize.Value;
-                double askPrice = 127.46;
-                int orderId = OrderFactory.GenerateOrderId();
-                Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, askPrice);
-                client.placeOrder(orderId, currentContract, order);
+                double price = GetCurrentPrice(TickType.BID);
+                PlaceOrder(OrderActions.SELL, totalQuantity, price);
             });
         }
 
@@ -259,6 +258,13 @@ namespace TradeBot
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
             });
+        }
+
+        private void PlaceOrder(OrderActions action, int totalQuantity, double price)
+        {
+            int orderId = nextValidOrderId++;
+            Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
+            client.placeOrder(orderId, currentContract, order);
         }
 
         private void ToggleDebugMessagesCommand()
@@ -322,7 +328,7 @@ namespace TradeBot
 
         public override void nextValidId(int nextValidOrderId)
         {
-            OrderFactory.NextValidOrderId = nextValidOrderId;
+            this.nextValidOrderId = nextValidOrderId;
         }
 
         public override void error(Exception exception)
@@ -373,7 +379,7 @@ namespace TradeBot
 
         private void UpdateWindowTitle(int tickerId)
         {
-            var priceData = priceDatabase.GetPriceData(tickerId);
+            var priceData = priceDatabase[tickerId];
             IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
             if (!string.IsNullOrWhiteSpace(appName))
@@ -389,6 +395,11 @@ namespace TradeBot
             infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceData[TickType.CLOSE]));
             infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceData[TickType.OPEN]));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
+        }
+
+        private double GetCurrentPrice(int tickType)
+        {
+            return priceDatabase[currentTickerId][tickType];
         }
 
         private void IfTickerSet(Action action)
@@ -420,7 +431,7 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (currentContract != null && priceDatabase.GetPriceData(currentContract.ConId)[TickType.LAST] > 0)
+            if (GetCurrentPrice(TickType.ASK) > 0)
             {
                 action();
             }
