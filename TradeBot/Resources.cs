@@ -8,20 +8,20 @@ namespace TradeBot
 {
     public static class Resources
     {
-        public static StateProperties State { get; private set; }
-        public static PreferenceProperties Preferences { get; }
-        public static MessageProperties Messages { get; }
+        public static AppState State { get; private set; }
+        public static AppPreferences Preferences { get; }
+        public static AppMessages Messages { get; }
 
         static Resources()
         {
-            State = new StateProperties();
-            Preferences = JsonConvert.DeserializeObject<PreferenceProperties>(File.ReadAllText(PropertyFiles.PREFERENCES_FILE));
-            Messages = JsonConvert.DeserializeObject<MessageProperties>(File.ReadAllText(PropertyFiles.MESSAGES_FILE));
+            State = new AppState();
+            Preferences = JsonConvert.DeserializeObject<AppPreferences>(File.ReadAllText(PropertyFiles.PREFERENCES_FILE));
+            Messages = JsonConvert.DeserializeObject<AppMessages>(File.ReadAllText(PropertyFiles.MESSAGES_FILE));
         }
 
         public static void LoadState()
         {
-            State = JsonConvert.DeserializeObject<StateProperties>(File.ReadAllText(PropertyFiles.STATE_FILE));
+            State = JsonConvert.DeserializeObject<AppState>(File.ReadAllText(PropertyFiles.STATE_FILE));
         }
 
         public static void PersistState()
