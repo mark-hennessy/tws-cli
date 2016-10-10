@@ -21,43 +21,37 @@ namespace TradeBot
             program.Start();
         }
 
+        private readonly IList<int> ignoredErrorCodes = new List<int>()
+        {
+            ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
+            ErrorCodes.MARKET_DATA_FARM_CONNECTED,
+            ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
+            ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
+        };
 
-
-        private IList<int> ignoredErrorCodes;
-        private IDictionary<int, Order> recentOrders;
-        private PriceDataStore priceDatabase;
-        private Contract currentContract;
-        private AppState state;
-
-        private TwsClient client;
         private Menu menu;
+        private TwsClient client;
+        private AppState state;
+        private PriceDataStore priceDatabase;
+        private IDictionary<int, Order> recentOrders;
+        private Contract currentContract;
+
         private int currentTickerId;
         private int nextValidOrderId;
         private bool shouldExitApplication;
 
         public Program()
         {
-            InitializeCollections();
+            client = new TwsClient(this);
+            state = new AppState();
+            priceDatabase = new PriceDataStore();
+            recentOrders = new Dictionary<int, Order>();
+
             InitializeConsole();
-            InitializeClient();
             InitializeMenu();
         }
 
-        private void InitializeCollections()
-        {
-            ignoredErrorCodes = new List<int>()
-            {
-                ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
-                ErrorCodes.MARKET_DATA_FARM_CONNECTED,
-                ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
-                ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
-            };
-
-            recentOrders = new Dictionary<int, Order>();
-            priceDatabase = new PriceDataStore();
-            state = new AppState();
-        }
-
+        #region Initialization
         private void InitializeConsole()
         {
             Console.Title = Messages.AppName;
@@ -68,11 +62,6 @@ namespace TradeBot
                     Preferences.WindowHeight);
             }
             SetWindowCloseHandler(OnWindowClose);
-        }
-
-        private void InitializeClient()
-        {
-            client = new TwsClient(this);
         }
 
         private void InitializeMenu()
@@ -98,7 +87,65 @@ namespace TradeBot
             addMenuOption(menuOptionEntry.Help, HelpCommand);
             addMenuOption(menuOptionEntry.ExitApplication, ExitApplicationCommand);
         }
+        #endregion
 
+        #region Events
+        private void OnConnectionEstablished()
+        {
+            IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
+            LoadState();
+        }
+
+        private bool OnWindowClose(CloseReason reason)
+        {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
+        }
+        #endregion
+
+        #region Properties
+        public string TickerSymbol
+        {
+            get
+            {
+                return state.TickerSymbol;
+            }
+            set
+            {
+                state.TickerSymbol = value?.ToUpper();
+            }
+        }
+
+        public int StepSize
+        {
+            get
+            {
+                return state.StepSize ?? -1;
+            }
+            set
+            {
+                state.StepSize = Math.Abs(value);
+            }
+        }
+
+        public bool ShowDebugMessages
+        {
+            get
+            {
+                return state.ShowDebugMessages ?? false;
+            }
+            set
+            {
+                state.ShowDebugMessages = value;
+                IO.ShowDebugMessages = value;
+            }
+        }
+        #endregion
+
+        #region Public methods
         public void Start()
         {
             IO.ShowMessage(Messages.WelcomeMessage);
@@ -127,28 +174,9 @@ namespace TradeBot
                 }
             }
         }
+        #endregion
 
-        private void OnConnectionEstablished()
-        {
-            IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
-            LoadState();
-        }
-
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
-        }
-
-        private void Shutdown()
-        {
-            client.eDisconnect();
-            SaveState();
-        }
-
+        #region Menu commands
         private void ReloadSavedStateCommand()
         {
             LoadState();
@@ -157,37 +185,15 @@ namespace TradeBot
         private void RequestMarketDataCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
-            RequestMarketData(tickerSymbol);
-        }
-
-        private void RequestMarketData(string tickerSymbol)
-        {
             IfNotNullOrWhiteSpace(tickerSymbol, () =>
             {
-                CancelMarketData();
-
-                currentTickerId++;
-                currentContract = ContractFactory.CreateStockContract(tickerSymbol);
-                client.reqMktData(currentTickerId, currentContract, "", false, null);
-                state.TickerSymbol = tickerSymbol;
-
-                IO.ShowMessage(Messages.TickerSelectedFormat, currentContract.Symbol);
+                RequestMarketData(tickerSymbol);
             });
         }
 
         private void CancelMarketDataCommand()
         {
             CancelMarketData();
-        }
-
-        private void CancelMarketData()
-        {
-            if (currentContract != null)
-            {
-                client.cancelMktData(currentTickerId);
-                priceDatabase.RemovePriceData(currentTickerId);
-            }
-            ClearCurrentContract();
         }
 
         private void SetStepSizeCommand()
@@ -210,9 +216,7 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        double sharePrice = priceDatabase.GetPriceData(currentContract.ConId)[TickType.LAST];
-                        int stepSize = (int)Math.Floor(cash.Value / sharePrice);
-                        SetStepSize(stepSize);
+                        SetStepSizeFromCash(cash.Value);
                     });
                 });
             });
@@ -222,9 +226,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                int totalQuantity = state.StepSize.Value;
-                double price = GetCurrentPrice(TickType.ASK);
-                PlaceOrder(OrderActions.BUY, totalQuantity, price);
+                PlaceOrder(OrderActions.BUY, StepSize, GetPrice(TickType.ASK));
             });
         }
 
@@ -232,9 +234,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                int totalQuantity = state.StepSize.Value;
-                double price = GetCurrentPrice(TickType.BID);
-                PlaceOrder(OrderActions.SELL, totalQuantity, price);
+                PlaceOrder(OrderActions.SELL, StepSize, GetPrice(TickType.BID));
             });
         }
 
@@ -253,21 +253,9 @@ namespace TradeBot
             });
         }
 
-        private void PlaceOrder(OrderActions action, int totalQuantity, double price)
-        {
-            int orderId = nextValidOrderId++;
-            Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
-            client.placeOrder(orderId, currentContract, order);
-        }
-
         private void ToggleDebugMessagesCommand()
         {
-            bool showDebugMessages = state.ShowDebugMessages ?? false;
-            bool toggledValue = !showDebugMessages;
-            state.ShowDebugMessages = toggledValue;
-            IO.ShowDebugMessages = toggledValue;
-
-            IO.ShowMessage(Messages.ShowDebugMessagesFormat, toggledValue);
+            ToggleDebugMessages();
         }
 
         private void MiscCommand()
@@ -288,7 +276,9 @@ namespace TradeBot
         {
             shouldExitApplication = true;
         }
+        #endregion
 
+        #region TWS callbacks
         public override void managedAccounts(string accounts)
         {
             if (accounts.Contains(Preferences.AccountLive))
@@ -301,9 +291,9 @@ namespace TradeBot
             }
         }
 
-        public override void connectionClosed()
+        public override void nextValidId(int nextValidOrderId)
         {
-            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
+            this.nextValidOrderId = nextValidOrderId;
         }
 
         public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
@@ -318,11 +308,6 @@ namespace TradeBot
         public override void tickSize(int tickerId, int field, int size)
         {
             priceDatabase[tickerId][field] = size;
-        }
-
-        public override void nextValidId(int nextValidOrderId)
-        {
-            this.nextValidOrderId = nextValidOrderId;
         }
 
         public override void error(Exception exception)
@@ -352,24 +337,26 @@ namespace TradeBot
             }
         }
 
+        public override void connectionClosed()
+        {
+            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
+        }
+        #endregion
+
+        #region Helper methods
         private void LoadState()
         {
             state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
             IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
 
-            string ticker = state.TickerSymbol;
-            if (!string.IsNullOrWhiteSpace(ticker))
+            if (!string.IsNullOrWhiteSpace(TickerSymbol))
             {
-                RequestMarketData(ticker);
+                RequestMarketData(TickerSymbol);
             }
 
-            int? stepSize = state.StepSize;
-            if (stepSize.HasValue)
-            {
-                SetStepSize(stepSize.Value);
-            }
+            SetStepSize(StepSize);
 
-            IO.ShowDebugMessages = state.ShowDebugMessages ?? false;
+            IO.ShowDebugMessages = ShowDebugMessages;
         }
 
         private void SaveState()
@@ -379,6 +366,34 @@ namespace TradeBot
             IO.ShowMessage(Messages.StateSavedFormat, MessageType.SUCCESS, path);
         }
 
+        private void Shutdown()
+        {
+            client.eDisconnect();
+            SaveState();
+        }
+
+        private void RequestMarketData(string tickerSymbol)
+        {
+            CancelMarketData();
+
+            currentTickerId++;
+            currentContract = ContractFactory.CreateStockContract(tickerSymbol);
+            client.reqMktData(currentTickerId, currentContract, "", false, null);
+            TickerSymbol = tickerSymbol;
+
+            IO.ShowMessage(Messages.TickerSelectedFormat, TickerSymbol);
+        }
+
+        private void CancelMarketData()
+        {
+            if (currentContract != null)
+            {
+                client.cancelMktData(currentTickerId);
+                priceDatabase.RemovePriceData(currentTickerId);
+            }
+            ClearCurrentContract();
+        }
+
         private void ClearCurrentContract()
         {
             if (currentContract != null)
@@ -386,16 +401,40 @@ namespace TradeBot
                 IO.ShowMessage(Messages.TickerClearedFormat, currentContract.Symbol);
             }
             currentContract = null;
+            TickerSymbol = null;
             Console.Title = string.Empty;
-            state.TickerSymbol = null;
         }
 
         private void SetStepSize(int stepSize)
         {
-            stepSize = Math.Abs(stepSize);
-            state.StepSize = stepSize;
+            StepSize = stepSize;
 
             IO.ShowMessage(Messages.StepSizeSetFormat, stepSize);
+        }
+
+        private void SetStepSizeFromCash(double cash)
+        {
+            double sharePrice = GetPrice(TickType.LAST);
+            int stepSize = (int)Math.Floor(cash / sharePrice);
+            SetStepSize(stepSize);
+        }
+
+        private double GetPrice(int tickType)
+        {
+            return priceDatabase[currentTickerId][tickType];
+        }
+
+        private void PlaceOrder(OrderActions action, int totalQuantity, double price)
+        {
+            int orderId = nextValidOrderId++;
+            Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
+            client.placeOrder(orderId, currentContract, order);
+        }
+
+        private void ToggleDebugMessages()
+        {
+            ShowDebugMessages = !ShowDebugMessages;
+            IO.ShowMessage(Messages.ShowDebugMessagesFormat, ShowDebugMessages);
         }
 
         private void UpdateWindowTitle(int tickerId)
@@ -407,9 +446,9 @@ namespace TradeBot
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTicker, currentContract.Symbol));
+            infoStrings.Add(string.Format(Messages.TitleTicker, TickerSymbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceData[TickType.LAST]));
-            infoStrings.Add(string.Format(Messages.TitleStepSize, state.StepSize ?? -1));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, StepSize));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
             infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceData[TickType.BID], priceData[TickType.ASK]));
             infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceData[TickType.VOLUME]));
@@ -417,12 +456,9 @@ namespace TradeBot
             infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceData[TickType.OPEN]));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
+        #endregion
 
-        private double GetCurrentPrice(int tickType)
-        {
-            return priceDatabase[currentTickerId][tickType];
-        }
-
+        #region Validations
         private void IfTickerSet(Action action)
         {
             if (currentContract != null)
@@ -438,8 +474,7 @@ namespace TradeBot
 
         private void IfStepSizeSet(Action action)
         {
-            int? stepSize = state.StepSize;
-            if (stepSize.HasValue && stepSize.Value > 0)
+            if (StepSize > 0)
             {
                 action();
             }
@@ -452,7 +487,7 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (GetCurrentPrice(TickType.ASK) > 0)
+            if (GetPrice(TickType.LAST) > 0)
             {
                 action();
             }
@@ -511,5 +546,6 @@ namespace TradeBot
                 });
             });
         }
+        #endregion
     }
 }
