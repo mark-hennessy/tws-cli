@@ -16,7 +16,7 @@
   "menuOptionDivider": "\n",
   "menuOptionLongestKey": "cls",
   "menuOptionEntries": {
-    "loadSavedState": [ "l", "Load saved state" ],
+    "reloadSavedState": [ "l", "Reload saved state" ],
     "requestMarketData": [ "m", "Request market data for a stock" ],
     "cancelMarketData": [ "M", "Cancel market data for a stock" ],
     "setStepSize": [ "p", "Set the step size, i.e. the amount of shares to buy/sell" ],
@@ -46,7 +46,7 @@
   "tickerSelectedFormat": "Selected ticker symbol: {0}",
   "tickerClearedFormat": "Cleared ticker symbol: {0}",
   "stepSizeSetFormat": "Step size set to {0} shares",
-  "hideDebugMessagesFormat": "Hide debug messages set to: {0}",
+  "showDebugMessagesFormat": "Show debug messages set to: {0}",
   "stateSavedFormat": "Application state saved to {0}",
 
   "invalidIntegerInputError": "Invalid input, expected an integer",

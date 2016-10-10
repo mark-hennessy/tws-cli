@@ -18,8 +18,8 @@ namespace TradeBot.Gen
         [JsonProperty("stepSize")]
         public int? StepSize { get; set; }
 
-        [JsonProperty("hideDebugMessages")]
-        public bool? HideDebugMessages { get; set; }
+        [JsonProperty("showDebugMessages")]
+        public bool? ShowDebugMessages { get; set; }
     }
 
 }

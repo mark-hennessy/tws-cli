@@ -12,8 +12,8 @@ namespace TradeBot.Gen
     public class MenuOptionEntries
     {
 
-        [JsonProperty("loadSavedState")]
-        public IList<string> LoadSavedState { get; set; }
+        [JsonProperty("reloadSavedState")]
+        public IList<string> ReloadSavedState { get; set; }
 
         [JsonProperty("requestMarketData")]
         public IList<string> RequestMarketData { get; set; }
@@ -76,14 +76,14 @@ namespace TradeBot.Gen
         [JsonProperty("titleBidAskFormat")]
         public string TitleBidAskFormat { get; set; }
 
-        [JsonProperty("titleOpenFormat")]
-        public string TitleOpenFormat { get; set; }
+        [JsonProperty("titleVolumeFormat")]
+        public string TitleVolumeFormat { get; set; }
 
         [JsonProperty("titleCloseFormat")]
         public string TitleCloseFormat { get; set; }
 
-        [JsonProperty("titleVolumeFormat")]
-        public string TitleVolumeFormat { get; set; }
+        [JsonProperty("titleOpenFormat")]
+        public string TitleOpenFormat { get; set; }
 
         [JsonProperty("titleDivider")]
         public string TitleDivider { get; set; }
@@ -142,8 +142,8 @@ namespace TradeBot.Gen
         [JsonProperty("stepSizeSetFormat")]
         public string StepSizeSetFormat { get; set; }
 
-        [JsonProperty("hideDebugMessagesFormat")]
-        public string HideDebugMessagesFormat { get; set; }
+        [JsonProperty("showDebugMessagesFormat")]
+        public string ShowDebugMessagesFormat { get; set; }
 
         [JsonProperty("stateSavedFormat")]
         public string StateSavedFormat { get; set; }

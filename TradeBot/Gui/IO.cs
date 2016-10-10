@@ -43,7 +43,7 @@ namespace TradeBot.Gui
                     ShowMessage(message, ConsoleColor.White, args);
                     break;
                 case MessageType.DEBUG:
-                    if (State.HideDebugMessages ?? false)
+                    if (State.ShowDebugMessages ?? false)
                     {
                         ShowMessage(message, ConsoleColor.DarkGray, args);
                     }

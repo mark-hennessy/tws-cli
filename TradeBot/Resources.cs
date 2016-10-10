@@ -19,7 +19,7 @@ namespace TradeBot
             Messages = JsonConvert.DeserializeObject<MessageProperties>(File.ReadAllText(PropertyFiles.MESSAGES_FILE));
         }
 
-        public static void LoadPersistedState()
+        public static void LoadState()
         {
             State = JsonConvert.DeserializeObject<StateProperties>(File.ReadAllText(PropertyFiles.STATE_FILE));
         }

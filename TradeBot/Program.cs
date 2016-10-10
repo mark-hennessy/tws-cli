@@ -80,7 +80,7 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
-            addMenuOption(menuOptionEntry.LoadSavedState, LoadSavedStateCommand);
+            addMenuOption(menuOptionEntry.ReloadSavedState, ReloadSavedStateCommand);
             addMenuOption(menuOptionEntry.RequestMarketData, RequestMarketDataCommand);
             addMenuOption(menuOptionEntry.CancelMarketData, CancelMarketDataCommand);
             addMenuOption(menuOptionEntry.SetStepSize, SetStepSizeCommand);
@@ -128,6 +128,8 @@ namespace TradeBot
         private void OnConnectionEstablished()
         {
             IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
+
+            LoadSavedState();
         }
 
         private bool OnWindowClose(CloseReason reason)
@@ -145,21 +147,9 @@ namespace TradeBot
             PersistState();
         }
 
-        private void LoadSavedStateCommand()
+        private void ReloadSavedStateCommand()
         {
-            LoadPersistedState();
-            IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
-
-            string ticker = State.TickerSymbol;
-            if (!string.IsNullOrWhiteSpace(ticker))
-            {
-                RequestMarketData(ticker);
-            }
-            int? stepSize = State.StepSize;
-            if (stepSize.HasValue)
-            {
-                SetStepSize(stepSize.Value);
-            }
+            LoadSavedState();
         }
 
         private void RequestMarketDataCommand()
@@ -248,9 +238,10 @@ namespace TradeBot
 
         private void ReversePositionCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
-            {
-            });
+            client.reqPositions();
+            //IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            //{
+            //});
         }
 
         private void ClosePositionCommand()
@@ -269,11 +260,11 @@ namespace TradeBot
 
         private void ToggleDebugMessagesCommand()
         {
-            bool hideDebugMessages = State.HideDebugMessages ?? false;
-            bool toggledValue = !hideDebugMessages;
-            State.HideDebugMessages = toggledValue;
+            bool showDebugMessages = State.ShowDebugMessages ?? false;
+            bool toggledValue = !showDebugMessages;
+            State.ShowDebugMessages = toggledValue;
 
-            IO.ShowMessage(Messages.HideDebugMessagesFormat, toggledValue);
+            IO.ShowMessage(Messages.ShowDebugMessagesFormat, toggledValue);
         }
 
         private void MiscCommand()
@@ -355,6 +346,23 @@ namespace TradeBot
                 case ErrorCodes.TICKER_NOT_FOUND:
                     ClearCurrentContract();
                     break;
+            }
+        }
+
+        private void LoadSavedState()
+        {
+            LoadState();
+            IO.ShowMessage(Messages.LoadedState, MessageType.SUCCESS);
+
+            string ticker = State.TickerSymbol;
+            if (!string.IsNullOrWhiteSpace(ticker))
+            {
+                RequestMarketData(ticker);
+            }
+            int? stepSize = State.StepSize;
+            if (stepSize.HasValue)
+            {
+                SetStepSize(stepSize.Value);
             }
         }
 
