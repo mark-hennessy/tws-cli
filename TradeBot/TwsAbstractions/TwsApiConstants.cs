@@ -1,4 +1,4 @@
-﻿namespace TradeBot.Tws
+﻿namespace TradeBot.TwsAbstractions
 {
     public enum SecurityTypes
     {

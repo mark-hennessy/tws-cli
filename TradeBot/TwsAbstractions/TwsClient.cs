@@ -1,7 +1,7 @@
 ﻿using IBApi;
 using static TradeBot.GlobalProperties;
 
-namespace TradeBot.Tws
+namespace TradeBot.TwsAbstractions
 {
     public class TwsClient : EClientSocket
     {

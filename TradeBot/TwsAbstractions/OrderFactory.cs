@@ -1,6 +1,6 @@
 ﻿using IBApi;
 
-namespace TradeBot.Tws
+namespace TradeBot.TwsAbstractions
 {
     public static class OrderFactory
     {

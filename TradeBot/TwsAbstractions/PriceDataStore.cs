@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TradeBot.Tws
+namespace TradeBot.TwsAbstractions
 {
     public class PriceDataStore
     {

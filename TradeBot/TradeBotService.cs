@@ -6,7 +6,7 @@ using TradeBot.Events;
 using TradeBot.FileIO;
 using TradeBot.Generated;
 using TradeBot.Gui;
-using TradeBot.Tws;
+using TradeBot.TwsAbstractions;
 using static TradeBot.GlobalProperties;
 
 namespace TradeBot

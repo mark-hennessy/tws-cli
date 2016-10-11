@@ -7,7 +7,7 @@ using TradeBot.FileIO;
 using TradeBot.Generated;
 using TradeBot.Gui;
 using TradeBot.MenuFramework;
-using TradeBot.Tws;
+using TradeBot.TwsAbstractions;
 using static TradeBot.GlobalProperties;
 using static TradeBot.Gui.Window;
 

@@ -7,7 +7,7 @@ using System.Reflection;
 using TradeBot.Extensions;
 using TradeBot.Gui;
 
-namespace TradeBot.Tws
+namespace TradeBot.TwsAbstractions
 {
     public abstract class TwsResponseHandler : EWrapper
     {
