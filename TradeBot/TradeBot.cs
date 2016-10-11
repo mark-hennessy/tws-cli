@@ -11,7 +11,7 @@ using static TradeBot.GlobalProperties;
 
 namespace TradeBot
 {
-    public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
+    public class TradeBot : TwsResponseHandler, INotifyPropertyValueChanged
     {
         private TwsClient client;
         private PriceData priceData;
@@ -22,7 +22,7 @@ namespace TradeBot
         private int currentTickerId;
         private int nextValidOrderId;
 
-        public TradeBotService()
+        public TradeBot()
         {
             client = new TwsClient(this);
             priceData = new PriceData();

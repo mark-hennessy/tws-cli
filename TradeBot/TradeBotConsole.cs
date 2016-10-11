@@ -13,13 +13,12 @@ using static TradeBot.Gui.Window;
 
 namespace TradeBot
 {
-    public class TradeBotUI
+    public class TradeBotConsole
     {
         public static void Main(string[] args)
         {
-            TradeBotService service = new TradeBotService();
-            TradeBotUI program = new TradeBotUI(service);
-            program.Loop();
+            TradeBotConsole console = new TradeBotConsole();
+            console.Start();
         }
 
         private readonly IList<int> ignoredErrorCodes = new List<int>()
@@ -30,14 +29,14 @@ namespace TradeBot
             ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
         };
 
-        private TradeBotService service;
+        private TradeBot tradeBot;
         private Menu menu;
 
         private bool shouldExitApplication;
 
-        public TradeBotUI(TradeBotService service)
+        public TradeBotConsole()
         {
-            this.service = service;
+            tradeBot = new TradeBot();
 
             InitializeEventHandlers();
             InitializeConsole();
@@ -49,10 +48,10 @@ namespace TradeBot
         {
             Window.SetWindowCloseHandler(OnWindowClose);
 
-            service.PropertyValueChanged += OnPropertyValueChanged;
-            service.ConnectionClosed += OnConnectionClosed;
-            service.PriceDataUpdated += OnPriceDataUpdated;
-            service.ErrorOccured += OnError;
+            tradeBot.PropertyValueChanged += OnPropertyValueChanged;
+            tradeBot.ConnectionClosed += OnConnectionClosed;
+            tradeBot.PriceDataUpdated += OnPriceDataUpdated;
+            tradeBot.ErrorOccured += OnError;
         }
 
         private void InitializeConsole()
@@ -91,13 +90,13 @@ namespace TradeBot
         #endregion
 
         #region Public methods
-        public void Loop()
+        public void Start()
         {
             IO.ShowMessage(Messages.WelcomeMessage);
 
             try
             {
-                service.Connect();
+                tradeBot.Connect();
                 LoadState();
                 while (!shouldExitApplication)
                 {
@@ -130,13 +129,13 @@ namespace TradeBot
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             IfNotNullOrWhiteSpace(tickerSymbol, () =>
             {
-                service.RequestMarketData(tickerSymbol);
+                tradeBot.RequestMarketData(tickerSymbol);
             });
         }
 
         private void CancelMarketDataCommand()
         {
-            service.CancelMarketData();
+            tradeBot.CancelMarketData();
         }
 
         private void SetStepSizeCommand()
@@ -145,7 +144,7 @@ namespace TradeBot
             int? stepSize = stepSizeString.ToInt();
             IfHasValue(stepSize, () =>
             {
-                service.StepSize = stepSize.Value;
+                tradeBot.StepSize = stepSize.Value;
             });
         }
 
@@ -159,7 +158,7 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        service.SetStepSizeFromCash(cash.Value);
+                        tradeBot.SetStepSizeFromCash(cash.Value);
                     });
                 });
             });
@@ -169,7 +168,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetCurrentTickerPrice(TickType.ASK));
+                tradeBot.PlaceOrder(OrderActions.BUY, tradeBot.StepSize, tradeBot.GetCurrentTickerPrice(TickType.ASK));
             });
         }
 
@@ -177,7 +176,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetCurrentTickerPrice(TickType.BID));
+                tradeBot.PlaceOrder(OrderActions.SELL, tradeBot.StepSize, tradeBot.GetCurrentTickerPrice(TickType.BID));
             });
         }
 
@@ -229,13 +228,13 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
-                case nameof(service.ManagedAccounts):
+                case nameof(tradeBot.ManagedAccounts):
                     OnManagedAccountsSet(eventArgs);
                     break;
-                case nameof(service.TickerSymbol):
+                case nameof(tradeBot.TickerSymbol):
                     OnTickerChanged(eventArgs);
                     break;
-                case nameof(service.StepSize):
+                case nameof(tradeBot.StepSize):
                     OnStepSizeChanged(eventArgs);
                     break;
             }
@@ -243,7 +242,7 @@ namespace TradeBot
 
         private void OnManagedAccountsSet(PropertyValueChangedEventArgs eventArgs)
         {
-            string accounts = service.ManagedAccounts;
+            string accounts = tradeBot.ManagedAccounts;
 
             if (accounts.Contains(Preferences.AccountLive))
             {
@@ -303,20 +302,20 @@ namespace TradeBot
         #region Private helper methods
         private void Shutdown()
         {
-            service.Disconnect();
+            tradeBot.Disconnect();
             SaveState();
         }
 
         private void SaveState()
         {
-            service.SaveState();
+            tradeBot.SaveState();
             IO.ShowMessage(Messages.SavedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
         {
             IO.ShowMessage(Messages.LoadedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
-            service.LoadState();
+            tradeBot.LoadState();
         }
 
         private void UpdateConsoleTitle(PriceData priceData)
@@ -327,9 +326,9 @@ namespace TradeBot
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTicker, service.TickerSymbol));
+            infoStrings.Add(string.Format(Messages.TitleTicker, tradeBot.TickerSymbol));
             infoStrings.Add(string.Format(Messages.TitleLastFormat, priceData[TickType.LAST]));
-            infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, tradeBot.StepSize));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
             infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceData[TickType.BID], priceData[TickType.ASK]));
             infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceData[TickType.VOLUME]));
@@ -342,7 +341,7 @@ namespace TradeBot
         #region Validations
         private void IfTickerSet(Action action)
         {
-            if (service.TickerSymbol != null)
+            if (tradeBot.TickerSymbol != null)
             {
                 action();
             }
@@ -355,7 +354,7 @@ namespace TradeBot
 
         private void IfStepSizeSet(Action action)
         {
-            if (service.StepSize > 0)
+            if (tradeBot.StepSize > 0)
             {
                 action();
             }
@@ -368,7 +367,7 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (service.GetCurrentTickerPrice(TickType.LAST) > 0)
+            if (tradeBot.GetCurrentTickerPrice(TickType.LAST) > 0)
             {
                 action();
             }
