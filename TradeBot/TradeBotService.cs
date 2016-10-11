@@ -14,7 +14,6 @@ namespace TradeBot
     public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
     {
         private TwsClient client;
-        private AppState state;
         private PriceData priceData;
         private Contract contract;
         // TODO: delete this?
@@ -26,7 +25,6 @@ namespace TradeBot
         public TradeBotService()
         {
             client = new TwsClient(this);
-            state = new AppState();
             priceData = new PriceData();
             recentOrders = new Dictionary<int, Order>();
         }
@@ -109,7 +107,7 @@ namespace TradeBot
 
         public void LoadState()
         {
-            state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
+            AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
             TickerSymbol = state.TickerSymbol;
             StepSize = state.StepSize ?? -1;
