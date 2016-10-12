@@ -367,7 +367,12 @@ namespace TradeBot
 
         private void IfPriceDataAvailable(Action action)
         {
-            if (tradeBot.GetCurrentTickerPrice(TickType.LAST) > 0)
+            Func<int, bool> dataAvailable = (tickType)
+                => tradeBot.GetCurrentTickerPrice(tickType) > 0;
+
+            if (dataAvailable(TickType.LAST)
+                && dataAvailable(TickType.ASK)
+                && dataAvailable(TickType.BID))
             {
                 action();
             }
