@@ -74,8 +74,8 @@ namespace TradeBot
 
             MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
             addMenuOption(menuOptionEntry.ReloadSavedState, ReloadSavedStateCommand);
-            addMenuOption(menuOptionEntry.RequestMarketData, RequestMarketDataCommand);
-            addMenuOption(menuOptionEntry.CancelMarketData, CancelMarketDataCommand);
+            addMenuOption(menuOptionEntry.SetTickerSymbol, SetTickerSymbolDataCommand);
+            addMenuOption(menuOptionEntry.ClearTickerSymbol, ClearTickerSymbolCommand);
             addMenuOption(menuOptionEntry.SetStepSize, SetStepSizeCommand);
             addMenuOption(menuOptionEntry.SetStepSizeFromCash, SetStepSizeFromCashCommand);
             addMenuOption(menuOptionEntry.Buy, BuyCommand);
@@ -124,7 +124,7 @@ namespace TradeBot
             LoadState();
         }
 
-        private void RequestMarketDataCommand()
+        private void SetTickerSymbolDataCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             IfNotNullOrWhiteSpace(tickerSymbol, () =>
@@ -133,7 +133,7 @@ namespace TradeBot
             });
         }
 
-        private void CancelMarketDataCommand()
+        private void ClearTickerSymbolCommand()
         {
             tradeBot.CancelMarketData();
         }
@@ -260,12 +260,12 @@ namespace TradeBot
             string oldValue = eventArgs.OldValue as string;
             if (!string.IsNullOrWhiteSpace(oldValue))
             {
-                IO.ShowMessage(Messages.TickerClearedFormat, oldValue);
+                IO.ShowMessage(Messages.TickerSymbolClearedFormat, oldValue);
             }
             string newValue = eventArgs.NewValue as string;
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                IO.ShowMessage(Messages.TickerSelectedFormat, newValue);
+                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
             else
             {
@@ -347,7 +347,7 @@ namespace TradeBot
             }
             else
             {
-                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.VALIDATION_ERROR);
+                IO.ShowMessage(Messages.TickerSymbolNotSelectedError, MessageType.VALIDATION_ERROR);
             }
 
         }

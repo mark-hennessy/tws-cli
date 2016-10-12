@@ -15,11 +15,11 @@ namespace TradeBot.Generated
         [JsonProperty("reloadSavedState")]
         public IList<string> ReloadSavedState { get; set; }
 
-        [JsonProperty("requestMarketData")]
-        public IList<string> RequestMarketData { get; set; }
+        [JsonProperty("setTickerSymbol")]
+        public IList<string> SetTickerSymbol { get; set; }
 
-        [JsonProperty("cancelMarketData")]
-        public IList<string> CancelMarketData { get; set; }
+        [JsonProperty("clearTickerSymbol")]
+        public IList<string> ClearTickerSymbol { get; set; }
 
         [JsonProperty("setStepSize")]
         public IList<string> SetStepSize { get; set; }
@@ -106,9 +106,6 @@ namespace TradeBot.Generated
         [JsonProperty("welcomeMessage")]
         public string WelcomeMessage { get; set; }
 
-        [JsonProperty("twsConnected")]
-        public string TwsConnected { get; set; }
-
         [JsonProperty("accountTypeLive")]
         public string AccountTypeLive { get; set; }
 
@@ -127,11 +124,11 @@ namespace TradeBot.Generated
         [JsonProperty("stepSizeFromCashPrompt")]
         public string StepSizeFromCashPrompt { get; set; }
 
-        [JsonProperty("tickerSelectedFormat")]
-        public string TickerSelectedFormat { get; set; }
+        [JsonProperty("tickerSymbolSetFormat")]
+        public string TickerSymbolSetFormat { get; set; }
 
-        [JsonProperty("tickerClearedFormat")]
-        public string TickerClearedFormat { get; set; }
+        [JsonProperty("tickerSymbolClearedFormat")]
+        public string TickerSymbolClearedFormat { get; set; }
 
         [JsonProperty("stepSizeSetFormat")]
         public string StepSizeSetFormat { get; set; }
@@ -151,8 +148,8 @@ namespace TradeBot.Generated
         [JsonProperty("invalidNonEmptyStringInputError")]
         public string InvalidNonEmptyStringInputError { get; set; }
 
-        [JsonProperty("tickerNotSelectedError")]
-        public string TickerNotSelectedError { get; set; }
+        [JsonProperty("tickerSymbolNotSelectedError")]
+        public string TickerSymbolNotSelectedError { get; set; }
 
         [JsonProperty("stepSizeNotSetError")]
         public string StepSizeNotSetError { get; set; }
