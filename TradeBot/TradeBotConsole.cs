@@ -10,6 +10,7 @@ using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
 using static TradeBot.GlobalProperties;
 using static TradeBot.Gui.Window;
+using TradeBot.Utils;
 
 namespace TradeBot
 {
@@ -158,7 +159,8 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        tradeBot.SetStepSizeFromCash(cash.Value);
+                        double sharePrice = tradeBot.GetCurrentTickerPrice(TickType.LAST);
+                        tradeBot.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                     });
                 });
             });

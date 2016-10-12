@@ -146,12 +146,6 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public void SetStepSizeFromCash(double cash)
-        {
-            double sharePrice = GetCurrentTickerPrice(TickType.LAST);
-            StepSize = (int)Math.Floor(cash / sharePrice);
-        }
-
         public double GetCurrentTickerPrice(int tickType)
         {
             return priceData[tickType];
