@@ -129,13 +129,13 @@ namespace TradeBot
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             IfNotNullOrWhiteSpace(tickerSymbol, () =>
             {
-                tradeBot.RequestMarketData(tickerSymbol);
+                tradeBot.TickerSymbol = tickerSymbol;
             });
         }
 
         private void ClearTickerSymbolCommand()
         {
-            tradeBot.CancelMarketData();
+            tradeBot.TickerSymbol = null;
         }
 
         private void SetStepSizeCommand()
@@ -265,7 +265,7 @@ namespace TradeBot
             string newValue = eventArgs.NewValue as string;
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
+                IO.ShowMessage(Messages.TickerSymbolSFormat, newValue);
             }
             else
             {
@@ -347,7 +347,7 @@ namespace TradeBot
             }
             else
             {
-                IO.ShowMessage(Messages.TickerSymbolNotSelectedError, MessageType.VALIDATION_ERROR);
+                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.VALIDATION_ERROR);
             }
 
         }

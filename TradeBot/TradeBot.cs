@@ -60,11 +60,33 @@ namespace TradeBot
             {
                 return _tickerSymbol;
             }
-            private set
+            set
             {
                 string oldValue = _tickerSymbol;
                 string newValue = value?.ToUpper();
+
+                // Don't do anything if the same ticker symbol is already selected.
+                if (Equals(oldValue, newValue))
+                {
+                    return;
+                }
+
                 _tickerSymbol = newValue;
+
+                if (!string.IsNullOrWhiteSpace(oldValue))
+                {
+
+                    client.cancelMktData(currentTickerId);
+                    priceData = new PriceData();
+                    contract = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(newValue))
+                {
+                    contract = ContractFactory.CreateStockContract(newValue);
+                    client.reqMktData(++currentTickerId, contract, "", false, null);
+                }
+
                 RaisePropertyValueChangedEvent(oldValue, newValue);
             }
         }
@@ -87,10 +109,12 @@ namespace TradeBot
 
         protected void RaisePropertyValueChangedEvent(object oldValue, object newValue, [CallerMemberName] string propertyName = null)
         {
-            if (!Equals(oldValue, newValue))
+            if (Equals(oldValue, newValue))
             {
-                PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
+                return;
             }
+
+            PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
         }
         #endregion
 
@@ -111,8 +135,6 @@ namespace TradeBot
 
             TickerSymbol = state.TickerSymbol;
             StepSize = state.StepSize ?? -1;
-
-            RequestMarketData(TickerSymbol);
         }
 
         public void SaveState()
@@ -122,35 +144,6 @@ namespace TradeBot
             state.StepSize = StepSize;
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
-        }
-
-        public void RequestMarketData(string ticker)
-        {
-            // Don't do anything if the same ticker symbol is already selected.
-            if (Equals(ticker, TickerSymbol))
-            {
-                return;
-            }
-
-            CancelMarketData();
-
-            if (!string.IsNullOrWhiteSpace(ticker))
-            {
-                TickerSymbol = ticker;
-                currentTickerId++;
-                contract = ContractFactory.CreateStockContract(ticker);
-                client.reqMktData(currentTickerId, contract, "", false, null);
-            }
-        }
-
-        public void CancelMarketData()
-        {
-            if (contract != null)
-            {
-                client.cancelMktData(currentTickerId);
-                priceData = new PriceData();
-            }
-            ClearCurrentContract();
         }
 
         public void SetStepSizeFromCash(double cash)
@@ -212,7 +205,7 @@ namespace TradeBot
             switch (errorCode)
             {
                 case ErrorCodes.TICKER_NOT_FOUND:
-                    ClearCurrentContract();
+                    TickerSymbol = null;
                     break;
             }
         }
@@ -234,12 +227,6 @@ namespace TradeBot
             priceData[field] = price;
 
             PriceDataUpdated?.Invoke(priceData);
-        }
-
-        private void ClearCurrentContract()
-        {
-            contract = null;
-            TickerSymbol = null;
         }
         #endregion
     }
