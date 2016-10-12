@@ -265,7 +265,7 @@ namespace TradeBot
             string newValue = eventArgs.NewValue as string;
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                IO.ShowMessage(Messages.TickerSymbolSFormat, newValue);
+                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
             else
             {
@@ -347,7 +347,7 @@ namespace TradeBot
             }
             else
             {
-                IO.ShowMessage(Messages.TickerNotSelectedError, MessageType.VALIDATION_ERROR);
+                IO.ShowMessage(Messages.TickerSymbolNotSetError, MessageType.VALIDATION_ERROR);
             }
 
         }

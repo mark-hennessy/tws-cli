@@ -148,8 +148,8 @@ namespace TradeBot.Generated
         [JsonProperty("invalidNonEmptyStringInputError")]
         public string InvalidNonEmptyStringInputError { get; set; }
 
-        [JsonProperty("tickerSymbolNotSelectedError")]
-        public string TickerSymbolNotSelectedError { get; set; }
+        [JsonProperty("tickerSymbolNotSetError")]
+        public string TickerSymbolNotSetError { get; set; }
 
         [JsonProperty("stepSizeNotSetError")]
         public string StepSizeNotSetError { get; set; }

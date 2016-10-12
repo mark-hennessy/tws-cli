@@ -194,8 +194,6 @@ namespace TradeBot
         public override void error(string errorMessage)
         {
             error(-1, -1, errorMessage);
-
-            IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
         }
 
         public override void error(int id, int errorCode, string errorMessage)
