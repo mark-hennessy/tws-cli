@@ -5,9 +5,7 @@ using System.Runtime.CompilerServices;
 using TradeBot.Events;
 using TradeBot.FileIO;
 using TradeBot.Generated;
-using TradeBot.Gui;
 using TradeBot.TwsAbstractions;
-using static TradeBot.GlobalProperties;
 
 namespace TradeBot
 {
@@ -208,7 +206,7 @@ namespace TradeBot
         }
         #endregion
 
-        #region Private helper methods
+        #region Private methods
         private void UpdatePriceData(int tickerId, int field, double price)
         {
             if (tickerId != currentTickerId)

@@ -8,9 +8,9 @@ using TradeBot.Generated;
 using TradeBot.Gui;
 using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
+using TradeBot.Utils;
 using static TradeBot.GlobalProperties;
 using static TradeBot.Gui.Window;
-using TradeBot.Utils;
 
 namespace TradeBot
 {
@@ -301,7 +301,7 @@ namespace TradeBot
         }
         #endregion
 
-        #region Private helper methods
+        #region Private methods
         private void Shutdown()
         {
             tradeBot.Disconnect();
