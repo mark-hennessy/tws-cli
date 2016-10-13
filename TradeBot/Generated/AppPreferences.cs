@@ -12,12 +12,6 @@ namespace TradeBot.Generated
     public class AppPreferences
     {
 
-        [JsonProperty("accountLive")]
-        public string AccountLive { get; set; }
-
-        [JsonProperty("accountPaper")]
-        public string AccountPaper { get; set; }
-
         [JsonProperty("clientId")]
         public int ClientId { get; set; }
 

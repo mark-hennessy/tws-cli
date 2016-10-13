@@ -231,7 +231,7 @@ namespace TradeBot
             switch (eventArgs.PropertyName)
             {
                 case nameof(tradeBot.ManagedAccounts):
-                    OnManagedAccountsSet(eventArgs);
+                    OnManagedAccountsChanged(eventArgs);
                     break;
                 case nameof(tradeBot.TickerSymbol):
                     OnTickerChanged(eventArgs);
@@ -242,18 +242,24 @@ namespace TradeBot
             }
         }
 
-        private void OnManagedAccountsSet(PropertyValueChangedEventArgs eventArgs)
+        private void OnManagedAccountsChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            string accounts = tradeBot.ManagedAccounts;
-
-            if (accounts.Contains(Preferences.AccountLive))
+            string accountsString = eventArgs.NewValue as string;
+            if (!string.IsNullOrWhiteSpace(accountsString))
             {
-                IO.ShowMessage(Messages.AccountTypeLive, MessageType.ERROR);
-            }
-
-            if (accounts.Contains(Preferences.AccountPaper))
-            {
-                IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
+                string[] separators = { "," };
+                string[] accounts = accountsString.Split(separators, StringSplitOptions.None);
+                foreach (var account in accounts)
+                {
+                    if (account.StartsWith("D", StringComparison.InvariantCulture))
+                    {
+                        IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
+                    }
+                    else
+                    {
+                        IO.ShowMessage(Messages.AccountTypeLive, MessageType.WARNING);
+                    }
+                }
             }
         }
 

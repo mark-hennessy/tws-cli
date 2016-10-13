@@ -4,7 +4,7 @@ using static TradeBot.GlobalProperties;
 
 namespace TradeBot.Gui
 {
-    public enum MessageType { STANDARD, SUCCESS, ERROR, VALIDATION_ERROR, DEBUG }
+    public enum MessageType { STANDARD, SUCCESS, WARNING, ERROR, VALIDATION_ERROR, DEBUG }
 
     /// <summary>
     /// A helper class for console window input/output.
@@ -51,6 +51,7 @@ namespace TradeBot.Gui
                 case MessageType.SUCCESS:
                     ShowMessage(message, ConsoleColor.Green, args);
                     break;
+                case MessageType.WARNING:
                 case MessageType.ERROR:
                 case MessageType.VALIDATION_ERROR:
                     ShowMessage(message, ConsoleColor.Red, args);
