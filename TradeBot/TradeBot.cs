@@ -61,7 +61,7 @@ namespace TradeBot
             set
             {
                 string oldValue = _tickerSymbol;
-                string newValue = value?.ToUpper();
+                string newValue = value?.Trim().ToUpper();
 
                 // Don't do anything if the same ticker symbol is already selected.
                 if (Equals(oldValue, newValue))

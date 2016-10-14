@@ -251,7 +251,8 @@ namespace TradeBot
                 string[] accounts = accountsString.Split(separators, StringSplitOptions.None);
                 foreach (var account in accounts)
                 {
-                    if (account.StartsWith("D", StringComparison.InvariantCulture))
+                    string trimmedValue = account.Trim();
+                    if (trimmedValue.StartsWith("D", StringComparison.InvariantCulture))
                     {
                         IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
                     }
