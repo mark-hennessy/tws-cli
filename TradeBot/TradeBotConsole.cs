@@ -27,7 +27,9 @@ namespace TradeBot
             ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
             ErrorCodes.MARKET_DATA_FARM_CONNECTED,
             ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
-            ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED
+            ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED,
+            ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE,
+            ErrorCodes.MARKET_DATA_FARM_INACTIVE
         };
 
         private TradeBotService service;
@@ -58,6 +60,8 @@ namespace TradeBot
         private void InitializeConsole()
         {
             Console.Title = Messages.AppName;
+            // Set the console buffer height to the maximum allowed value.
+            Console.BufferHeight = Int16.MaxValue - 1;
             if (Preferences.CenterWindow)
             {
                 Window.SetWindowSizeAndCenter(
@@ -193,11 +197,13 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
+
             });
         }
 
         private void MiscCommand()
         {
+            service.Foo();
         }
 
         private void ClearScreenCommand()

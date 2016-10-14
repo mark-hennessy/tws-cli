@@ -63,5 +63,8 @@
         public const int MARKET_DATA_FARM_CONNECTED = 2104;
         public const int HISTORICAL_DATA_FARM_DISCONNECTED = 2105;
         public const int HISTORICAL_DATA_FARM_CONNECTED = 2106;
+        public const int HISTORICAL_DATA_FARM_INACTIVE = 2107;
+        public const int MARKET_DATA_FARM_INACTIVE = 2108;
+
     }
 }

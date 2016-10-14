@@ -155,6 +155,11 @@ namespace TradeBot
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             client.placeOrder(orderId, contract, order);
         }
+
+        public void Foo()
+        {
+            client.reqPositions();
+        }
         #endregion
 
         #region TWS callbacks

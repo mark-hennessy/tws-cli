@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -20,34 +21,57 @@ namespace TradeBot.Extensions
             return validInput ? result : default(double?);
         }
 
-        public static string ToPrettyString(this object obj)
+        public static string ToPrettyString(this object obj, int indentLevel = 0)
         {
-            var keyValuePairs = obj.GetType().GetProperties()
+            // Formatting is not necessary for strings and value types such as bool, int, double, etc.
+            Type type = obj.GetType();
+            if (type == typeof(string) || type.IsValueType)
+            {
+                return obj.ToString();
+            }
+
+            var keyValuePairs = obj.GetType()
+                .GetProperties()
+                // Exclude indexed properties to avoid Parameter Count Mismatch exceptions.
+                .Where(p => p.GetIndexParameters().Length == 0)
                 .Select(p => new KeyValuePair<string, object>(p.Name, p.GetValue(obj, null)));
-            return ToPrettyString(keyValuePairs);
+            return ToPrettyString(keyValuePairs, indentLevel);
         }
 
-        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs)
+        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs, int indentLevel = 0)
         {
             if (keyValuePairs.Count() == 0)
             {
                 return "{}";
             }
 
-            string indent = new string(' ', 2);
+            string indentString = GetIndentString(indentLevel);
+            int bodyIndentLevel = indentLevel + 1;
+            string bodyIndentString = GetIndentString(bodyIndentLevel);
+
             StringBuilder builder = new StringBuilder();
+            // Don't indent the opening curly brace. Assume it will be inine.
+            // e.g. contract: {
             builder.Append("{");
             foreach (var pair in keyValuePairs)
             {
                 builder
                     .AppendLine()
-                    .Append(indent)
-                    .AppendFormat("{0} : {1}", pair.Key, pair.Value);
+                    .Append(bodyIndentString)
+                    .AppendFormat("{0} : {1}",
+                        pair.Key,
+                        pair.Value?.ToPrettyString(bodyIndentLevel));
             }
             builder
                 .AppendLine()
+                .Append(indentString)
                 .Append("}");
             return builder.ToString();
+        }
+
+        private static string GetIndentString(int indentLevel)
+        {
+            return new string(' ', 2 * indentLevel);
         }
     }
 }
