@@ -12,7 +12,7 @@ namespace TradeBot
     public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
     {
         private TwsClient client;
-        private PriceData priceData;
+        private TickData tickData;
         private Contract contract;
         // TODO: delete this?
         private IDictionary<int, Order> recentOrders;
@@ -23,14 +23,14 @@ namespace TradeBot
         public TradeBotService()
         {
             client = new TwsClient(this);
-            priceData = new PriceData();
+            tickData = new TickData();
             recentOrders = new Dictionary<int, Order>();
         }
 
         #region Events
         public event PropertyValueChangedEventHandler PropertyValueChanged;
         public event Action ConnectionClosed;
-        public event Action<PriceData> PriceDataUpdated;
+        public event Action<TickData> tickDataUpdated;
         public event Action<int, int, string> ErrorOccured;
         #endregion
 
@@ -75,7 +75,7 @@ namespace TradeBot
                 {
 
                     client.cancelMktData(currentTickerId);
-                    priceData = new PriceData();
+                    tickData = new TickData();
                     contract = null;
                 }
 
@@ -144,9 +144,9 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public double GetCurrentTickerPrice(int tickType)
+        public double GetTickData(int tickType)
         {
-            return priceData[tickType];
+            return tickData[tickType];
         }
 
         public void PlaceOrder(OrderActions action, int totalQuantity, double price)
@@ -170,12 +170,22 @@ namespace TradeBot
 
         public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
-            UpdatePriceData(tickerId, field, price);
+            UpdateTickData(tickerId, field, price);
         }
 
         public override void tickSize(int tickerId, int field, int size)
         {
-            UpdatePriceData(tickerId, field, size);
+            UpdateTickData(tickerId, field, size);
+        }
+
+        public override void tickString(int tickerId, int field, string value)
+        {
+            // no-op, ignore the lastTimestamp string since it's not needed for our basic feature set.
+        }
+
+        public override void tickGeneric(int tickerId, int field, double value)
+        {
+            UpdateTickData(tickerId, field, value);
         }
 
         public override void error(Exception exception)
@@ -207,16 +217,16 @@ namespace TradeBot
         #endregion
 
         #region Private methods
-        private void UpdatePriceData(int tickerId, int field, double price)
+        private void UpdateTickData(int tickerId, int field, double data)
         {
             if (tickerId != currentTickerId)
             {
                 return;
             }
 
-            priceData[field] = price;
+            tickData[field] = data;
 
-            PriceDataUpdated?.Invoke(priceData);
+            tickDataUpdated?.Invoke(tickData);
         }
         #endregion
     }

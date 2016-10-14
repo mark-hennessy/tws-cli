@@ -51,7 +51,7 @@ namespace TradeBot
 
             service.PropertyValueChanged += OnPropertyValueChanged;
             service.ConnectionClosed += OnConnectionClosed;
-            service.PriceDataUpdated += OnPriceDataUpdated;
+            service.tickDataUpdated += OnTickDataUpdated;
             service.ErrorOccured += OnError;
         }
 
@@ -159,7 +159,7 @@ namespace TradeBot
                     double? cash = cashString.ToDouble();
                     IfHasValue(cash, () =>
                     {
-                        double sharePrice = service.GetCurrentTickerPrice(TickType.LAST);
+                        double sharePrice = service.GetTickData(TickType.LAST);
                         service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                     });
                 });
@@ -170,7 +170,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetCurrentTickerPrice(TickType.ASK));
+                service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetTickData(TickType.ASK));
             });
         }
 
@@ -178,7 +178,7 @@ namespace TradeBot
         {
             IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
             {
-                service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetCurrentTickerPrice(TickType.BID));
+                service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetTickData(TickType.BID));
             });
         }
 
@@ -292,9 +292,9 @@ namespace TradeBot
             IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
         }
 
-        private void OnPriceDataUpdated(PriceData priceData)
+        private void OnTickDataUpdated(TickData tickData)
         {
-            UpdateConsoleTitle(priceData);
+            UpdateConsoleTitle(tickData);
         }
 
         private void OnError(int id, int errorCode, string errorMessage)
@@ -327,7 +327,7 @@ namespace TradeBot
             service.LoadState();
         }
 
-        private void UpdateConsoleTitle(PriceData priceData)
+        private void UpdateConsoleTitle(TickData tickData)
         {
             IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
@@ -336,13 +336,13 @@ namespace TradeBot
                 infoStrings.Add(appName);
             }
             infoStrings.Add(string.Format(Messages.TitleTicker, service.TickerSymbol));
-            infoStrings.Add(string.Format(Messages.TitleLastFormat, priceData[TickType.LAST]));
+            infoStrings.Add(string.Format(Messages.TitleLastFormat, tickData[TickType.LAST]));
             infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
             infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
-            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, priceData[TickType.BID], priceData[TickType.ASK]));
-            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, priceData[TickType.VOLUME]));
-            infoStrings.Add(string.Format(Messages.TitleCloseFormat, priceData[TickType.CLOSE]));
-            infoStrings.Add(string.Format(Messages.TitleOpenFormat, priceData[TickType.OPEN]));
+            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, tickData[TickType.BID], tickData[TickType.ASK]));
+            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, tickData[TickType.VOLUME]));
+            infoStrings.Add(string.Format(Messages.TitleCloseFormat, tickData[TickType.CLOSE]));
+            infoStrings.Add(string.Format(Messages.TitleOpenFormat, tickData[TickType.OPEN]));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
         #endregion
@@ -377,7 +377,7 @@ namespace TradeBot
         private void IfPriceDataAvailable(Action action)
         {
             Func<int, bool> dataAvailable = (tickType)
-                => service.GetCurrentTickerPrice(tickType) > 0;
+                => service.GetTickData(tickType) > 0;
 
             if (dataAvailable(TickType.LAST)
                 && dataAvailable(TickType.ASK)

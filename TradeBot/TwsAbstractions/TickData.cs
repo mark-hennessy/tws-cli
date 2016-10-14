@@ -2,11 +2,11 @@
 
 namespace TradeBot.TwsAbstractions
 {
-    public class PriceData
+    public class TickData
     {
         private IDictionary<int, double> data;
 
-        public PriceData()
+        public TickData()
         {
             data = new Dictionary<int, double>();
         }
