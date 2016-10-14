@@ -9,7 +9,7 @@ using TradeBot.TwsAbstractions;
 
 namespace TradeBot
 {
-    public class TradeBot : TwsResponseHandler, INotifyPropertyValueChanged
+    public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
     {
         private TwsClient client;
         private PriceData priceData;
@@ -20,7 +20,7 @@ namespace TradeBot
         private int currentTickerId;
         private int nextValidOrderId;
 
-        public TradeBot()
+        public TradeBotService()
         {
             client = new TwsClient(this);
             priceData = new PriceData();
