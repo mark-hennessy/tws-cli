@@ -53,7 +53,7 @@ namespace TradeBot
 
             service.PropertyValueChanged += OnPropertyValueChanged;
             service.ConnectionClosed += OnConnectionClosed;
-            service.tickDataUpdated += OnTickDataUpdated;
+            service.TickDataUpdated += OnTickDataUpdated;
             service.ErrorOccured += OnError;
         }
 
@@ -188,9 +188,19 @@ namespace TradeBot
 
         private void ReversePositionCommand()
         {
-            //IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
-            //{
-            //});
+            IfTickerAndStepSizeSetAndPriceDataAvailable(async () =>
+            {
+                IDictionary<string, PositionInfo> positions = await service.GetPositions();
+                if (positions.Count > 1)
+                {
+
+                }
+                else
+                {
+
+                }
+
+            });
         }
 
         private void ClosePositionCommand()
@@ -203,7 +213,6 @@ namespace TradeBot
 
         private void MiscCommand()
         {
-            service.Foo();
         }
 
         private void ClearScreenCommand()
@@ -250,15 +259,12 @@ namespace TradeBot
 
         private void OnManagedAccountsChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            string accountsString = eventArgs.NewValue as string;
-            if (!string.IsNullOrWhiteSpace(accountsString))
+            string[] accounts = eventArgs.NewValue as string[];
+            if (accounts != null)
             {
-                string[] separators = { "," };
-                string[] accounts = accountsString.Split(separators, StringSplitOptions.None);
                 foreach (var account in accounts)
                 {
-                    string trimmedValue = account.Trim();
-                    if (trimmedValue.StartsWith("D", StringComparison.InvariantCulture))
+                    if (account.StartsWith("D", StringComparison.InvariantCulture))
                     {
                         IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
                     }

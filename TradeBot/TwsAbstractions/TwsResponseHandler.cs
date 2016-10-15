@@ -141,9 +141,9 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
         }
 
-        public virtual void position(string account, Contract contract, int position, double averageCost)
+        public virtual void position(string account, Contract contract, int positionSize, double averageCost)
         {
-            ShowMethodDebugInfo(account, contract, position, averageCost);
+            ShowMethodDebugInfo(account, contract, positionSize, averageCost);
         }
 
         public virtual void positionEnd()
@@ -221,14 +221,14 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(key, value, currency, accountName);
         }
 
-        public virtual void updateMktDepth(int tickerId, int position, int operation, int side, double price, int size)
+        public virtual void updateMktDepth(int tickerId, int rowId, int operation, int side, double price, int size)
         {
-            ShowMethodDebugInfo(tickerId, position, operation, side, price, size);
+            ShowMethodDebugInfo(tickerId, rowId, operation, side, price, size);
         }
 
-        public virtual void updateMktDepthL2(int tickerId, int position, string marketMaker, int operation, int side, double price, int size)
+        public virtual void updateMktDepthL2(int tickerId, int rowId, string marketMaker, int operation, int side, double price, int size)
         {
-            ShowMethodDebugInfo(tickerId, position, marketMaker, operation, side, price, size);
+            ShowMethodDebugInfo(tickerId, rowId, marketMaker, operation, side, price, size);
         }
 
         public virtual void updateNewsBulletin(int messageId, int messageType, string message, string origExchange)
@@ -236,9 +236,9 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(messageId, messageType, message, origExchange);
         }
 
-        public virtual void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string accountName)
+        public virtual void updatePortfolio(Contract contract, int positionSize, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            ShowMethodDebugInfo(contract, position, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
+            ShowMethodDebugInfo(contract, positionSize, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, account);
         }
 
         public virtual void verifyCompleted(bool isSuccessful, string errorText)

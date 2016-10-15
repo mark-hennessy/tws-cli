@@ -104,6 +104,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events\PropertyValueChanged.cs" />
+    <Compile Include="TwsAbstractions\PortfolioInfo.cs" />
+    <Compile Include="TwsAbstractions\PositionInfo.cs" />
     <Compile Include="TwsAbstractions\TickData.cs" />
     <Compile Include="FileIO\PropertySerializer.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
@@ -116,7 +118,6 @@
     <Compile Include="TradeBotConsole.cs" />
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
-    <Compile Include="TwsAbstractions\TickDataStore.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />
     <Compile Include="TwsAbstractions\TwsResponseHandler.cs" />
     <Compile Include="Gui\Screen.cs" />

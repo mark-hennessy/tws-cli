@@ -1,7 +1,9 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.FileIO;
 using TradeBot.Generated;
@@ -14,8 +16,8 @@ namespace TradeBot
         private TwsClient client;
         private TickData tickData;
         private Contract contract;
-        // TODO: delete this?
-        private IDictionary<int, Order> recentOrders;
+        private TaskCompletionSource<IDictionary<string, PositionInfo>> positionRequestTCS;
+        private IDictionary<string, PositionInfo> positions;
 
         private int currentTickerId;
         private int nextValidOrderId;
@@ -24,19 +26,18 @@ namespace TradeBot
         {
             client = new TwsClient(this);
             tickData = new TickData();
-            recentOrders = new Dictionary<int, Order>();
         }
 
         #region Events
         public event PropertyValueChangedEventHandler PropertyValueChanged;
         public event Action ConnectionClosed;
-        public event Action<TickData> tickDataUpdated;
+        public event Action<TickData> TickDataUpdated;
         public event Action<int, int, string> ErrorOccured;
         #endregion
 
         #region Properties
-        private string _managedAccounts;
-        public string ManagedAccounts
+        private string[] _managedAccounts;
+        public string[] ManagedAccounts
         {
             get
             {
@@ -44,8 +45,8 @@ namespace TradeBot
             }
             private set
             {
-                string oldValue = _managedAccounts;
-                string newValue = value;
+                string[] oldValue = _managedAccounts;
+                string[] newValue = value;
                 _managedAccounts = newValue;
                 RaisePropertyValueChangedEvent(oldValue, newValue);
             }
@@ -149,23 +150,29 @@ namespace TradeBot
             return tickData[tickType];
         }
 
+        public async Task<IDictionary<string, PositionInfo>> GetPositions()
+        {
+            positionRequestTCS = new TaskCompletionSource<IDictionary<string, PositionInfo>>();
+            positions = new Dictionary<string, PositionInfo>();
+            client.reqPositions();
+            return await positionRequestTCS.Task;
+        }
+
         public void PlaceOrder(OrderActions action, int totalQuantity, double price)
         {
             int orderId = nextValidOrderId++;
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             client.placeOrder(orderId, contract, order);
         }
-
-        public void Foo()
-        {
-            client.reqPositions();
-        }
         #endregion
 
         #region TWS callbacks
         public override void managedAccounts(string accounts)
         {
-            ManagedAccounts = accounts;
+            ManagedAccounts = accounts
+                .Split(new string[] { "," }, StringSplitOptions.None)
+                .Select(s => s.Trim())
+                .ToArray();
         }
 
         public override void nextValidId(int nextValidOrderId)
@@ -183,14 +190,27 @@ namespace TradeBot
             UpdateTickData(tickerId, field, size);
         }
 
-        public override void tickString(int tickerId, int field, string value)
-        {
-            // no-op, ignore the lastTimestamp string since it's not needed for our basic feature set.
-        }
-
         public override void tickGeneric(int tickerId, int field, double value)
         {
             UpdateTickData(tickerId, field, value);
+        }
+
+        public override void position(string account, Contract contract, int positionSize, double averageCost)
+        {
+            PositionInfo info = new PositionInfo(account, contract, positionSize, averageCost);
+            positions.Add(contract.Symbol, info);
+        }
+
+        public override void positionEnd()
+        {
+            positionRequestTCS.SetResult(positions);
+            positionRequestTCS = null;
+            positions = null;
+        }
+
+        public override void connectionClosed()
+        {
+            ConnectionClosed?.Invoke();
         }
 
         public override void error(Exception exception)
@@ -215,23 +235,24 @@ namespace TradeBot
             }
         }
 
-        public override void connectionClosed()
+        public override void tickString(int tickerId, int field, string value)
         {
-            ConnectionClosed?.Invoke();
+            // no-op, this is not needed for our basic feature set
+            //base.tickString(tickerId, field, value);
         }
         #endregion
 
         #region Private methods
-        private void UpdateTickData(int tickerId, int field, double data)
+        private void UpdateTickData(int tickerId, int field, double value)
         {
             if (tickerId != currentTickerId)
             {
                 return;
             }
 
-            tickData[field] = data;
+            tickData[field] = value;
 
-            tickDataUpdated?.Invoke(tickData);
+            TickDataUpdated?.Invoke(tickData);
         }
         #endregion
     }
