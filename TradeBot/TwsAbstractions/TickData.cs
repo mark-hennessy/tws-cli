@@ -15,8 +15,9 @@ namespace TradeBot.TwsAbstractions
         {
             get
             {
-                return data.ContainsKey(field)
-                    ? data[field] : -1;
+                double result;
+                return data.TryGetValue(field, out result)
+                    ? result : -1;
             }
             set
             {

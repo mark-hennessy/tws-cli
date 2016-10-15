@@ -132,7 +132,7 @@ namespace TradeBot
         private void SetTickerSymbolDataCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
-            IfNotNullOrWhiteSpace(tickerSymbol, () =>
+            IfNotNullOrWhiteSpace(tickerSymbol)(() =>
             {
                 service.TickerSymbol = tickerSymbol;
             });
@@ -147,7 +147,7 @@ namespace TradeBot
         {
             string stepSizeString = IO.PromptForInput(Messages.StepSizePrompt);
             int? stepSize = stepSizeString.ToInt();
-            IfHasValue(stepSize, () =>
+            IfHasValue(stepSize)(() =>
             {
                 service.StepSize = stepSize.Value;
             });
@@ -155,24 +155,23 @@ namespace TradeBot
 
         private void SetStepSizeFromCashCommand()
         {
-            IfTickerSet(() =>
+            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
+            Validate(validators, () =>
             {
-                IfPriceDataAvailable(() =>
+                string cashString = IO.PromptForInput(Messages.StepSizeFromCashPrompt);
+                double? cash = cashString.ToDouble();
+                IfHasValue(cash)(() =>
                 {
-                    string cashString = IO.PromptForInput(Messages.StepSizeFromCashPrompt);
-                    double? cash = cashString.ToDouble();
-                    IfHasValue(cash, () =>
-                    {
-                        double sharePrice = service.GetTickData(TickType.LAST);
-                        service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
-                    });
+                    double sharePrice = service.GetTickData(TickType.LAST);
+                    service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                 });
             });
         }
 
         private void BuyCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
+            Validate(validators, () =>
             {
                 service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetTickData(TickType.ASK));
             });
@@ -180,7 +179,8 @@ namespace TradeBot
 
         private void SellCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
+            Validate(validators, () =>
             {
                 service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetTickData(TickType.BID));
             });
@@ -188,26 +188,23 @@ namespace TradeBot
 
         private void ReversePositionCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(async () =>
+            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
+            Validate(validators, async () =>
             {
                 IDictionary<string, PositionInfo> positions = await service.GetPositions();
-                if (positions.Count > 1)
+                PositionInfo position;
+                if (positions.TryGetValue(service.TickerSymbol, out position))
                 {
 
                 }
-                else
-                {
-
-                }
-
             });
         }
 
         private void ClosePositionCommand()
         {
-            IfTickerAndStepSizeSetAndPriceDataAvailable(() =>
+            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
+            Validate(validators, () =>
             {
-
             });
         }
 
@@ -360,97 +357,82 @@ namespace TradeBot
         #endregion
 
         #region Validations
-        private void IfTickerSet(Action action)
-        {
-            if (service.TickerSymbol != null)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.TickerSymbolNotSetError, MessageType.VALIDATION_ERROR);
-            }
+        private delegate bool Validation();
+        private delegate bool Validator(Action ifValidCallback);
 
+        private void Validate(Validator[] validators, Action ifValidCallback)
+        {
+            bool valid = false;
+            foreach (var validator in validators)
+            {
+                valid &= validator(null);
+            }
+            if (valid)
+            {
+                ifValidCallback();
+            }
         }
 
-        private void IfStepSizeSet(Action action)
+        private Validator IfTickerSet()
         {
-            if (service.StepSize > 0)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.StepSizeNotSetError, MessageType.VALIDATION_ERROR);
-            }
-
+            return CreateValidator(
+                () => service.TickerSymbol != null,
+                Messages.TickerSymbolNotSetError);
         }
 
-        private void IfPriceDataAvailable(Action action)
+        private Validator IfStepSizeSet()
         {
-            Func<int, bool> dataAvailable = (tickType)
+            return CreateValidator(
+                () => service.StepSize > 0,
+                Messages.StepSizeNotSetError);
+        }
+
+        private Validator IfPriceDataAvailable()
+        {
+            Func<int, bool> ifAvailable = (tickType)
                 => service.GetTickData(tickType) > 0;
 
-            if (dataAvailable(TickType.LAST)
-                && dataAvailable(TickType.ASK)
-                && dataAvailable(TickType.BID))
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.PriceDataUnavailableError, MessageType.VALIDATION_ERROR);
-            }
+            return CreateValidator(
+                () => ifAvailable(TickType.LAST) && ifAvailable(TickType.ASK) && ifAvailable(TickType.BID),
+                Messages.PriceDataUnavailableError);
         }
 
-        private void IfNotNullOrWhiteSpace(string str, Action action)
+        private Validator IfNotNullOrWhiteSpace(string str)
         {
-            if (!string.IsNullOrWhiteSpace(str))
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.InvalidNonEmptyStringInputError, MessageType.VALIDATION_ERROR);
-            }
+            return CreateValidator(
+                () => !string.IsNullOrWhiteSpace(str),
+                Messages.InvalidNonEmptyStringInputError);
         }
 
-        private void IfHasValue(int? nullable, Action action)
+        private Validator IfHasValue(int? nullable)
         {
-            if (nullable.HasValue)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.InvalidIntegerInputError, MessageType.VALIDATION_ERROR);
-            }
+            return CreateValidator(
+                () => nullable.HasValue,
+                Messages.InvalidIntegerInputError);
         }
 
-        private void IfHasValue(double? nullable, Action action)
+        private Validator IfHasValue(double? nullable)
         {
-            if (nullable.HasValue)
-            {
-                action();
-            }
-            else
-            {
-                IO.ShowMessage(Messages.InvalidDecimalInputError, MessageType.VALIDATION_ERROR);
-            }
+            return CreateValidator(
+                () => nullable.HasValue,
+                Messages.InvalidDecimalInputError);
         }
 
-        private void IfTickerAndStepSizeSetAndPriceDataAvailable(Action action)
+        private Validator CreateValidator(Validation validation, string errorMessage)
         {
-            IfTickerSet(() =>
+            return (ifValidCallback) =>
             {
-                IfStepSizeSet(() =>
+                bool valid = validation();
+                if (valid)
                 {
-                    IfPriceDataAvailable(() =>
-                    {
-                        action();
-                    });
-                });
-            });
+                    ifValidCallback?.Invoke();
+                }
+                else
+                {
+                    IO.ShowMessage(errorMessage, MessageType.VALIDATION_ERROR);
+                }
+                return valid;
+            };
         }
         #endregion
     }
