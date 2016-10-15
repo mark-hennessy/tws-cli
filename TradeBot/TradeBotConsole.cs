@@ -162,7 +162,7 @@ namespace TradeBot
                 double? cash = cashString.ToDouble();
                 IfHasValue(cash)(() =>
                 {
-                    double sharePrice = service.GetTickData(TickType.LAST);
+                    double sharePrice = Tick(TickType.LAST);
                     service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                 });
             });
@@ -173,7 +173,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceOrder(OrderActions.BUY, service.StepSize, service.GetTickData(TickType.ASK));
+                service.PlaceOrder(OrderActions.BUY, service.StepSize, Tick(TickType.ASK));
             });
         }
 
@@ -182,7 +182,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceOrder(OrderActions.SELL, service.StepSize, service.GetTickData(TickType.BID));
+                service.PlaceOrder(OrderActions.SELL, service.StepSize, Tick(TickType.BID));
             });
         }
 
@@ -285,25 +285,25 @@ namespace TradeBot
             {
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
-            else
-            {
-                Console.Title = string.Empty;
-            }
+
+            UpdateConsoleTitle();
         }
 
         private void OnStepSizeChanged(PropertyValueChangedEventArgs eventArgs)
         {
             IO.ShowMessage(Messages.StepSizeSetFormat, eventArgs.NewValue);
+
+            UpdateConsoleTitle();
+        }
+
+        private void OnTickDataUpdated()
+        {
+            UpdateConsoleTitle();
         }
 
         private void OnConnectionClosed()
         {
             IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
-        }
-
-        private void OnTickDataUpdated(TickData tickData)
-        {
-            UpdateConsoleTitle(tickData);
         }
 
         private void OnError(int id, int errorCode, string errorMessage)
@@ -317,7 +317,7 @@ namespace TradeBot
         }
         #endregion
 
-        #region Private methods
+        #region Private helper methods
         private void Shutdown()
         {
             service.Disconnect();
@@ -336,23 +336,27 @@ namespace TradeBot
             service.LoadState();
         }
 
-        private void UpdateConsoleTitle(TickData tickData)
+        private void UpdateConsoleTitle()
         {
-            IList<string> infoStrings = new List<string>();
             string appName = Messages.AppName;
+            IList<string> infoStrings = new List<string>();
             if (!string.IsNullOrWhiteSpace(appName))
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTicker, service.TickerSymbol));
-            infoStrings.Add(string.Format(Messages.TitleLastFormat, tickData[TickType.LAST]));
+            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, service.TickerSymbol ?? Messages.TitleTickerSymbolNotSelected));
             infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
-            infoStrings.Add(string.Format(Messages.TitlePositionSize, 0));
-            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, tickData[TickType.BID], tickData[TickType.ASK]));
-            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, tickData[TickType.VOLUME]));
-            infoStrings.Add(string.Format(Messages.TitleCloseFormat, tickData[TickType.CLOSE]));
-            infoStrings.Add(string.Format(Messages.TitleOpenFormat, tickData[TickType.OPEN]));
+            infoStrings.Add(string.Format(Messages.TitleLastFormat, Tick(TickType.LAST)));
+            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, Tick(TickType.BID), Tick(TickType.ASK)));
+            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, Tick(TickType.VOLUME)));
+            infoStrings.Add(string.Format(Messages.TitleCloseFormat, Tick(TickType.CLOSE)));
+            infoStrings.Add(string.Format(Messages.TitleOpenFormat, Tick(TickType.OPEN)));
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
+        }
+
+        private double Tick(int tickType)
+        {
+            return service.GetTickData(tickType);
         }
         #endregion
 
@@ -390,7 +394,7 @@ namespace TradeBot
         private Validator IfPriceDataAvailable()
         {
             Func<int, bool> ifAvailable = (tickType)
-                => service.GetTickData(tickType) > 0;
+                => Tick(tickType) > 0;
 
             return CreateValidator(
                 () => ifAvailable(TickType.LAST) && ifAvailable(TickType.ASK) && ifAvailable(TickType.BID),

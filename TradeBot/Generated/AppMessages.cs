@@ -58,14 +58,14 @@ namespace TradeBot.Generated
         [JsonProperty("appName")]
         public string AppName { get; set; }
 
-        [JsonProperty("titleTicker")]
-        public string TitleTicker { get; set; }
+        [JsonProperty("titleTickerSymbol")]
+        public string TitleTickerSymbol { get; set; }
+
+        [JsonProperty("titleTickerSymbolNotSelected")]
+        public string TitleTickerSymbolNotSelected { get; set; }
 
         [JsonProperty("titleStepSize")]
         public string TitleStepSize { get; set; }
-
-        [JsonProperty("titlePositionSize")]
-        public string TitlePositionSize { get; set; }
 
         [JsonProperty("titleLastFormat")]
         public string TitleLastFormat { get; set; }

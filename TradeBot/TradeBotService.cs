@@ -31,7 +31,7 @@ namespace TradeBot
         #region Events
         public event PropertyValueChangedEventHandler PropertyValueChanged;
         public event Action ConnectionClosed;
-        public event Action<TickData> TickDataUpdated;
+        public event Action TickDataUpdated;
         public event Action<int, int, string> ErrorOccured;
         #endregion
 
@@ -61,33 +61,43 @@ namespace TradeBot
             }
             set
             {
-                string oldValue = _tickerSymbol;
-                string newValue = value?.Trim().ToUpper();
+                SetTickerSymbol(value, cancelAndRequestMarketData: true);
+            }
+        }
 
-                // Don't do anything if the same ticker symbol is already selected.
-                if (Equals(oldValue, newValue))
+        private void SetTickerSymbol(string value, bool cancelAndRequestMarketData)
+        {
+            string oldValue = _tickerSymbol;
+            string newValue = value?.Trim().ToUpper();
+
+            // Don't do anything if the same ticker symbol is already selected.
+            if (Equals(oldValue, newValue))
+            {
+                return;
+            }
+
+            _tickerSymbol = newValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                if (cancelAndRequestMarketData)
                 {
-                    return;
-                }
-
-                _tickerSymbol = newValue;
-
-                if (!string.IsNullOrWhiteSpace(oldValue))
-                {
-
                     client.cancelMktData(currentTickerId);
-                    tickData = new TickData();
-                    contract = null;
                 }
+                tickData = new TickData();
+                contract = null;
+            }
 
-                if (!string.IsNullOrWhiteSpace(newValue))
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                contract = ContractFactory.CreateStockContract(newValue);
+                if (cancelAndRequestMarketData)
                 {
-                    contract = ContractFactory.CreateStockContract(newValue);
                     client.reqMktData(++currentTickerId, contract, "", false, null);
                 }
-
-                RaisePropertyValueChangedEvent(oldValue, newValue);
             }
+
+            RaisePropertyValueChangedEvent(oldValue, newValue, propertyName: nameof(TickerSymbol));
         }
 
         private int _stepSize = -1;
@@ -195,6 +205,18 @@ namespace TradeBot
             UpdateTickData(tickerId, field, value);
         }
 
+        private void UpdateTickData(int tickerId, int field, double value)
+        {
+            if (tickerId != currentTickerId)
+            {
+                return;
+            }
+
+            tickData[field] = value;
+
+            TickDataUpdated?.Invoke();
+        }
+
         public override void position(string account, Contract contract, int positionSize, double averageCost)
         {
             PositionInfo info = new PositionInfo(account, contract, positionSize, averageCost);
@@ -230,7 +252,7 @@ namespace TradeBot
             switch (errorCode)
             {
                 case ErrorCodes.TICKER_NOT_FOUND:
-                    TickerSymbol = null;
+                    SetTickerSymbol(null, cancelAndRequestMarketData: false);
                     break;
             }
         }
@@ -239,20 +261,6 @@ namespace TradeBot
         {
             // no-op, this is not needed for our basic feature set
             //base.tickString(tickerId, field, value);
-        }
-        #endregion
-
-        #region Private methods
-        private void UpdateTickData(int tickerId, int field, double value)
-        {
-            if (tickerId != currentTickerId)
-            {
-                return;
-            }
-
-            tickData[field] = value;
-
-            TickDataUpdated?.Invoke(tickData);
         }
         #endregion
     }
