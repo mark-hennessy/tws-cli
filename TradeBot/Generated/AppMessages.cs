@@ -39,6 +39,9 @@ namespace TradeBot.Generated
         [JsonProperty("closePosition")]
         public IList<string> ClosePosition { get; set; }
 
+        [JsonProperty("listAllPositions")]
+        public IList<string> ListAllPositions { get; set; }
+
         [JsonProperty("misc")]
         public IList<string> Misc { get; set; }
 
@@ -106,11 +109,17 @@ namespace TradeBot.Generated
         [JsonProperty("welcomeMessage")]
         public string WelcomeMessage { get; set; }
 
-        [JsonProperty("accountTypeLive")]
-        public string AccountTypeLive { get; set; }
+        [JsonProperty("multipleAccountsWarningFormat")]
+        public string MultipleAccountsWarningFormat { get; set; }
+
+        [JsonProperty("paperAccountPrefix")]
+        public string PaperAccountPrefix { get; set; }
 
         [JsonProperty("accountTypePaper")]
         public string AccountTypePaper { get; set; }
+
+        [JsonProperty("accountTypeLive")]
+        public string AccountTypeLive { get; set; }
 
         [JsonProperty("pressAnyKeyToExit")]
         public string PressAnyKeyToExit { get; set; }
@@ -138,6 +147,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("savedStateFormat")]
         public string SavedStateFormat { get; set; }
+
+        [JsonProperty("allPositionsFormat")]
+        public string AllPositionsFormat { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }

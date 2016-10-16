@@ -25,6 +25,7 @@
     "sell": [ "s", "Sell" ],
     "reversePosition": [ "r", "Reverse position" ],
     "closePosition": [ "c", "Close position" ],
+    "listAllPositions": [ "a", "List all positions for all accounts" ],
     "misc": [ "m", "Misc. test code" ],
     "clearScreen": [ "/", "Clear screen" ],
     "help": [ "?", "Help" ],
@@ -32,8 +33,10 @@
   },
 
   "welcomeMessage": "Welcome to TradeBot. Enter '?' to show the menu",
-  "accountTypeLive": "Live Trading",
+  "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded",
+  "paperAccountPrefix": "D",
   "accountTypePaper": "Paper Trading",
+  "accountTypeLive": "Live Trading",
   "pressAnyKeyToExit": "Goodbye! Press any key to exit...",
 
   "selectTickerPrompt": "Ticker symbol: ",
@@ -45,6 +48,7 @@
   "stepSizeSetFormat": "Step size set to {0} shares",
   "loadedStateFormat": "Loaded state from {0}",
   "savedStateFormat": "Saved state to {0}",
+  "allPositionsFormat": "{0} {1}, {2}",
 
   "invalidIntegerInputError": "Invalid input, expected an integer",
   "invalidDecimalInputError": "Invalid input, expected a decimal",

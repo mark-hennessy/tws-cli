@@ -8,9 +8,9 @@ namespace TradeBot.TwsAbstractions
         {
             Order order = new Order();
             order.Action = action.ToString();
-            order.OrderType = OrderTypes.LMT.ToString();
             order.TotalQuantity = totalQuantity;
             order.LmtPrice = limitPrice;
+            order.OrderType = OrderTypes.LMT.ToString();
             order.Tif = TimeInForce.DAY.ToString();
             order.Transmit = true;
             order.OutsideRth = true;

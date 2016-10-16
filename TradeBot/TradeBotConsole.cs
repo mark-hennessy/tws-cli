@@ -77,20 +77,21 @@ namespace TradeBot
             Action<IList<string>, Action> addMenuOption = (entry, command)
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
-            MenuOptionEntries menuOptionEntry = Messages.MenuOptionEntries;
-            addMenuOption(menuOptionEntry.ReloadSavedState, ReloadSavedStateCommand);
-            addMenuOption(menuOptionEntry.SetTickerSymbol, SetTickerSymbolDataCommand);
-            addMenuOption(menuOptionEntry.ClearTickerSymbol, ClearTickerSymbolCommand);
-            addMenuOption(menuOptionEntry.SetStepSize, SetStepSizeCommand);
-            addMenuOption(menuOptionEntry.SetStepSizeFromCash, SetStepSizeFromCashCommand);
-            addMenuOption(menuOptionEntry.Buy, BuyCommand);
-            addMenuOption(menuOptionEntry.Sell, SellCommand);
-            addMenuOption(menuOptionEntry.ReversePosition, ReversePositionCommand);
-            addMenuOption(menuOptionEntry.ClosePosition, ClosePositionCommand);
-            addMenuOption(menuOptionEntry.Misc, MiscCommand);
-            addMenuOption(menuOptionEntry.ClearScreen, ClearScreenCommand);
-            addMenuOption(menuOptionEntry.Help, HelpCommand);
-            addMenuOption(menuOptionEntry.ExitApplication, ExitApplicationCommand);
+            MenuOptionEntries entries = Messages.MenuOptionEntries;
+            addMenuOption(entries.ReloadSavedState, ReloadSavedStateCommand);
+            addMenuOption(entries.SetTickerSymbol, SetTickerSymbolDataCommand);
+            addMenuOption(entries.ClearTickerSymbol, ClearTickerSymbolCommand);
+            addMenuOption(entries.SetStepSize, SetStepSizeCommand);
+            addMenuOption(entries.SetStepSizeFromCash, SetStepSizeFromCashCommand);
+            addMenuOption(entries.Buy, BuyCommand);
+            addMenuOption(entries.Sell, SellCommand);
+            addMenuOption(entries.ReversePosition, ReversePositionCommand);
+            addMenuOption(entries.ClosePosition, ClosePositionCommand);
+            addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
+            addMenuOption(entries.Misc, MiscCommand);
+            addMenuOption(entries.ClearScreen, ClearScreenCommand);
+            addMenuOption(entries.Help, HelpCommand);
+            addMenuOption(entries.ExitApplication, ExitApplicationCommand);
         }
         #endregion
 
@@ -189,14 +190,9 @@ namespace TradeBot
         private void ReversePositionCommand()
         {
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
-            Validate(validators, async () =>
+            Validate(validators, () =>
             {
-                IDictionary<string, PositionInfo> positions = await service.GetPositions();
-                PositionInfo position;
-                if (positions.TryGetValue(service.TickerSymbol, out position))
-                {
 
-                }
             });
         }
 
@@ -206,6 +202,15 @@ namespace TradeBot
             Validate(validators, () =>
             {
             });
+        }
+
+        private async void ListAllPositionsCommand()
+        {
+            IList<PositionInfo> positions = await service.GetAllPositionsForAllAccounts();
+            foreach (var position in positions)
+            {
+                IO.ShowMessage(Messages.AllPositionsFormat, position.PositionSize, position.Contract.Symbol, position.Account);
+            }
         }
 
         private void MiscCommand()
@@ -257,18 +262,23 @@ namespace TradeBot
         private void OnManagedAccountsChanged(PropertyValueChangedEventArgs eventArgs)
         {
             string[] accounts = eventArgs.NewValue as string[];
-            if (accounts != null)
+            if (accounts != null && accounts.Length > 0)
             {
-                foreach (var account in accounts)
+                string tradedAccount = accounts[0];
+                service.TradedAccount = tradedAccount;
+
+                if (accounts.Length > 1)
                 {
-                    if (account.StartsWith("D", StringComparison.InvariantCulture))
-                    {
-                        IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
-                    }
-                    else
-                    {
-                        IO.ShowMessage(Messages.AccountTypeLive, MessageType.WARNING);
-                    }
+                    IO.ShowMessage(Messages.MultipleAccountsWarningFormat, MessageType.WARNING, tradedAccount);
+                }
+
+                if (tradedAccount.StartsWith(Messages.PaperAccountPrefix, StringComparison.InvariantCulture))
+                {
+                    IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
+                }
+                else
+                {
+                    IO.ShowMessage(Messages.AccountTypeLive, MessageType.WARNING);
                 }
             }
         }

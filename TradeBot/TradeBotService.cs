@@ -16,8 +16,8 @@ namespace TradeBot
         private TwsClient client;
         private TickData tickData;
         private Contract contract;
-        private TaskCompletionSource<IDictionary<string, PositionInfo>> positionRequestTCS;
-        private IDictionary<string, PositionInfo> positions;
+        private TaskCompletionSource<IList<PositionInfo>> allPositionRequestTCS;
+        private IList<PositionInfo> allPositions;
 
         private int currentTickerId;
         private int nextValidOrderId;
@@ -51,6 +51,8 @@ namespace TradeBot
                 RaisePropertyValueChangedEvent(oldValue, newValue);
             }
         }
+
+        public string TradedAccount { get; set; }
 
         private string _tickerSymbol;
         public string TickerSymbol
@@ -160,18 +162,19 @@ namespace TradeBot
             return tickData[tickType];
         }
 
-        public async Task<IDictionary<string, PositionInfo>> GetPositions()
+        public async Task<IList<PositionInfo>> GetAllPositionsForAllAccounts()
         {
-            positionRequestTCS = new TaskCompletionSource<IDictionary<string, PositionInfo>>();
-            positions = new Dictionary<string, PositionInfo>();
+            allPositionRequestTCS = new TaskCompletionSource<IList<PositionInfo>>();
+            allPositions = new List<PositionInfo>();
             client.reqPositions();
-            return await positionRequestTCS.Task;
+            return await allPositionRequestTCS.Task;
         }
 
         public void PlaceOrder(OrderActions action, int totalQuantity, double price)
         {
             int orderId = nextValidOrderId++;
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
+            order.Account = TradedAccount;
             client.placeOrder(orderId, contract, order);
         }
         #endregion
@@ -219,15 +222,14 @@ namespace TradeBot
 
         public override void position(string account, Contract contract, int positionSize, double averageCost)
         {
-            PositionInfo info = new PositionInfo(account, contract, positionSize, averageCost);
-            positions.Add(contract.Symbol, info);
+            allPositions.Add(new PositionInfo(account, contract, positionSize, averageCost));
         }
 
         public override void positionEnd()
         {
-            positionRequestTCS.SetResult(positions);
-            positionRequestTCS = null;
-            positions = null;
+            allPositionRequestTCS.SetResult(allPositions);
+            allPositionRequestTCS = null;
+            allPositions = null;
         }
 
         public override void connectionClosed()

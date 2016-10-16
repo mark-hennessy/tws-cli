@@ -216,9 +216,9 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(timestamp);
         }
 
-        public virtual void updateAccountValue(string key, string value, string currency, string accountName)
+        public virtual void updateAccountValue(string key, string value, string currency, string account)
         {
-            ShowMethodDebugInfo(key, value, currency, accountName);
+            ShowMethodDebugInfo(key, value, currency, account);
         }
 
         public virtual void updateMktDepth(int tickerId, int rowId, int operation, int side, double price, int size)
