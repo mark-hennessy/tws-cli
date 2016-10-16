@@ -148,9 +148,14 @@ namespace TradeBot
 
         public TickData TickData { get; private set; }
 
-        private void UpdateTickData(int field, double value)
+        public double GetTick(int tickType)
         {
-            TickData.Update(field, value);
+            return TickData?.Get(tickType) ?? -1;
+        }
+
+        private void UpdateTick(int tickType, double value)
+        {
+            TickData.Update(tickType, value);
             RaisePropertyValueChangedEvent(TickData, propertyName: nameof(TickData));
         }
 
@@ -223,8 +228,23 @@ namespace TradeBot
             return await allPositionRequestTCS.Task;
         }
 
+        public void PlaceBuyOrder(int totalQuantity, int tickType = TickType.ASK)
+        {
+            PlaceOrder(OrderActions.BUY, totalQuantity, GetTick(tickType));
+        }
+
+        public void PlaceSellOrder(int totalQuantity, int tickType = TickType.BID)
+        {
+            PlaceOrder(OrderActions.SELL, totalQuantity, GetTick(tickType));
+        }
+
         public void PlaceOrder(OrderActions action, int totalQuantity, double price)
         {
+            if (contract == null || price <= 0)
+            {
+                return;
+            }
+
             int orderId = nextValidOrderId++;
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             order.Account = TradedAccount;
@@ -246,29 +266,29 @@ namespace TradeBot
             this.nextValidOrderId = nextValidOrderId;
         }
 
-        public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public override void tickPrice(int tickerId, int tickType, double price, int canAutoExecute)
         {
-            UpdateTickData(tickerId, field, price);
+            UpdateTickData(tickerId, tickType, price);
         }
 
-        public override void tickSize(int tickerId, int field, int size)
+        public override void tickSize(int tickerId, int tickType, int size)
         {
-            UpdateTickData(tickerId, field, size);
+            UpdateTickData(tickerId, tickType, size);
         }
 
-        public override void tickGeneric(int tickerId, int field, double value)
+        public override void tickGeneric(int tickerId, int tickType, double value)
         {
-            UpdateTickData(tickerId, field, value);
+            UpdateTickData(tickerId, tickType, value);
         }
 
-        private void UpdateTickData(int tickerId, int field, double value)
+        private void UpdateTickData(int tickerId, int tickType, double value)
         {
             if (tickerId != currentTickerId)
             {
                 return;
             }
 
-            UpdateTickData(field, value);
+            UpdateTick(tickType, value);
         }
 
         public override void updatePortfolio(Contract contract, int positionSize, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string account)
@@ -315,10 +335,10 @@ namespace TradeBot
             }
         }
 
-        public override void tickString(int tickerId, int field, string value)
+        public override void tickString(int tickerId, int tickType, string value)
         {
             // no-op, this is not needed for our basic feature set
-            //base.tickString(tickerId, field, value);
+            //base.tickString(tickerId, tickType, value);
         }
 
         public override void updateAccountValue(string key, string value, string currency, string account)

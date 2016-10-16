@@ -59,8 +59,7 @@
   "tickerSymbolNotSetError": "Ticker symbol not set",
   "stepSizeNotSetError": "Step size not set",
   "priceDataUnavailableError": "Price data is unavailable for the selected ticker symbol",
-  "pendingOrderFoundError": "Another order is already pending. Please wait or cancel the pending order",
-  "pendingOrderNotFoundError": "No pending order to act on",
+  "positionNotFoundError": "Position not found",
   "twsDisconnectedError": "Connection to TWS closed",
   "twsErrorFormat": "Error: {0}"
 }

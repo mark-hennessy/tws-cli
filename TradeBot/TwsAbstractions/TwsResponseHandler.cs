@@ -181,24 +181,24 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureExpiry, dividendImpact, dividendsToExpiry);
         }
 
-        public virtual void tickGeneric(int tickerId, int field, double value)
+        public virtual void tickGeneric(int tickerId, int tickType, double value)
         {
-            ShowMethodDebugInfo(tickerId, TickType.getField(field), value);
+            ShowMethodDebugInfo(tickerId, TickType.getField(tickType), value);
         }
 
-        public virtual void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+        public virtual void tickOptionComputation(int tickerId, int tickType, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
         {
-            ShowMethodDebugInfo(tickerId, TickType.getField(field), impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+            ShowMethodDebugInfo(tickerId, TickType.getField(tickType), impliedVolatility, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
         }
 
-        public virtual void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public virtual void tickPrice(int tickerId, int tickType, double price, int canAutoExecute)
         {
-            ShowMethodDebugInfo(tickerId, TickType.getField(field), price, canAutoExecute);
+            ShowMethodDebugInfo(tickerId, TickType.getField(tickType), price, canAutoExecute);
         }
 
-        public virtual void tickSize(int tickerId, int field, int size)
+        public virtual void tickSize(int tickerId, int tickType, int size)
         {
-            ShowMethodDebugInfo(tickerId, TickType.getField(field), size);
+            ShowMethodDebugInfo(tickerId, TickType.getField(tickType), size);
         }
 
         public virtual void tickSnapshotEnd(int tickerId)
@@ -206,9 +206,9 @@ namespace TradeBot.TwsAbstractions
             ShowMethodDebugInfo(tickerId);
         }
 
-        public virtual void tickString(int tickerId, int field, string value)
+        public virtual void tickString(int tickerId, int tickType, string value)
         {
-            ShowMethodDebugInfo(tickerId, TickType.getField(field), value);
+            ShowMethodDebugInfo(tickerId, TickType.getField(tickType), value);
         }
 
         public virtual void updateAccountTime(string timestamp)

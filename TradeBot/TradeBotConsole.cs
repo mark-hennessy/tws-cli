@@ -163,7 +163,7 @@ namespace TradeBot
                 double? cash = cashString.ToDouble();
                 IfHasValue(cash)(() =>
                 {
-                    double sharePrice = Tick(TickType.LAST);
+                    double sharePrice = service.GetTick(TickType.LAST);
                     service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                 });
             });
@@ -174,7 +174,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceOrder(OrderActions.BUY, service.StepSize, Tick(TickType.ASK));
+                service.PlaceBuyOrder(service.StepSize);
             });
         }
 
@@ -183,7 +183,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceOrder(OrderActions.SELL, service.StepSize, Tick(TickType.BID));
+                service.PlaceSellOrder(service.StepSize);
             });
         }
 
@@ -192,7 +192,22 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
+                PortfolioInfo position = service.Portfolio.Get(service.TickerSymbol);
+                IfPositionExists(position)(() =>
+                {
+                    int positionSize = position.PositionSize;
+                    int orderSize = Math.Abs(positionSize) * 2;
 
+                    if (positionSize > 0)
+                    {
+                        service.PlaceSellOrder(orderSize);
+
+                    }
+                    else if (positionSize < 0)
+                    {
+                        service.PlaceBuyOrder(orderSize);
+                    }
+                });
             });
         }
 
@@ -201,6 +216,22 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
+                PortfolioInfo position = service.Portfolio.Get(service.TickerSymbol);
+                IfPositionExists(position)(() =>
+                {
+                    int positionSize = position.PositionSize;
+                    int orderSize = Math.Abs(positionSize);
+
+                    if (positionSize > 0)
+                    {
+                        service.PlaceSellOrder(orderSize);
+
+                    }
+                    else if (positionSize < 0)
+                    {
+                        service.PlaceBuyOrder(orderSize);
+                    }
+                });
             });
         }
 
@@ -396,19 +427,14 @@ namespace TradeBot
             {
                 int positionSize = service.Portfolio.Get(tickerSymbol)?.PositionSize ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
-                infoStrings.Add(string.Format(Messages.TitleLastFormat, Tick(TickType.LAST)));
-                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, Tick(TickType.BID), Tick(TickType.ASK)));
-                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, Tick(TickType.VOLUME)));
-                infoStrings.Add(string.Format(Messages.TitleCloseFormat, Tick(TickType.CLOSE)));
-                infoStrings.Add(string.Format(Messages.TitleOpenFormat, Tick(TickType.OPEN)));
+                infoStrings.Add(string.Format(Messages.TitleLastFormat, service.GetTick(TickType.LAST)));
+                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, service.GetTick(TickType.BID), service.GetTick(TickType.ASK)));
+                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, service.GetTick(TickType.VOLUME)));
+                infoStrings.Add(string.Format(Messages.TitleCloseFormat, service.GetTick(TickType.CLOSE)));
+                infoStrings.Add(string.Format(Messages.TitleOpenFormat, service.GetTick(TickType.OPEN)));
             }
 
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
-        }
-
-        private double Tick(int tickType)
-        {
-            return service.TickData?.Get(tickType) ?? -1;
         }
         #endregion
 
@@ -446,11 +472,18 @@ namespace TradeBot
         private Validator IfPriceDataAvailable()
         {
             Func<int, bool> ifAvailable = (tickType)
-                => Tick(tickType) > 0;
+                => service.GetTick(tickType) > 0;
 
             return CreateValidator(
                 () => ifAvailable(TickType.LAST) && ifAvailable(TickType.ASK) && ifAvailable(TickType.BID),
                 Messages.PriceDataUnavailableError);
+        }
+
+        private Validator IfPositionExists(PortfolioInfo position)
+        {
+            return CreateValidator(
+                () => position != null,
+                Messages.PositionNotFoundError);
         }
 
         private Validator IfNotNullOrWhiteSpace(string str)
