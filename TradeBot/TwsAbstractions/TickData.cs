@@ -2,33 +2,24 @@
 
 namespace TradeBot.TwsAbstractions
 {
-    public class TickData
+    public class TickData : Dictionary<int, double>
     {
-        private IDictionary<int, double> data;
-
-        public TickData()
+        public double Get(int tickType)
         {
-            data = new Dictionary<int, double>();
+            double result;
+            return TryGetValue(tickType, out result)
+                ? result : -1;
         }
 
-        public double this[int field]
+        public void Update(int field, double value)
         {
-            get
+            if (ContainsKey(field))
             {
-                double result;
-                return data.TryGetValue(field, out result)
-                    ? result : -1;
+                this[field] = value;
             }
-            set
+            else
             {
-                if (data.ContainsKey(field))
-                {
-                    data[field] = value;
-                }
-                else
-                {
-                    data.Add(field, value);
-                }
+                Add(field, value);
             }
         }
     }

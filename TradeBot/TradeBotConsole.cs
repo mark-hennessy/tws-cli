@@ -53,7 +53,6 @@ namespace TradeBot
 
             service.PropertyValueChanged += OnPropertyValueChanged;
             service.ConnectionClosed += OnConnectionClosed;
-            service.TickDataUpdated += OnTickDataUpdated;
             service.ErrorOccured += OnError;
         }
 
@@ -87,6 +86,7 @@ namespace TradeBot
             addMenuOption(entries.Sell, SellCommand);
             addMenuOption(entries.ReversePosition, ReversePositionCommand);
             addMenuOption(entries.ClosePosition, ClosePositionCommand);
+            addMenuOption(entries.ListPositions, ListPositionsCommand);
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
             addMenuOption(entries.Misc, MiscCommand);
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
@@ -204,12 +204,31 @@ namespace TradeBot
             });
         }
 
+        private void ListPositionsCommand()
+        {
+            foreach (var portfolioEntry in service.Portfolio)
+            {
+                string tickerSymbol = portfolioEntry.Key;
+                PortfolioInfo position = portfolioEntry.Value;
+                IO.ShowMessage(Messages.ListPositionsFormat,
+                    position.PositionSize,
+                    position.Contract.Symbol,
+                    position.AverageCost.ToCurrencyString(),
+                    position.MarketPrice.ToCurrencyString(),
+                    position.UnrealisedPNL.ToCurrencyString(),
+                    position.MarketValue.ToCurrencyString());
+            }
+        }
+
         private async void ListAllPositionsCommand()
         {
             IList<PositionInfo> positions = await service.GetAllPositionsForAllAccounts();
             foreach (var position in positions)
             {
-                IO.ShowMessage(Messages.AllPositionsFormat, position.PositionSize, position.Contract.Symbol, position.Account);
+                IO.ShowMessage(Messages.ListAllPositionsFormat,
+                    position.PositionSize,
+                    position.Contract.Symbol,
+                    position.Account);
             }
         }
 
@@ -255,6 +274,12 @@ namespace TradeBot
                     break;
                 case nameof(service.StepSize):
                     OnStepSizeChanged(eventArgs);
+                    break;
+                case nameof(service.TickData):
+                    OnTickDataUpdated(eventArgs);
+                    break;
+                case nameof(service.Portfolio):
+                    OnPortfolioUpdated(eventArgs);
                     break;
             }
         }
@@ -306,7 +331,12 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnTickDataUpdated()
+        private void OnTickDataUpdated(PropertyValueChangedEventArgs eventArgs)
+        {
+            UpdateConsoleTitle();
+        }
+
+        private void OnPortfolioUpdated(PropertyValueChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
         }
@@ -348,25 +378,37 @@ namespace TradeBot
 
         private void UpdateConsoleTitle()
         {
-            string appName = Messages.AppName;
             IList<string> infoStrings = new List<string>();
+
+            string appName = Messages.AppName;
             if (!string.IsNullOrWhiteSpace(appName))
             {
                 infoStrings.Add(appName);
             }
-            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, service.TickerSymbol ?? Messages.TitleTickerSymbolNotSelected));
+
+            string tickerSymbol = service.TickerSymbol;
+            bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
+            string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleTickerSymbolNotSelected;
+            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
             infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
-            infoStrings.Add(string.Format(Messages.TitleLastFormat, Tick(TickType.LAST)));
-            infoStrings.Add(string.Format(Messages.TitleBidAskFormat, Tick(TickType.BID), Tick(TickType.ASK)));
-            infoStrings.Add(string.Format(Messages.TitleVolumeFormat, Tick(TickType.VOLUME)));
-            infoStrings.Add(string.Format(Messages.TitleCloseFormat, Tick(TickType.CLOSE)));
-            infoStrings.Add(string.Format(Messages.TitleOpenFormat, Tick(TickType.OPEN)));
+
+            if (isTickerSet)
+            {
+                int positionSize = service.Portfolio.Get(tickerSymbol)?.PositionSize ?? 0;
+                infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
+                infoStrings.Add(string.Format(Messages.TitleLastFormat, Tick(TickType.LAST)));
+                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, Tick(TickType.BID), Tick(TickType.ASK)));
+                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, Tick(TickType.VOLUME)));
+                infoStrings.Add(string.Format(Messages.TitleCloseFormat, Tick(TickType.CLOSE)));
+                infoStrings.Add(string.Format(Messages.TitleOpenFormat, Tick(TickType.OPEN)));
+            }
+
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
         private double Tick(int tickType)
         {
-            return service.GetTickData(tickType);
+            return service.TickData?.Get(tickType) ?? -1;
         }
         #endregion
 

@@ -39,6 +39,9 @@ namespace TradeBot.Generated
         [JsonProperty("closePosition")]
         public IList<string> ClosePosition { get; set; }
 
+        [JsonProperty("listPositions")]
+        public IList<string> ListPositions { get; set; }
+
         [JsonProperty("listAllPositions")]
         public IList<string> ListAllPositions { get; set; }
 
@@ -66,6 +69,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("titleTickerSymbolNotSelected")]
         public string TitleTickerSymbolNotSelected { get; set; }
+
+        [JsonProperty("titlePositionSize")]
+        public string TitlePositionSize { get; set; }
 
         [JsonProperty("titleStepSize")]
         public string TitleStepSize { get; set; }
@@ -148,8 +154,11 @@ namespace TradeBot.Generated
         [JsonProperty("savedStateFormat")]
         public string SavedStateFormat { get; set; }
 
-        [JsonProperty("allPositionsFormat")]
-        public string AllPositionsFormat { get; set; }
+        [JsonProperty("listPositionsFormat")]
+        public string ListPositionsFormat { get; set; }
+
+        [JsonProperty("listAllPositionsFormat")]
+        public string ListAllPositionsFormat { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }
