@@ -444,7 +444,7 @@ namespace TradeBot
 
         private void Validate(Validator[] validators, Action ifValidCallback)
         {
-            bool valid = false;
+            bool valid = true;
             foreach (var validator in validators)
             {
                 valid &= validator(null);
