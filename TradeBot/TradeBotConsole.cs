@@ -58,14 +58,19 @@ namespace TradeBot
 
         private void InitializeConsole()
         {
-            Console.Title = Messages.AppName;
-            // Set the console buffer height to the maximum allowed value.
-            Console.BufferHeight = Int16.MaxValue - 1;
-            if (Preferences.CenterWindow)
+            UpdateConsoleTitle();
+
+            // The following settings are only supported on Windows.
+            if (OS.IsWindows())
             {
-                Window.SetWindowSizeAndCenter(
-                    Preferences.WindowWidth,
-                    Preferences.WindowHeight);
+                // Set the console buffer height to the maximum allowed value.
+                Console.BufferHeight = Int16.MaxValue - 1;
+                if (Preferences.CenterWindow)
+                {
+                    Window.SetWindowSizeAndCenter(
+                        Preferences.WindowWidth,
+                        Preferences.WindowHeight);
+                }
             }
         }
 
