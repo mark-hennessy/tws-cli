@@ -11,7 +11,7 @@ namespace TradeBot.TwsAbstractions
             order.TotalQuantity = totalQuantity;
             order.LmtPrice = limitPrice;
             order.OrderType = OrderTypes.LMT.ToString();
-            order.Tif = TimeInForce.DAY.ToString();
+            order.Tif = TimeInForce.GTC.ToString();
             order.Transmit = true;
             order.OutsideRth = true;
             return order;

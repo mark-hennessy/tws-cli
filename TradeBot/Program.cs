@@ -30,6 +30,7 @@ namespace TradeBot
             ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED,
             ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE,
             ErrorCodes.MARKET_DATA_FARM_INACTIVE,
+
             ErrorCodes.CROSS_SIDE_WARNING
         };
 
@@ -258,7 +259,7 @@ namespace TradeBot
 
         private void ListAllPositionsCommand()
         {
-            IList<PositionInfo> positions = service.GetAllPositionsForAllAccounts().Result;
+            IList<PositionInfo> positions = service.GetAllPositionsForAllAccountsAsync().Result;
             foreach (var position in positions)
             {
                 IO.ShowMessage(Messages.ListAllPositionsFormat,

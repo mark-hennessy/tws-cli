@@ -220,12 +220,12 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public async Task<IList<PositionInfo>> GetAllPositionsForAllAccounts()
+        public Task<IList<PositionInfo>> GetAllPositionsForAllAccountsAsync()
         {
             allPositionRequestTCS = new TaskCompletionSource<IList<PositionInfo>>();
             allPositions = new List<PositionInfo>();
             client.reqPositions();
-            return await allPositionRequestTCS.Task;
+            return allPositionRequestTCS.Task;
         }
 
         public void PlaceBuyOrder(int totalQuantity, int tickType = TickType.ASK)
