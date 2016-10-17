@@ -9,16 +9,16 @@ using TradeBot.Gui;
 using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
-using static TradeBot.GlobalProperties;
 using static TradeBot.Gui.Window;
+using static TradeBot.Properties;
 
 namespace TradeBot
 {
-    public class TradeBotConsole
+    public class Program
     {
         public static void Main(string[] args)
         {
-            TradeBotConsole console = new TradeBotConsole();
+            Program console = new Program();
             console.Start();
         }
 
@@ -38,7 +38,7 @@ namespace TradeBot
 
         private bool shouldExitApplication;
 
-        public TradeBotConsole()
+        public Program()
         {
             service = new TradeBotService();
 

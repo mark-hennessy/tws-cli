@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-using static TradeBot.GlobalProperties;
+using static TradeBot.Properties;
 
 namespace TradeBot.Gui
 {

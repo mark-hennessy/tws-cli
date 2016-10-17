@@ -69,7 +69,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TradeBot.TradeBotConsole</StartupObject>
+    <StartupObject>TradeBot.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\Icons\uptrend_icon.ico</ApplicationIcon>
@@ -116,11 +116,11 @@
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="GlobalProperties.cs" />
+    <Compile Include="Properties.cs" />
     <Compile Include="Generated\AppMessages.cs" />
     <Compile Include="Generated\AppPreferences.cs" />
     <Compile Include="Generated\AppState.cs" />
-    <Compile Include="TradeBotConsole.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />
