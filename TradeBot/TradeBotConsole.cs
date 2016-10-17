@@ -29,7 +29,8 @@ namespace TradeBot
             ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
             ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED,
             ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE,
-            ErrorCodes.MARKET_DATA_FARM_INACTIVE
+            ErrorCodes.MARKET_DATA_FARM_INACTIVE,
+            ErrorCodes.CROSS_SIDE_WARNING
         };
 
         private TradeBotService service;

@@ -55,6 +55,8 @@
         SMART
     }
 
+    // Error codes are documented at:
+    // http://interactivebrokers.github.io/tws-api/message_codes.html
     public static class ErrorCodes
     {
         public const int TICKER_NOT_FOUND = 200;
@@ -67,5 +69,7 @@
         public const int HISTORICAL_DATA_FARM_INACTIVE = 2107;
         public const int MARKET_DATA_FARM_INACTIVE = 2108;
 
+        // Occurs when an order will change the position in an account from long to short or from short to long.
+        public const int CROSS_SIDE_WARNING = 2137;
     }
 }
