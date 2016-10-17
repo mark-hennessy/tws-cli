@@ -19,7 +19,11 @@ namespace TradeBot.TwsAbstractions
         public void Update(PortfolioInfo info)
         {
             string tickerSymbol = info.Contract.Symbol;
-            if (info.PositionSize > 0)
+            if (info.PositionSize == 0)
+            {
+                Remove(tickerSymbol);
+            }
+            else
             {
                 if (ContainsKey(tickerSymbol))
                 {
@@ -29,10 +33,6 @@ namespace TradeBot.TwsAbstractions
                 {
                     Add(tickerSymbol, info);
                 }
-            }
-            else
-            {
-                Remove(tickerSymbol);
             }
         }
     }
