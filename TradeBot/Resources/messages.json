@@ -3,7 +3,7 @@
   "titleTickerSymbol": "Symbol: {0}",
   "titleTickerSymbolNotSelected": "????",
   "titlePositionSize": "Pos: {0}",
-  "titleStepSize": "Step: {0}",
+  "titleStepSize": "Step Size: {0}",
   "titleLastFormat": "Last: {0}",
   "titleBidAskFormat": "Bid/Ask: {0} x {1}",
   "titleVolumeFormat": "Vol: {0}",
@@ -28,8 +28,7 @@
     "closePosition": [ "c", "Close position" ],
     "listPositions": [ "a", "List positions for traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
-    "misc": [ "m", "Misc. test code" ],
-    "clearScreen": [ "/", "Clear screen" ],
+    "clearScreen": [ ".", "Clear screen" ],
     "help": [ "?", "Help" ],
     "exitApplication": [ "q", "Save and exit" ]
   },

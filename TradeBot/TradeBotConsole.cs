@@ -22,7 +22,7 @@ namespace TradeBot
             console.Start();
         }
 
-        private readonly IList<int> ignoredErrorCodes = new List<int>()
+        private readonly IList<int> ignoredErrorCodes = new List<int>
         {
             ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
             ErrorCodes.MARKET_DATA_FARM_CONNECTED,
@@ -93,7 +93,6 @@ namespace TradeBot
             addMenuOption(entries.ClosePosition, ClosePositionCommand);
             addMenuOption(entries.ListPositions, ListPositionsCommand);
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
-            addMenuOption(entries.Misc, MiscCommand);
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
             addMenuOption(entries.Help, HelpCommand);
             addMenuOption(entries.ExitApplication, ExitApplicationCommand);
@@ -256,9 +255,9 @@ namespace TradeBot
             }
         }
 
-        private async void ListAllPositionsCommand()
+        private void ListAllPositionsCommand()
         {
-            IList<PositionInfo> positions = await service.GetAllPositionsForAllAccounts();
+            IList<PositionInfo> positions = service.GetAllPositionsForAllAccounts().Result;
             foreach (var position in positions)
             {
                 IO.ShowMessage(Messages.ListAllPositionsFormat,
@@ -266,10 +265,6 @@ namespace TradeBot
                     position.Contract.Symbol,
                     position.Account);
             }
-        }
-
-        private void MiscCommand()
-        {
         }
 
         private void ClearScreenCommand()
