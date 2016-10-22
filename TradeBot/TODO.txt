@@ -1,0 +1,6 @@
+Extract port/url preferences out of service
+Have service listen for property change events to kick off requests for data
+Delete RaisePropertyEvent method overloads
+Figure out why requesting positions is not working
+Use Random generator to generate contract request ids
+Use TaskCompletionService like in example app

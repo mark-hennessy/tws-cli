@@ -54,7 +54,6 @@ namespace TradeBot
             Window.SetWindowCloseHandler(OnWindowClose);
 
             service.PropertyValueChanged += OnPropertyValueChanged;
-            service.ConnectionClosed += OnConnectionClosed;
             service.ErrorOccured += OnError;
         }
 
@@ -198,7 +197,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                PortfolioInfo position = service.Portfolio.Get(service.TickerSymbol);
+                PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
                     int positionSize = position.PositionSize;
@@ -222,7 +221,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                PortfolioInfo position = service.Portfolio.Get(service.TickerSymbol);
+                PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
                     int positionSize = position.PositionSize;
@@ -243,7 +242,13 @@ namespace TradeBot
 
         private void ListPositionsCommand()
         {
-            foreach (var portfolioEntry in service.Portfolio)
+            Portfolio portfolio = service.Portfolio;
+            if (portfolio == null)
+            {
+                return;
+            }
+
+            foreach (var portfolioEntry in portfolio)
             {
                 string tickerSymbol = portfolioEntry.Key;
                 PortfolioInfo position = portfolioEntry.Value;
@@ -299,6 +304,9 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
+                case nameof(service.IsConnected):
+                    OnIsConnectedChanged(eventArgs);
+                    break;
                 case nameof(service.ManagedAccounts):
                     OnManagedAccountsChanged(eventArgs);
                     break;
@@ -317,9 +325,21 @@ namespace TradeBot
             }
         }
 
+        private void OnIsConnectedChanged(PropertyValueChangedEventArgs eventArgs)
+        {
+            if (service.IsConnected)
+            {
+                IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
+            }
+            else
+            {
+                IO.ShowMessage(Messages.TwsDisconnected, MessageType.WARNING);
+            }
+        }
+
         private void OnManagedAccountsChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            string[] accounts = eventArgs.NewValue as string[];
+            string[] accounts = service.ManagedAccounts;
             if (accounts != null && accounts.Length > 0)
             {
                 string tradedAccount = accounts[0];
@@ -359,7 +379,7 @@ namespace TradeBot
 
         private void OnStepSizeChanged(PropertyValueChangedEventArgs eventArgs)
         {
-            IO.ShowMessage(Messages.StepSizeSetFormat, eventArgs.NewValue);
+            IO.ShowMessage(Messages.StepSizeSetFormat, service.StepSize);
 
             UpdateConsoleTitle();
         }
@@ -372,11 +392,6 @@ namespace TradeBot
         private void OnPortfolioUpdated(PropertyValueChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
-        }
-
-        private void OnConnectionClosed()
-        {
-            IO.ShowMessage(Messages.TwsDisconnectedError, MessageType.ERROR);
         }
 
         private void OnError(int id, int errorCode, string errorMessage)
@@ -427,7 +442,7 @@ namespace TradeBot
 
             if (isTickerSet)
             {
-                int positionSize = service.Portfolio.Get(tickerSymbol)?.PositionSize ?? 0;
+                int positionSize = service.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
                 infoStrings.Add(string.Format(Messages.TitleLastFormat, service.GetTick(TickType.LAST)));
                 infoStrings.Add(string.Format(Messages.TitleBidAskFormat, service.GetTick(TickType.BID), service.GetTick(TickType.ASK)));

@@ -1,0 +1,3 @@
+https://github.com/InteractiveBrokers/tws-api
+SHA-1 checksum of current commit:
+7c5cce9e347267351cf4efc420cb470d95982401

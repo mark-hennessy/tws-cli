@@ -3,17 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.FileIO;
 using TradeBot.Generated;
 using TradeBot.TwsAbstractions;
+using static TradeBot.Properties;
 
 namespace TradeBot
 {
     public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
     {
-        private TwsClient client;
+        private EReaderSignal readerSignal;
+        private EClientSocket client;
+        private EReader reader;
 
         private Contract contract;
         private TaskCompletionSource<IList<PositionInfo>> allPositionRequestTCS;
@@ -24,16 +28,45 @@ namespace TradeBot
 
         public TradeBotService()
         {
-            client = new TwsClient(this);
+            readerSignal = new EReaderMonitorSignal();
+            client = new EClientSocket(this, readerSignal);
+            client.AsyncEConnect = false;
+            // Create a reader to consume messages from the TWS. 
+            // The EReader will consume the incoming messages and put them in a queue.
+            reader = new EReader(client, readerSignal);
+            reader.Start();
+            // Once the messages are in the queue, an additional thread is needed to fetch them.
+            Thread thread = new Thread(() =>
+            {
+                while (client.IsConnected())
+                {
+                    readerSignal.waitForSignal();
+                    reader.processMsgs();
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         #region Events
         public event PropertyValueChangedEventHandler PropertyValueChanged;
-        public event Action ConnectionClosed;
         public event Action<int, int, string> ErrorOccured;
         #endregion
 
         #region Properties
+        private bool _isConnected;
+        public bool IsConnected
+        {
+            get
+            {
+                return _isConnected;
+            }
+            private set
+            {
+                RaisePropertyValueChangedEvent(ref _isConnected, value);
+            }
+        }
+
         private string[] _managedAccounts;
         public string[] ManagedAccounts
         {
@@ -43,11 +76,7 @@ namespace TradeBot
             }
             private set
             {
-                string[] oldValue = _managedAccounts;
-                string[] newValue = value;
-                _managedAccounts = newValue;
-
-                RaisePropertyValueChangedEvent(oldValue, newValue);
+                RaisePropertyValueChangedEvent(ref _managedAccounts, value);
             }
         }
 
@@ -74,26 +103,40 @@ namespace TradeBot
                     client.reqAccountUpdates(false, oldValue);
                 }
 
+                ClearPortfolio();
+
                 if (!string.IsNullOrWhiteSpace(newValue))
                 {
-                    Portfolio = new Portfolio();
                     client.reqAccountUpdates(true, newValue);
-                }
-                else
-                {
-                    Portfolio = null;
                 }
 
                 RaisePropertyValueChangedEvent(oldValue, newValue);
             }
         }
 
-        public Portfolio Portfolio { get; private set; }
+        private Portfolio _portfolio;
+        public Portfolio Portfolio
+        {
+            get
+            {
+                return _portfolio;
+            }
+            private set
+            {
+                RaisePropertyValueChangedEvent(ref _portfolio, value);
+            }
+        }
 
         private void UpdatePortfolio(PortfolioInfo info)
         {
             Portfolio.Update(info);
             RaisePropertyValueChangedEvent(Portfolio, propertyName: nameof(Portfolio));
+        }
+
+        private void ClearPortfolio()
+        {
+            // Set the property to a new instance to trigger a property changed event.
+            Portfolio = new Portfolio();
         }
 
         private string _tickerSymbol;
@@ -128,25 +171,39 @@ namespace TradeBot
                 }
             }
 
+            ClearTickData();
+            contract = null;
+
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 contract = ContractFactory.CreateStockContract(newValue);
-                TickData = new TickData();
                 if (cancelAndRequestMarketData)
                 {
                     client.reqMktData(++currentTickerId, contract, "", false, null);
                 }
             }
-            else
-            {
-                contract = null;
-                TickData = null;
-            }
 
             RaisePropertyValueChangedEvent(oldValue, newValue, propertyName: nameof(TickerSymbol));
         }
 
-        public TickData TickData { get; private set; }
+        private TickData _tickData;
+        public TickData TickData
+        {
+            get
+            {
+                return _tickData;
+            }
+            private set
+            {
+                RaisePropertyValueChangedEvent(ref _tickData, value);
+            }
+        }
+
+        private void ClearTickData()
+        {
+            // Set the property to a new instance to trigger a property changed event.
+            TickData = new TickData();
+        }
 
         public double GetTick(int tickType)
         {
@@ -168,34 +225,38 @@ namespace TradeBot
             }
             set
             {
-                int oldValue = _stepSize;
-                int newValue = Math.Abs(value);
-                _stepSize = newValue;
-
-                RaisePropertyValueChangedEvent(oldValue, newValue);
+                RaisePropertyValueChangedEvent(ref _stepSize, Math.Abs(value));
             }
         }
 
-        protected void RaisePropertyValueChangedEvent(object value, [CallerMemberName] string propertyName = null)
+        protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
         {
             PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, value, value));
         }
 
-        protected void RaisePropertyValueChangedEvent(object oldValue, object newValue, [CallerMemberName] string propertyName = null)
+        protected void RaisePropertyValueChangedEvent<T>(T oldValue, T newValue, [CallerMemberName] string propertyName = null)
         {
-            if (Equals(oldValue, newValue))
+            if (!Equals(oldValue, newValue))
             {
-                return;
+                PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
             }
+        }
 
-            PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
+        protected void RaisePropertyValueChangedEvent<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+        {
+            T oldValue = field;
+            if (!Equals(oldValue, newValue))
+            {
+                field = newValue;
+                PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
+            }
         }
         #endregion
 
         #region Public methods
         public void Connect()
         {
-            client.eConnect();
+            client.eConnect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
         }
 
         public void Disconnect()
@@ -253,6 +314,16 @@ namespace TradeBot
         #endregion
 
         #region TWS callbacks
+        public override void connectAck()
+        {
+            IsConnected = true;
+        }
+
+        public override void connectionClosed()
+        {
+            IsConnected = false;
+        }
+
         public override void managedAccounts(string accounts)
         {
             ManagedAccounts = accounts
@@ -306,11 +377,6 @@ namespace TradeBot
             allPositionRequestTCS.SetResult(allPositions);
             allPositionRequestTCS = null;
             allPositions = null;
-        }
-
-        public override void connectionClosed()
-        {
-            ConnectionClosed?.Invoke();
         }
 
         public override void error(Exception exception)

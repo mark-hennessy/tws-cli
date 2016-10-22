@@ -45,9 +45,6 @@ namespace TradeBot.Generated
         [JsonProperty("listAllPositions")]
         public IList<string> ListAllPositions { get; set; }
 
-        [JsonProperty("misc")]
-        public IList<string> Misc { get; set; }
-
         [JsonProperty("clearScreen")]
         public IList<string> ClearScreen { get; set; }
 
@@ -115,6 +112,12 @@ namespace TradeBot.Generated
         [JsonProperty("welcomeMessage")]
         public string WelcomeMessage { get; set; }
 
+        [JsonProperty("twsConnected")]
+        public string TwsConnected { get; set; }
+
+        [JsonProperty("twsDisconnected")]
+        public string TwsDisconnected { get; set; }
+
         [JsonProperty("multipleAccountsWarningFormat")]
         public string MultipleAccountsWarningFormat { get; set; }
 
@@ -180,9 +183,6 @@ namespace TradeBot.Generated
 
         [JsonProperty("positionNotFoundError")]
         public string PositionNotFoundError { get; set; }
-
-        [JsonProperty("twsDisconnectedError")]
-        public string TwsDisconnectedError { get; set; }
 
         [JsonProperty("twsErrorFormat")]
         public string TwsErrorFormat { get; set; }
