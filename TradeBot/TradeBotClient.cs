@@ -14,7 +14,7 @@ using TradeBot.Utils;
 
 namespace TradeBot
 {
-    public class TradeBotService : DebugableEWrapper, INotifyPropertyChanged
+    public class TradeBotClient : DebugableEWrapper, INotifyPropertyChanged
     {
         private EReaderSignal readerSignal;
         private EClientSocket client;
@@ -27,7 +27,7 @@ namespace TradeBot
         private int currentTickerId;
         private int nextValidOrderId;
 
-        public TradeBotService()
+        public TradeBotClient()
         {
             PropertyChanged += OnPropertyChanged;
 
@@ -112,7 +112,7 @@ namespace TradeBot
         private void UpdatePortfolio(PortfolioInfo info)
         {
             Portfolio.Update(info);
-            RaisePropertyValueChangedEvent(Portfolio, propertyName: nameof(Portfolio));
+            RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
         }
 
         private string _tickerSymbol;
@@ -149,7 +149,7 @@ namespace TradeBot
         private void UpdateTick(int tickType, double value)
         {
             TickData.Update(tickType, value);
-            RaisePropertyValueChangedEvent(TickData, propertyName: nameof(TickData));
+            RaisePropertyValueChangedEvent(TickData, nameof(TickData));
         }
 
         private int _stepSize;

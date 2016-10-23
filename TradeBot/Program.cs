@@ -35,14 +35,14 @@ namespace TradeBot
             ErrorCodes.CROSS_SIDE_WARNING
         };
 
-        private TradeBotService service;
+        private TradeBotClient client;
         private Menu menu;
 
         private bool shouldExitApplication;
 
         public Program()
         {
-            service = new TradeBotService();
+            client = new TradeBotClient();
 
             InitializeEventHandlers();
             InitializeConsole();
@@ -54,8 +54,8 @@ namespace TradeBot
         {
             Window.SetWindowCloseHandler(OnWindowClose);
 
-            service.PropertyChanged += OnPropertyChanged;
-            service.ErrorOccured += OnError;
+            client.PropertyChanged += OnPropertyChanged;
+            client.ErrorOccured += OnError;
         }
 
         private void InitializeConsole()
@@ -108,7 +108,7 @@ namespace TradeBot
 
             try
             {
-                service.Connect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
+                client.Connect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
                 LoadState();
                 while (!shouldExitApplication)
                 {
@@ -141,13 +141,13 @@ namespace TradeBot
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             IfNotNullOrWhiteSpace(tickerSymbol)(() =>
             {
-                service.TickerSymbol = tickerSymbol;
+                client.TickerSymbol = tickerSymbol;
             });
         }
 
         private void ClearTickerSymbolCommand()
         {
-            service.TickerSymbol = null;
+            client.TickerSymbol = null;
         }
 
         private void SetStepSizeCommand()
@@ -156,7 +156,7 @@ namespace TradeBot
             int? stepSize = stepSizeString.ToInt();
             IfHasValue(stepSize)(() =>
             {
-                service.StepSize = stepSize.Value;
+                client.StepSize = stepSize.Value;
             });
         }
 
@@ -169,8 +169,8 @@ namespace TradeBot
                 double? cash = cashString.ToDouble();
                 IfHasValue(cash)(() =>
                 {
-                    double sharePrice = service.GetTick(TickType.LAST);
-                    service.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
+                    double sharePrice = client.GetTick(TickType.LAST);
+                    client.StepSize = StockMath.CalculateStepSizeFromCashValue(cash.Value, sharePrice);
                 });
             });
         }
@@ -180,7 +180,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceBuyOrder(service.StepSize);
+                client.PlaceBuyOrder(client.StepSize);
             });
         }
 
@@ -189,7 +189,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfStepSizeSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                service.PlaceSellOrder(service.StepSize);
+                client.PlaceSellOrder(client.StepSize);
             });
         }
 
@@ -198,7 +198,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
+                PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
                     int positionSize = position.PositionSize;
@@ -206,12 +206,12 @@ namespace TradeBot
 
                     if (positionSize > 0)
                     {
-                        service.PlaceSellOrder(orderSize);
+                        client.PlaceSellOrder(orderSize);
 
                     }
                     else if (positionSize < 0)
                     {
-                        service.PlaceBuyOrder(orderSize);
+                        client.PlaceBuyOrder(orderSize);
                     }
                 });
             });
@@ -222,7 +222,7 @@ namespace TradeBot
             Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
             Validate(validators, () =>
             {
-                PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
+                PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
                     int positionSize = position.PositionSize;
@@ -230,12 +230,12 @@ namespace TradeBot
 
                     if (positionSize > 0)
                     {
-                        service.PlaceSellOrder(orderSize);
+                        client.PlaceSellOrder(orderSize);
 
                     }
                     else if (positionSize < 0)
                     {
-                        service.PlaceBuyOrder(orderSize);
+                        client.PlaceBuyOrder(orderSize);
                     }
                 });
             });
@@ -243,7 +243,7 @@ namespace TradeBot
 
         private void ListPositionsCommand()
         {
-            Portfolio portfolio = service.Portfolio;
+            Portfolio portfolio = client.Portfolio;
             if (portfolio == null)
             {
                 return;
@@ -265,7 +265,7 @@ namespace TradeBot
 
         private void ListAllPositionsCommand()
         {
-            IList<PositionInfo> positions = service.GetAllPositionsForAllAccountsAsync().Result;
+            IList<PositionInfo> positions = client.GetAllPositionsForAllAccountsAsync().Result;
             foreach (var position in positions)
             {
                 IO.ShowMessage(Messages.ListAllPositionsFormat,
@@ -305,22 +305,22 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
-                case nameof(service.IsConnected):
+                case nameof(client.IsConnected):
                     OnIsConnectedChanged(eventArgs);
                     break;
-                case nameof(service.ManagedAccounts):
+                case nameof(client.ManagedAccounts):
                     OnManagedAccountsChanged(eventArgs);
                     break;
-                case nameof(service.TickerSymbol):
+                case nameof(client.TickerSymbol):
                     OnTickerSymbolChanged(eventArgs);
                     break;
-                case nameof(service.StepSize):
+                case nameof(client.StepSize):
                     OnStepSizeChanged(eventArgs);
                     break;
-                case nameof(service.TickData):
+                case nameof(client.TickData):
                     OnTickDataChanged(eventArgs);
                     break;
-                case nameof(service.Portfolio):
+                case nameof(client.Portfolio):
                     OnPortfolioChanged(eventArgs);
                     break;
             }
@@ -328,7 +328,7 @@ namespace TradeBot
 
         private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)
         {
-            if (service.IsConnected)
+            if (client.IsConnected)
             {
                 IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
             }
@@ -340,11 +340,11 @@ namespace TradeBot
 
         private void OnManagedAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
-            string[] accounts = service.ManagedAccounts;
+            string[] accounts = client.ManagedAccounts;
             if (accounts != null && accounts.Length > 0)
             {
                 string tradedAccount = accounts[0];
-                service.TradedAccount = tradedAccount;
+                client.TradedAccount = tradedAccount;
 
                 if (accounts.Length > 1)
                 {
@@ -383,7 +383,7 @@ namespace TradeBot
 
         private void OnStepSizeChanged(PropertyChangedEventArgs eventArgs)
         {
-            IO.ShowMessage(Messages.StepSizeSetFormat, service.StepSize);
+            IO.ShowMessage(Messages.StepSizeSetFormat, client.StepSize);
 
             UpdateConsoleTitle();
         }
@@ -412,20 +412,20 @@ namespace TradeBot
         #region Private helper methods
         private void Shutdown()
         {
-            service.Disconnect();
+            client.Disconnect();
             SaveState();
         }
 
         private void SaveState()
         {
-            service.SaveState();
+            client.SaveState();
             IO.ShowMessage(Messages.SavedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
         {
             IO.ShowMessage(Messages.LoadedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
-            service.LoadState();
+            client.LoadState();
         }
 
         private void UpdateConsoleTitle()
@@ -438,21 +438,21 @@ namespace TradeBot
                 infoStrings.Add(appName);
             }
 
-            string tickerSymbol = service.TickerSymbol;
+            string tickerSymbol = client.TickerSymbol;
             bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
             string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleTickerSymbolNotSelected;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
-            infoStrings.Add(string.Format(Messages.TitleStepSize, service.StepSize));
+            infoStrings.Add(string.Format(Messages.TitleStepSize, client.StepSize));
 
             if (isTickerSet)
             {
-                int positionSize = service.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
+                int positionSize = client.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
-                infoStrings.Add(string.Format(Messages.TitleLastFormat, service.GetTick(TickType.LAST)));
-                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, service.GetTick(TickType.BID), service.GetTick(TickType.ASK)));
-                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, service.GetTick(TickType.VOLUME)));
-                infoStrings.Add(string.Format(Messages.TitleCloseFormat, service.GetTick(TickType.CLOSE)));
-                infoStrings.Add(string.Format(Messages.TitleOpenFormat, service.GetTick(TickType.OPEN)));
+                infoStrings.Add(string.Format(Messages.TitleLastFormat, client.GetTick(TickType.LAST)));
+                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, client.GetTick(TickType.BID), client.GetTick(TickType.ASK)));
+                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, client.GetTick(TickType.VOLUME)));
+                infoStrings.Add(string.Format(Messages.TitleCloseFormat, client.GetTick(TickType.CLOSE)));
+                infoStrings.Add(string.Format(Messages.TitleOpenFormat, client.GetTick(TickType.OPEN)));
             }
 
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
@@ -479,21 +479,21 @@ namespace TradeBot
         private Validator IfTickerSet()
         {
             return CreateValidator(
-                () => service.TickerSymbol != null,
+                () => client.TickerSymbol != null,
                 Messages.TickerSymbolNotSetError);
         }
 
         private Validator IfStepSizeSet()
         {
             return CreateValidator(
-                () => service.StepSize > 0,
+                () => client.StepSize > 0,
                 Messages.StepSizeNotSetError);
         }
 
         private Validator IfPriceDataAvailable()
         {
             Func<int, bool> ifAvailable = (tickType)
-                => service.GetTick(tickType) > 0;
+                => client.GetTick(tickType) > 0;
 
             return CreateValidator(
                 () => ifAvailable(TickType.LAST) && ifAvailable(TickType.ASK) && ifAvailable(TickType.BID),
