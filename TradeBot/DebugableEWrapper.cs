@@ -7,11 +7,11 @@ using System.Reflection;
 using TradeBot.Extensions;
 using TradeBot.Gui;
 
-namespace TradeBot.TwsAbstractions
+namespace TradeBot
 {
-    public abstract class DebugableEWrapper : EWrapper
+    public abstract class DebugableEWrapper : EWrapperEvents
     {
-        public virtual void accountDownloadEnd(string account)
+        public override void accountDownloadEnd(string account)
         {
             ShowMethodDebugInfo(account);
         }

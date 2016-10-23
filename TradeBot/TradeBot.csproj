@@ -124,7 +124,6 @@
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />
-    <Compile Include="TwsAbstractions\DebugableEWrapper.cs" />
     <Compile Include="Gui\Screen.cs" />
     <Compile Include="Gui\IO.cs" />
     <Compile Include="MenuFramework\Menu.cs" />
@@ -135,7 +134,8 @@
     <Compile Include="Gui\OS.cs" />
     <Compile Include="Utils\StockMath.cs" />
     <Compile Include="Utils\NumberGenerator.cs" />
-    <Compile Include="IBClient.cs" />
+    <Compile Include="EWrapperEvents.cs" />
+    <Compile Include="DebugableEWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

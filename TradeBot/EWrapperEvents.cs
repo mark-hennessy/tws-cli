@@ -1,99 +1,11 @@
-/* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
- * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 using System;
 using System.Collections.Generic;
 using IBApi;
-using System.Threading.Tasks;
-using TradeBot.Utils;
 
-namespace IBSampleApp
+namespace TradeBot
 {
-    public class IBClient : EWrapper
+    public abstract class EWrapperEvents : EWrapper
     {
-        public IBClient(EReaderSignal signal)
-        {
-            ClientSocket = new EClientSocket(this, signal);
-
-            ConnectAck += () =>
-            {
-                if (ClientSocket.AsyncEConnect)
-                {
-                    ClientSocket.startApi();
-                }
-            };
-
-            NextValidId += (orderId) =>
-            {
-                NextOrderId = orderId;
-            };
-        }
-
-        public EClientSocket ClientSocket { get; }
-
-        public int ClientId { get; set; }
-
-        public int NextOrderId { get; private set; }
-
-        #region API Requests
-        public Task<Contract> RequestContractDetailsAsync(int conId, string refExch)
-        {
-            var reqId = NumberGenerator.RandomInt();
-            var resolveResult = new TaskCompletionSource<Contract>();
-
-            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
-            {
-                if (reqId != id)
-                {
-                    return;
-                }
-
-                resolveResult.SetResult(null);
-
-            });
-
-            var onContractDetails = new Action<int, ContractDetails>((id, details) =>
-            {
-                if (reqId != id)
-                {
-                    return;
-                }
-
-                resolveResult.SetResult(details.Summary);
-            });
-
-            var onContractDetailsEnd = new Action<int>(id =>
-            {
-                if (reqId != id || resolveResult.Task.IsCompleted)
-                {
-                    return;
-                }
-
-                resolveResult.SetResult(null);
-            });
-
-            Error += onError;
-            ContractDetails += onContractDetails;
-            ContractDetailsEnd += onContractDetailsEnd;
-
-            resolveResult.Task.ContinueWith(t =>
-            {
-                Error -= onError;
-                ContractDetails -= onContractDetails;
-                ContractDetailsEnd -= onContractDetailsEnd;
-            });
-
-            Contract contract = new Contract()
-            {
-                ConId = conId,
-                Exchange = refExch
-            };
-            ClientSocket.reqContractDetails(reqId, contract);
-
-            return resolveResult.Task;
-        }
-        #endregion
-
-        #region API method/event conversions
         public event Action<int, int, string, Exception> Error;
 
         void EWrapper.error(Exception e)
@@ -494,6 +406,5 @@ namespace IBSampleApp
         {
             SoftDollarTiers?.Invoke(reqId, tiers);
         }
-        #endregion
     }
 }
