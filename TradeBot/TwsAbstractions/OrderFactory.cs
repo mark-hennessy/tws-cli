@@ -6,15 +6,16 @@ namespace TradeBot.TwsAbstractions
     {
         public static Order CreateLimitOrder(OrderActions action, int totalQuantity, double limitPrice)
         {
-            Order order = new Order();
-            order.Action = action.ToString();
-            order.TotalQuantity = totalQuantity;
-            order.LmtPrice = limitPrice;
-            order.OrderType = OrderTypes.LMT.ToString();
-            order.Tif = TimeInForce.GTC.ToString();
-            order.Transmit = true;
-            order.OutsideRth = true;
-            return order;
+            return new Order()
+            {
+                Action = action.ToString(),
+                TotalQuantity = totalQuantity,
+                LmtPrice = limitPrice,
+                OrderType = OrderTypes.LMT.ToString(),
+                Tif = TimeInForce.GTC.ToString(),
+                Transmit = true,
+                OutsideRth = true
+            };
         }
     }
 }

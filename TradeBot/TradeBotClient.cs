@@ -234,7 +234,7 @@ namespace TradeBot
                 TickData = new TickData();
                 contract = ContractFactory.CreateStockContract(newValue);
 
-                currentTickerId = NumberGenerator.NextRandomInt();
+                currentTickerId = NumberGenerator.RandomInt();
                 client.reqMktData(currentTickerId, contract, "", false, null);
             }
             else

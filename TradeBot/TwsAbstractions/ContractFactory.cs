@@ -6,12 +6,13 @@ namespace TradeBot.TwsAbstractions
     {
         public static Contract CreateStockContract(string tickerSymbol)
         {
-            Contract contract = new Contract();
-            contract.Symbol = tickerSymbol.ToUpper();
-            contract.SecType = SecurityTypes.STK.ToString();
-            contract.Currency = Currencies.USD.ToString();
-            contract.Exchange = Exchanges.SMART.ToString();
-            return contract;
+            return new Contract()
+            {
+                Symbol = tickerSymbol.ToUpper(),
+                SecType = SecurityTypes.STK.ToString(),
+                Currency = Currencies.USD.ToString(),
+                Exchange = Exchanges.SMART.ToString()
+            };
         }
     }
 }
