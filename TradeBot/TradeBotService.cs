@@ -1,6 +1,7 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -9,11 +10,11 @@ using TradeBot.Events;
 using TradeBot.FileIO;
 using TradeBot.Generated;
 using TradeBot.TwsAbstractions;
-using static TradeBot.Properties;
+using TradeBot.Utils;
 
 namespace TradeBot
 {
-    public class TradeBotService : TwsResponseHandler, INotifyPropertyValueChanged
+    public class TradeBotService : DebugableEWrapper, INotifyPropertyChanged
     {
         private EReaderSignal readerSignal;
         private EClientSocket client;
@@ -28,6 +29,8 @@ namespace TradeBot
 
         public TradeBotService()
         {
+            PropertyChanged += OnPropertyChanged;
+
             readerSignal = new EReaderMonitorSignal();
             client = new EClientSocket(this, readerSignal);
             client.AsyncEConnect = false;
@@ -49,7 +52,7 @@ namespace TradeBot
         }
 
         #region Events
-        public event PropertyValueChangedEventHandler PropertyValueChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
         public event Action<int, int, string> ErrorOccured;
         #endregion
 
@@ -63,7 +66,7 @@ namespace TradeBot
             }
             private set
             {
-                RaisePropertyValueChangedEvent(ref _isConnected, value);
+                SetPropertyAndRaiseValueChangedEvent(ref _isConnected, value);
             }
         }
 
@@ -76,7 +79,7 @@ namespace TradeBot
             }
             private set
             {
-                RaisePropertyValueChangedEvent(ref _managedAccounts, value);
+                SetPropertyAndRaiseValueChangedEvent(ref _managedAccounts, value);
             }
         }
 
@@ -89,28 +92,7 @@ namespace TradeBot
             }
             set
             {
-                string oldValue = _tradedAccount;
-                string newValue = value;
-                _tradedAccount = newValue;
-
-                if (Equals(oldValue, newValue))
-                {
-                    return;
-                }
-
-                if (!string.IsNullOrWhiteSpace(oldValue))
-                {
-                    client.reqAccountUpdates(false, oldValue);
-                }
-
-                ClearPortfolio();
-
-                if (!string.IsNullOrWhiteSpace(newValue))
-                {
-                    client.reqAccountUpdates(true, newValue);
-                }
-
-                RaisePropertyValueChangedEvent(oldValue, newValue);
+                SetPropertyAndRaiseValueChangedEvent(ref _tradedAccount, value);
             }
         }
 
@@ -123,7 +105,7 @@ namespace TradeBot
             }
             private set
             {
-                RaisePropertyValueChangedEvent(ref _portfolio, value);
+                SetPropertyAndRaiseValueChangedEvent(ref _portfolio, value);
             }
         }
 
@@ -131,12 +113,6 @@ namespace TradeBot
         {
             Portfolio.Update(info);
             RaisePropertyValueChangedEvent(Portfolio, propertyName: nameof(Portfolio));
-        }
-
-        private void ClearPortfolio()
-        {
-            // Set the property to a new instance to trigger a property changed event.
-            Portfolio = new Portfolio();
         }
 
         private string _tickerSymbol;
@@ -148,42 +124,8 @@ namespace TradeBot
             }
             set
             {
-                SetTickerSymbol(value, cancelAndRequestMarketData: true);
+                SetPropertyAndRaiseValueChangedEvent(ref _tickerSymbol, value?.Trim().ToUpper());
             }
-        }
-
-        private void SetTickerSymbol(string value, bool cancelAndRequestMarketData)
-        {
-            string oldValue = _tickerSymbol;
-            string newValue = value?.Trim().ToUpper();
-            _tickerSymbol = newValue;
-
-            if (Equals(oldValue, newValue))
-            {
-                return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(oldValue))
-            {
-                if (cancelAndRequestMarketData)
-                {
-                    client.cancelMktData(currentTickerId);
-                }
-            }
-
-            ClearTickData();
-            contract = null;
-
-            if (!string.IsNullOrWhiteSpace(newValue))
-            {
-                contract = ContractFactory.CreateStockContract(newValue);
-                if (cancelAndRequestMarketData)
-                {
-                    client.reqMktData(++currentTickerId, contract, "", false, null);
-                }
-            }
-
-            RaisePropertyValueChangedEvent(oldValue, newValue, propertyName: nameof(TickerSymbol));
         }
 
         private TickData _tickData;
@@ -195,14 +137,8 @@ namespace TradeBot
             }
             private set
             {
-                RaisePropertyValueChangedEvent(ref _tickData, value);
+                SetPropertyAndRaiseValueChangedEvent(ref _tickData, value);
             }
-        }
-
-        private void ClearTickData()
-        {
-            // Set the property to a new instance to trigger a property changed event.
-            TickData = new TickData();
         }
 
         public double GetTick(int tickType)
@@ -225,38 +161,99 @@ namespace TradeBot
             }
             set
             {
-                RaisePropertyValueChangedEvent(ref _stepSize, Math.Abs(value));
+                SetPropertyAndRaiseValueChangedEvent(ref _stepSize, Math.Abs(value));
             }
         }
 
         protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
         {
-            PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, value, value));
+            PropertyChanged?.Invoke(this, new PropertyValueChangedEventArgs<T>(propertyName, value, value));
         }
 
-        protected void RaisePropertyValueChangedEvent<T>(T oldValue, T newValue, [CallerMemberName] string propertyName = null)
-        {
-            if (!Equals(oldValue, newValue))
-            {
-                PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
-            }
-        }
-
-        protected void RaisePropertyValueChangedEvent<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+        protected void SetPropertyAndRaiseValueChangedEvent<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
         {
             T oldValue = field;
             if (!Equals(oldValue, newValue))
             {
                 field = newValue;
-                PropertyValueChanged?.Invoke(this, new PropertyValueChangedEventArgs(propertyName, oldValue, newValue));
+                PropertyChanged?.Invoke(this, new PropertyValueChangedEventArgs<T>(propertyName, oldValue, newValue));
             }
         }
         #endregion
 
-        #region Public methods
-        public void Connect()
+        #region Event Handlers
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
-            client.eConnect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
+            switch (eventArgs.PropertyName)
+            {
+                case nameof(TradedAccount):
+                    OnTradedAccountChanged(eventArgs);
+                    break;
+                case nameof(TickerSymbol):
+                    OnTickerSymbolChanged(eventArgs);
+                    break;
+            }
+        }
+
+        private void OnTradedAccountChanged(PropertyChangedEventArgs eventArgs)
+        {
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                client.reqAccountUpdates(false, oldValue);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                Portfolio = new Portfolio();
+
+                client.reqAccountUpdates(true, newValue);
+            }
+            else
+            {
+                Portfolio = null;
+            }
+        }
+
+        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
+        {
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                client.cancelMktData(currentTickerId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                TickData = new TickData();
+                contract = ContractFactory.CreateStockContract(newValue);
+
+                currentTickerId = NumberGenerator.NextRandomInt();
+                client.reqMktData(currentTickerId, contract, "", false, null);
+            }
+            else
+            {
+                TickData = null;
+                contract = null;
+            }
+        }
+
+        private int GenerateId()
+        {
+            return new Random().Next();
+        }
+        #endregion
+
+        #region Public methods
+        public void Connect(string host, int port, int clientId)
+        {
+            client.eConnect(host, port, clientId);
         }
 
         public void Disconnect()
@@ -306,10 +303,9 @@ namespace TradeBot
                 return;
             }
 
-            int orderId = nextValidOrderId++;
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             order.Account = TradedAccount;
-            client.placeOrder(orderId, contract, order);
+            client.placeOrder(nextValidOrderId++, contract, order);
         }
         #endregion
 
@@ -337,19 +333,19 @@ namespace TradeBot
             this.nextValidOrderId = nextValidOrderId;
         }
 
-        public override void tickPrice(int tickerId, int tickType, double price, int canAutoExecute)
+        public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
-            UpdateTickData(tickerId, tickType, price);
+            UpdateTickData(tickerId, field, price);
         }
 
-        public override void tickSize(int tickerId, int tickType, int size)
+        public override void tickSize(int tickerId, int field, int size)
         {
-            UpdateTickData(tickerId, tickType, size);
+            UpdateTickData(tickerId, field, size);
         }
 
-        public override void tickGeneric(int tickerId, int tickType, double value)
+        public override void tickGeneric(int tickerId, int field, double value)
         {
-            UpdateTickData(tickerId, tickType, value);
+            UpdateTickData(tickerId, field, value);
         }
 
         private void UpdateTickData(int tickerId, int tickType, double value)
@@ -362,14 +358,14 @@ namespace TradeBot
             UpdateTick(tickType, value);
         }
 
-        public override void updatePortfolio(Contract contract, int positionSize, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string account)
+        public override void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            UpdatePortfolio(new PortfolioInfo(contract, positionSize, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, account));
+            UpdatePortfolio(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
         }
 
-        public override void position(string account, Contract contract, int positionSize, double averageCost)
+        public override void position(string account, Contract contract, int position, double avgCost)
         {
-            allPositions.Add(new PositionInfo(account, contract, positionSize, averageCost));
+            allPositions.Add(new PositionInfo(account, contract, position, avgCost));
         }
 
         public override void positionEnd()
@@ -379,32 +375,32 @@ namespace TradeBot
             allPositions = null;
         }
 
-        public override void error(Exception exception)
+        public override void error(Exception e)
         {
-            error(exception.Message);
+            error(e.Message);
         }
 
-        public override void error(string errorMessage)
+        public override void error(string str)
         {
-            error(-1, -1, errorMessage);
+            error(-1, -1, str);
         }
 
-        public override void error(int id, int errorCode, string errorMessage)
+        public override void error(int id, int errorCode, string errorMsg)
         {
-            ErrorOccured?.Invoke(id, errorCode, errorMessage);
+            ErrorOccured?.Invoke(id, errorCode, errorMsg);
 
             switch (errorCode)
             {
                 case ErrorCodes.TICKER_NOT_FOUND:
-                    SetTickerSymbol(null, cancelAndRequestMarketData: false);
+                    TickerSymbol = null;
                     break;
             }
         }
 
-        public override void tickString(int tickerId, int tickType, string value)
+        public override void tickString(int tickerId, int field, string value)
         {
             // no-op, this is not needed for our basic feature set
-            //base.tickString(tickerId, tickType, value);
+            //base.tickString(tickerId, field, value);
         }
 
         public override void updateAccountValue(string key, string value, string currency, string account)

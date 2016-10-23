@@ -11,12 +11,13 @@ using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
 using static TradeBot.Gui.Window;
 using static TradeBot.Properties;
+using System.ComponentModel;
 
 namespace TradeBot
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             Program console = new Program();
             console.Start();
@@ -53,7 +54,7 @@ namespace TradeBot
         {
             Window.SetWindowCloseHandler(OnWindowClose);
 
-            service.PropertyValueChanged += OnPropertyValueChanged;
+            service.PropertyChanged += OnPropertyChanged;
             service.ErrorOccured += OnError;
         }
 
@@ -107,7 +108,7 @@ namespace TradeBot
 
             try
             {
-                service.Connect();
+                service.Connect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
                 LoadState();
                 while (!shouldExitApplication)
                 {
@@ -300,7 +301,7 @@ namespace TradeBot
             return false;
         }
 
-        private void OnPropertyValueChanged(object sender, PropertyValueChangedEventArgs eventArgs)
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
             {
@@ -311,21 +312,21 @@ namespace TradeBot
                     OnManagedAccountsChanged(eventArgs);
                     break;
                 case nameof(service.TickerSymbol):
-                    OnTickerChanged(eventArgs);
+                    OnTickerSymbolChanged(eventArgs);
                     break;
                 case nameof(service.StepSize):
                     OnStepSizeChanged(eventArgs);
                     break;
                 case nameof(service.TickData):
-                    OnTickDataUpdated(eventArgs);
+                    OnTickDataChanged(eventArgs);
                     break;
                 case nameof(service.Portfolio):
-                    OnPortfolioUpdated(eventArgs);
+                    OnPortfolioChanged(eventArgs);
                     break;
             }
         }
 
-        private void OnIsConnectedChanged(PropertyValueChangedEventArgs eventArgs)
+        private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)
         {
             if (service.IsConnected)
             {
@@ -337,7 +338,7 @@ namespace TradeBot
             }
         }
 
-        private void OnManagedAccountsChanged(PropertyValueChangedEventArgs eventArgs)
+        private void OnManagedAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
             string[] accounts = service.ManagedAccounts;
             if (accounts != null && accounts.Length > 0)
@@ -361,14 +362,17 @@ namespace TradeBot
             }
         }
 
-        private void OnTickerChanged(PropertyValueChangedEventArgs eventArgs)
+        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
         {
-            string oldValue = eventArgs.OldValue as string;
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
             if (!string.IsNullOrWhiteSpace(oldValue))
             {
                 IO.ShowMessage(Messages.TickerSymbolClearedFormat, oldValue);
             }
-            string newValue = eventArgs.NewValue as string;
+
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
@@ -377,19 +381,19 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnStepSizeChanged(PropertyValueChangedEventArgs eventArgs)
+        private void OnStepSizeChanged(PropertyChangedEventArgs eventArgs)
         {
             IO.ShowMessage(Messages.StepSizeSetFormat, service.StepSize);
 
             UpdateConsoleTitle();
         }
 
-        private void OnTickDataUpdated(PropertyValueChangedEventArgs eventArgs)
+        private void OnTickDataChanged(PropertyChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
         }
 
-        private void OnPortfolioUpdated(PropertyValueChangedEventArgs eventArgs)
+        private void OnPortfolioChanged(PropertyChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
         }

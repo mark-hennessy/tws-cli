@@ -107,7 +107,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Events\PropertyValueChanged.cs" />
+    <Compile Include="Events\PropertyValueChangedEventArgs.cs" />
     <Compile Include="TwsAbstractions\Portfolio.cs" />
     <Compile Include="TwsAbstractions\PortfolioInfo.cs" />
     <Compile Include="TwsAbstractions\PositionInfo.cs" />
@@ -124,7 +124,7 @@
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />
-    <Compile Include="TwsAbstractions\TwsResponseHandler.cs" />
+    <Compile Include="TwsAbstractions\DebugableEWrapper.cs" />
     <Compile Include="Gui\Screen.cs" />
     <Compile Include="Gui\IO.cs" />
     <Compile Include="MenuFramework\Menu.cs" />
@@ -134,6 +134,7 @@
     <Compile Include="Gui\Window.cs" />
     <Compile Include="Gui\OS.cs" />
     <Compile Include="Utils\StockMath.cs" />
+    <Compile Include="Utils\NumberGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

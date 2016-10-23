@@ -9,7 +9,7 @@ using TradeBot.Gui;
 
 namespace TradeBot.TwsAbstractions
 {
-    public abstract class TwsResponseHandler : EWrapper
+    public abstract class DebugableEWrapper : EWrapper
     {
         public virtual void accountDownloadEnd(string account)
         {
