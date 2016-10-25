@@ -42,14 +42,21 @@ namespace TradeBot
 
         public Program()
         {
-            client = new TradeBotClient();
-
-            InitializeEventHandlers();
+            InitializeClient();
             InitializeConsole();
             InitializeMenu();
+            InitializeEventHandlers();
         }
 
         #region Initialization
+        private void InitializeClient()
+        {
+            client = new TradeBotClient(Preferences.ClientId);
+            client.IgnoredDebugMessages = new string[] {
+                "connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
+            };
+        }
+
         private void InitializeEventHandlers()
         {
             Window.SetWindowCloseHandler(OnWindowClose);
@@ -108,7 +115,8 @@ namespace TradeBot
 
             try
             {
-                client.Connect(Preferences.ClientUrl, Preferences.ClientPort, Preferences.ClientId);
+                client.Start();
+                client.Connect(Preferences.ClientUrl, Preferences.ClientPort);
                 LoadState();
                 while (!shouldExitApplication)
                 {
@@ -201,7 +209,7 @@ namespace TradeBot
                 PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
-                    int positionSize = position.PositionSize;
+                    int positionSize = (int)position.Position;
                     int orderSize = Math.Abs(positionSize) * 2;
 
                     if (positionSize > 0)
@@ -225,7 +233,7 @@ namespace TradeBot
                 PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
                 IfPositionExists(position)(() =>
                 {
-                    int positionSize = position.PositionSize;
+                    int positionSize = (int)position.Position;
                     int orderSize = Math.Abs(positionSize);
 
                     if (positionSize > 0)
@@ -254,7 +262,7 @@ namespace TradeBot
                 string tickerSymbol = portfolioEntry.Key;
                 PortfolioInfo position = portfolioEntry.Value;
                 IO.ShowMessage(Messages.ListPositionsFormat,
-                    position.PositionSize,
+                    position.Position,
                     position.Contract.Symbol,
                     position.AverageCost.ToCurrencyString(),
                     position.MarketPrice.ToCurrencyString(),
@@ -340,7 +348,7 @@ namespace TradeBot
 
         private void OnManagedAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
-            string[] accounts = client.ManagedAccounts;
+            string[] accounts = client.Accounts;
             if (accounts != null && accounts.Length > 0)
             {
                 string tradedAccount = accounts[0];
@@ -398,14 +406,23 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnError(int id, int errorCode, string errorMessage)
+        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
         {
             if (ignoredErrorCodes.Contains(errorCode))
             {
                 return;
             }
 
-            IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+            }
+
+            if (exception != null)
+            {
+                IO.ShowMessage(exception.Message, MessageType.ERROR);
+                IO.ShowMessage(exception.StackTrace, MessageType.ERROR);
+            }
         }
         #endregion
 
@@ -446,7 +463,7 @@ namespace TradeBot
 
             if (isTickerSet)
             {
-                int positionSize = client.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
+                double positionSize = client.Portfolio?.Get(tickerSymbol)?.Position ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
                 infoStrings.Add(string.Format(Messages.TitleLastFormat, client.GetTick(TickType.LAST)));
                 infoStrings.Add(string.Format(Messages.TitleBidAskFormat, client.GetTick(TickType.BID), client.GetTick(TickType.ASK)));

@@ -4,7 +4,7 @@ namespace TradeBot.TwsAbstractions
 {
     public class PositionInfo
     {
-        public PositionInfo(string account, Contract contract, int positionSize, double averageCost)
+        public PositionInfo(string account, Contract contract, double positionSize, double averageCost)
         {
             Account = account;
             Contract = contract;
@@ -14,7 +14,7 @@ namespace TradeBot.TwsAbstractions
 
         public string Account { get; }
         public Contract Contract { get; }
-        public int PositionSize { get; }
+        public double PositionSize { get; }
         public double AverageCost { get; }
     }
 }

@@ -134,8 +134,7 @@
     <Compile Include="Gui\OS.cs" />
     <Compile Include="Utils\StockMath.cs" />
     <Compile Include="Utils\NumberGenerator.cs" />
-    <Compile Include="EWrapperEvents.cs" />
-    <Compile Include="DebugableEWrapper.cs" />
+    <Compile Include="TwsAbstractions\EWrapperImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -171,7 +170,6 @@
     <Content Include="References\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll" />
     <Content Include="Resources\Icons\uptrend_icon.ico" />
     <Content Include="Resources\readme.txt" />
-    <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

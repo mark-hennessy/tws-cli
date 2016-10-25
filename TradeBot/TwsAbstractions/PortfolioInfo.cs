@@ -4,10 +4,10 @@ namespace TradeBot.TwsAbstractions
 {
     public class PortfolioInfo
     {
-        public PortfolioInfo(Contract contract, int positionSize, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string account)
+        public PortfolioInfo(Contract contract, double position, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string account)
         {
             Contract = contract;
-            PositionSize = positionSize;
+            Position = position;
             MarketPrice = marketPrice;
             MarketValue = marketValue;
             AverageCost = averageCost;
@@ -17,7 +17,7 @@ namespace TradeBot.TwsAbstractions
         }
 
         public Contract Contract { get; }
-        public int PositionSize { get; }
+        public double Position { get; }
         public double MarketPrice { get; }
         public double MarketValue { get; }
         public double AverageCost { get; }

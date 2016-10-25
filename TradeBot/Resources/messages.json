@@ -12,7 +12,7 @@
   "titleDivider": "        ",
 
   "menuTitle": "====================\nMenu\n====================\n",
-  "menuOptionInvalidEntry": "No such menu option. Please try again",
+  "menuOptionInvalidEntry": "No such menu option",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionDivider": "\n",
   "menuOptionLongestKey": "r",
@@ -59,7 +59,7 @@
   "invalidNonEmptyStringInputError": "Invalid input, expected non-empty text",
   "tickerSymbolNotSetError": "Ticker symbol not set",
   "stepSizeNotSetError": "Step size not set",
-  "priceDataUnavailableError": "Price data is unavailable for the selected ticker symbol",
+  "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
   "twsErrorFormat": "Error: {0}"
 }

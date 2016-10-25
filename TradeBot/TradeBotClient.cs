@@ -14,7 +14,7 @@ using TradeBot.Utils;
 
 namespace TradeBot
 {
-    public class TradeBotClient : DebugableEWrapper, INotifyPropertyChanged
+    public class TradeBotClient : EWrapperImpl, INotifyPropertyChanged
     {
         private EReaderSignal readerSignal;
         private EClientSocket client;
@@ -24,39 +24,52 @@ namespace TradeBot
         private TaskCompletionSource<IList<PositionInfo>> allPositionRequestTCS;
         private IList<PositionInfo> allPositions;
 
-        private int currentTickerId;
         private int nextValidOrderId;
+        private int currentTickerId;
 
-        public TradeBotClient()
+        public TradeBotClient(int clientId = 0)
         {
-            PropertyChanged += OnPropertyChanged;
+            ClientId = clientId;
 
+            PropertyChanged += OnPropertyChanged;
+            RegisterTwsEventHandlers();
+
+            initEReader();
+        }
+
+        private void RegisterTwsEventHandlers()
+        {
+            ConnectAck += connectAck;
+            ConnectionClosed += connectionClosed;
+            ManagedAccounts += managedAccounts;
+            NextValidId += nextValidId;
+            TickPrice += tickPrice;
+            TickSize += tickSize;
+            TickGeneric += tickGeneric;
+            UpdatePortfolio += updatePortfolio;
+            Position += position;
+            PositionEnd += positionEnd;
+            Error += error;
+        }
+
+        private void initEReader()
+        {
             readerSignal = new EReaderMonitorSignal();
             client = new EClientSocket(this, readerSignal);
             client.AsyncEConnect = false;
             // Create a reader to consume messages from the TWS. 
             // The EReader will consume the incoming messages and put them in a queue.
             reader = new EReader(client, readerSignal);
-            reader.Start();
-            // Once the messages are in the queue, an additional thread is needed to fetch them.
-            Thread thread = new Thread(() =>
-            {
-                while (client.IsConnected())
-                {
-                    readerSignal.waitForSignal();
-                    reader.processMsgs();
-                }
-            });
-            thread.IsBackground = true;
-            thread.Start();
         }
 
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
-        public event Action<int, int, string> ErrorOccured;
+        public event Action<int, int, string, Exception> ErrorOccured;
         #endregion
 
         #region Properties
+        public int ClientId { get; }
+
         private bool _isConnected;
         public bool IsConnected
         {
@@ -70,16 +83,16 @@ namespace TradeBot
             }
         }
 
-        private string[] _managedAccounts;
-        public string[] ManagedAccounts
+        private string[] _accounts;
+        public string[] Accounts
         {
             get
             {
-                return _managedAccounts;
+                return _accounts;
             }
             private set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _managedAccounts, value);
+                SetPropertyAndRaiseValueChangedEvent(ref _accounts, value);
             }
         }
 
@@ -109,7 +122,7 @@ namespace TradeBot
             }
         }
 
-        private void UpdatePortfolio(PortfolioInfo info)
+        private void UpdatePortfolioInfo(PortfolioInfo info)
         {
             Portfolio.Update(info);
             RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
@@ -251,9 +264,25 @@ namespace TradeBot
         #endregion
 
         #region Public methods
-        public void Connect(string host, int port, int clientId)
+        public void Start()
         {
-            client.eConnect(host, port, clientId);
+            reader.Start();
+            // Once the messages are in the queue, an additional thread is needed to fetch them.
+            Thread thread = new Thread(() =>
+            {
+                while (client.IsConnected())
+                {
+                    readerSignal.waitForSignal();
+                    reader.processMsgs();
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
+        }
+
+        public void Connect(string host, int port)
+        {
+            client.eConnect(host, port, ClientId);
         }
 
         public void Disconnect()
@@ -310,40 +339,40 @@ namespace TradeBot
         #endregion
 
         #region TWS callbacks
-        public override void connectAck()
+        public void connectAck()
         {
             IsConnected = true;
         }
 
-        public override void connectionClosed()
+        public void connectionClosed()
         {
             IsConnected = false;
         }
 
-        public override void managedAccounts(string accounts)
+        public void managedAccounts(string accounts)
         {
-            ManagedAccounts = accounts
+            Accounts = accounts
                 .Split(new string[] { "," }, StringSplitOptions.None)
                 .Select(s => s.Trim())
                 .ToArray();
         }
 
-        public override void nextValidId(int nextValidOrderId)
+        public void nextValidId(int nextValidOrderId)
         {
             this.nextValidOrderId = nextValidOrderId;
         }
 
-        public override void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public void tickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
             UpdateTickData(tickerId, field, price);
         }
 
-        public override void tickSize(int tickerId, int field, int size)
+        public void tickSize(int tickerId, int field, int size)
         {
             UpdateTickData(tickerId, field, size);
         }
 
-        public override void tickGeneric(int tickerId, int field, double value)
+        public void tickGeneric(int tickerId, int field, double value)
         {
             UpdateTickData(tickerId, field, value);
         }
@@ -358,36 +387,26 @@ namespace TradeBot
             UpdateTick(tickType, value);
         }
 
-        public override void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
+        public void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            UpdatePortfolio(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
+            UpdatePortfolioInfo(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
         }
 
-        public override void position(string account, Contract contract, int position, double avgCost)
+        public void position(string account, Contract contract, double position, double avgCost)
         {
             allPositions.Add(new PositionInfo(account, contract, position, avgCost));
         }
 
-        public override void positionEnd()
+        public void positionEnd()
         {
             allPositionRequestTCS.SetResult(allPositions);
             allPositionRequestTCS = null;
             allPositions = null;
         }
 
-        public override void error(Exception e)
+        public void error(int id, int errorCode, string errorMessage, Exception exception)
         {
-            error(e.Message);
-        }
-
-        public override void error(string str)
-        {
-            error(-1, -1, str);
-        }
-
-        public override void error(int id, int errorCode, string errorMsg)
-        {
-            ErrorOccured?.Invoke(id, errorCode, errorMsg);
+            ErrorOccured?.Invoke(id, errorCode, errorMessage, exception);
 
             switch (errorCode)
             {
@@ -395,30 +414,6 @@ namespace TradeBot
                     TickerSymbol = null;
                     break;
             }
-        }
-
-        public override void tickString(int tickerId, int field, string value)
-        {
-            // no-op, this is not needed for our basic feature set
-            //base.tickString(tickerId, field, value);
-        }
-
-        public override void updateAccountValue(string key, string value, string currency, string account)
-        {
-            // no-op, this is not needed for our basic feature set
-            //base.updateAccountValue(key, value, currency, account);
-        }
-
-        public override void updateAccountTime(string timestamp)
-        {
-            // no-op, this is not needed for our basic feature set
-            //base.updateAccountTime(timestamp);
-        }
-
-        public override void accountDownloadEnd(string account)
-        {
-            // no-op, this is not needed for our basic feature set
-            //base.accountDownloadEnd(account);
         }
         #endregion
     }
