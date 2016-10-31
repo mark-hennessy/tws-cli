@@ -69,7 +69,11 @@ namespace TradeBot
                 nameof(EWrapper.accountDownloadEnd),
                 nameof(EWrapper.updatePortfolio),
                 nameof(EWrapper.position),
-                nameof(EWrapper.positionEnd)
+                nameof(EWrapper.positionEnd),
+                nameof(EWrapper.openOrder),
+                nameof(EWrapper.orderStatus),
+                nameof(EWrapper.execDetails),
+                nameof(EWrapper.commissionReport)
             };
         }
 
