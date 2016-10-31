@@ -42,22 +42,22 @@ namespace TradeBot
 
         public Program()
         {
-            InitializeClient();
-            InitializeConsole();
-            InitializeMenu();
-            InitializeEventHandlers();
+            InitClient();
+            InitConsole();
+            InitMenu();
+            InitEventHandlers();
         }
 
         #region Initialization
-        private void InitializeClient()
+        private void InitClient()
         {
             client = new TradeBotClient(Preferences.ClientId);
             client.IgnoredDebugMessages = new string[] {
-                //"connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
+                "connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
             };
         }
 
-        private void InitializeEventHandlers()
+        private void InitEventHandlers()
         {
             Window.SetWindowCloseHandler(OnWindowClose);
 
@@ -65,7 +65,7 @@ namespace TradeBot
             client.ErrorOccured += OnError;
         }
 
-        private void InitializeConsole()
+        private void InitConsole()
         {
             UpdateConsoleTitle();
 
@@ -83,7 +83,7 @@ namespace TradeBot
             }
         }
 
-        private void InitializeMenu()
+        private void InitMenu()
         {
             menu = new Menu();
 

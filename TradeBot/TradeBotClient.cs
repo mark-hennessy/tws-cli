@@ -18,7 +18,6 @@ namespace TradeBot
     {
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
-        private EReader reader;
 
         private Contract contract;
 
@@ -29,15 +28,22 @@ namespace TradeBot
         {
             ClientId = clientId;
 
-            PropertyChanged += OnPropertyChanged;
-            RegisterTwsEventHandlers();
-
-            initEReader();
-            Start();
+            initClientSocket();
+            initEventHandlers();
         }
 
-        private void RegisterTwsEventHandlers()
+        private void initClientSocket()
         {
+            readerSignal = new EReaderMonitorSignal();
+            clientSocket = new EClientSocket(this, readerSignal);
+        }
+
+        private void initEventHandlers()
+        {
+            // TradeBot events
+            PropertyChanged += OnPropertyChanged;
+
+            // EWrapperImpl events
             ConnectAck += OnConnectAck;
             ConnectionClosed += OnConnectionClosed;
             ManagedAccounts += OnManagedAccounts;
@@ -47,32 +53,6 @@ namespace TradeBot
             TickGeneric += OnTickGeneric;
             UpdatePortfolio += OnUpdatePortfolio;
             Error += OnError;
-        }
-
-        private void initEReader()
-        {
-            readerSignal = new EReaderMonitorSignal();
-            clientSocket = new EClientSocket(this, readerSignal);
-            clientSocket.AsyncEConnect = false;
-            // Create a reader to consume messages from the TWS. 
-            // The EReader will consume the incoming messages and put them in a queue.
-            reader = new EReader(clientSocket, readerSignal);
-        }
-
-        private void Start()
-        {
-            reader.Start();
-            // Once the messages are in the queue, an additional thread is needed to fetch them.
-            Thread thread = new Thread(() =>
-            {
-                while (clientSocket.IsConnected())
-                {
-                    readerSignal.waitForSignal();
-                    reader.processMsgs();
-                }
-            });
-            thread.IsBackground = true;
-            thread.Start();
         }
 
         #region Events
@@ -280,11 +260,28 @@ namespace TradeBot
         public void Connect(string host, int port)
         {
             clientSocket.eConnect(host, port, ClientId);
+
+            // Create a reader to consume incoming messages 
+            // and store them in a queue.
+            var reader = new EReader(clientSocket, readerSignal);
+            reader.Start();
+            // Once the messages are in the queue, an additional thread is needed to fetch them.
+            var thread = new Thread(() =>
+            {
+                while (clientSocket.IsConnected())
+                {
+                    readerSignal.waitForSignal();
+                    reader.processMsgs();
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         public void Disconnect()
         {
             clientSocket.eDisconnect();
+            IsConnected = false;
         }
 
         public void LoadState()
