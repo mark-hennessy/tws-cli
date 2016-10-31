@@ -56,21 +56,21 @@ namespace TradeBot
         {
             client = new TradeBotClient(Preferences.ClientId);
             client.IgnoredDebugMessages = new string[] {
-                "error",
-                "connectAck",
-                "connectionClosed",
-                "managedAccounts",
-                "nextValidId",
-                "tickPrice",
-                "tickSize",
-                "tickString",
-                "tickGeneric",
-                "updateAccountValue",
-                "updateAccountTime",
-                "accountDownloadEnd",
-                "updatePortfolio",
-                "position",
-                "positionEnd"
+                nameof(EWrapper.error),
+                nameof(EWrapper.connectAck),
+                nameof(EWrapper.connectionClosed),
+                nameof(EWrapper.managedAccounts),
+                nameof(EWrapper.nextValidId),
+                nameof(EWrapper.tickPrice),
+                nameof(EWrapper.tickSize),
+                nameof(EWrapper.tickString),
+                nameof(EWrapper.tickGeneric),
+                nameof(EWrapper.updateAccountValue),
+                nameof(EWrapper.updateAccountTime),
+                nameof(EWrapper.accountDownloadEnd),
+                nameof(EWrapper.updatePortfolio),
+                nameof(EWrapper.position),
+                nameof(EWrapper.positionEnd)
             };
         }
 
