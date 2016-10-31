@@ -17,7 +17,7 @@ namespace TradeBot
     public class TradeBotClient : EWrapperImpl, INotifyPropertyChanged
     {
         private EReaderSignal readerSignal;
-        private EClientSocket client;
+        private EClientSocket clientSocket;
         private EReader reader;
 
         private Contract contract;
@@ -52,11 +52,11 @@ namespace TradeBot
         private void initEReader()
         {
             readerSignal = new EReaderMonitorSignal();
-            client = new EClientSocket(this, readerSignal);
-            client.AsyncEConnect = false;
+            clientSocket = new EClientSocket(this, readerSignal);
+            clientSocket.AsyncEConnect = false;
             // Create a reader to consume messages from the TWS. 
             // The EReader will consume the incoming messages and put them in a queue.
-            reader = new EReader(client, readerSignal);
+            reader = new EReader(clientSocket, readerSignal);
         }
 
         private void Start()
@@ -65,7 +65,7 @@ namespace TradeBot
             // Once the messages are in the queue, an additional thread is needed to fetch them.
             Thread thread = new Thread(() =>
             {
-                while (client.IsConnected())
+                while (clientSocket.IsConnected())
                 {
                     readerSignal.waitForSignal();
                     reader.processMsgs();
@@ -229,14 +229,14 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(oldValue))
             {
-                client.reqAccountUpdates(false, oldValue);
+                clientSocket.reqAccountUpdates(false, oldValue);
             }
 
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 Portfolio = new Portfolio();
 
-                client.reqAccountUpdates(true, newValue);
+                clientSocket.reqAccountUpdates(true, newValue);
             }
             else
             {
@@ -252,7 +252,7 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(oldValue))
             {
-                client.cancelMktData(currentTickerId);
+                clientSocket.cancelMktData(currentTickerId);
             }
 
             if (!string.IsNullOrWhiteSpace(newValue))
@@ -261,7 +261,7 @@ namespace TradeBot
                 contract = ContractFactory.CreateStockContract(newValue);
 
                 currentTickerId = NumberGenerator.RandomInt();
-                client.reqMktData(currentTickerId, contract, "", false, null);
+                clientSocket.reqMktData(currentTickerId, contract, "", false, null);
             }
             else
             {
@@ -279,12 +279,12 @@ namespace TradeBot
         #region Public methods
         public void Connect(string host, int port)
         {
-            client.eConnect(host, port, ClientId);
+            clientSocket.eConnect(host, port, ClientId);
         }
 
         public void Disconnect()
         {
-            client.eDisconnect();
+            clientSocket.eDisconnect();
         }
 
         public void LoadState()
@@ -323,7 +323,7 @@ namespace TradeBot
 
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             order.Account = TradedAccount;
-            client.placeOrder(nextValidOrderId++, contract, order);
+            clientSocket.placeOrder(nextValidOrderId++, contract, order);
         }
 
         public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
@@ -362,7 +362,7 @@ namespace TradeBot
                 PositionEnd -= onPositionEnd;
             });
 
-            client.reqPositions();
+            clientSocket.reqPositions();
 
             return request.Task;
         }
@@ -371,6 +371,11 @@ namespace TradeBot
         #region TWS callbacks
         public void connectAck()
         {
+            if (clientSocket.AsyncEConnect)
+            {
+                clientSocket.startApi();
+            }
+
             IsConnected = true;
         }
 

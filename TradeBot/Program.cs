@@ -1,6 +1,7 @@
 ﻿using IBApi;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -11,7 +12,6 @@ using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
 using static TradeBot.Gui.Window;
 using static TradeBot.Properties;
-using System.ComponentModel;
 
 namespace TradeBot
 {
@@ -53,7 +53,7 @@ namespace TradeBot
         {
             client = new TradeBotClient(Preferences.ClientId);
             client.IgnoredDebugMessages = new string[] {
-                "connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
+                //"connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
             };
         }
 
