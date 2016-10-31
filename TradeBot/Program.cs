@@ -115,7 +115,6 @@ namespace TradeBot
 
             try
             {
-                client.Start();
                 client.Connect(Preferences.ClientUrl, Preferences.ClientPort);
                 LoadState();
                 while (!shouldExitApplication)
@@ -273,7 +272,7 @@ namespace TradeBot
 
         private void ListAllPositionsCommand()
         {
-            IList<PositionInfo> positions = client.GetAllPositionsForAllAccountsAsync().Result;
+            IList<PositionInfo> positions = client.RequestAllPositionsForAllAccountsAsync().Result;
             foreach (var position in positions)
             {
                 IO.ShowMessage(Messages.ListAllPositionsFormat,

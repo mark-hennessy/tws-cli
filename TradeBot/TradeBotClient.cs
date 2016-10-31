@@ -21,8 +21,6 @@ namespace TradeBot
         private EReader reader;
 
         private Contract contract;
-        private TaskCompletionSource<IList<PositionInfo>> allPositionRequestTCS;
-        private IList<PositionInfo> allPositions;
 
         private int nextValidOrderId;
         private int currentTickerId;
@@ -35,6 +33,7 @@ namespace TradeBot
             RegisterTwsEventHandlers();
 
             initEReader();
+            Start();
         }
 
         private void RegisterTwsEventHandlers()
@@ -47,8 +46,6 @@ namespace TradeBot
             TickSize += tickSize;
             TickGeneric += tickGeneric;
             UpdatePortfolio += updatePortfolio;
-            Position += position;
-            PositionEnd += positionEnd;
             Error += error;
         }
 
@@ -60,6 +57,22 @@ namespace TradeBot
             // Create a reader to consume messages from the TWS. 
             // The EReader will consume the incoming messages and put them in a queue.
             reader = new EReader(client, readerSignal);
+        }
+
+        private void Start()
+        {
+            reader.Start();
+            // Once the messages are in the queue, an additional thread is needed to fetch them.
+            Thread thread = new Thread(() =>
+            {
+                while (client.IsConnected())
+                {
+                    readerSignal.waitForSignal();
+                    reader.processMsgs();
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         #region Events
@@ -264,22 +277,6 @@ namespace TradeBot
         #endregion
 
         #region Public methods
-        public void Start()
-        {
-            reader.Start();
-            // Once the messages are in the queue, an additional thread is needed to fetch them.
-            Thread thread = new Thread(() =>
-            {
-                while (client.IsConnected())
-                {
-                    readerSignal.waitForSignal();
-                    reader.processMsgs();
-                }
-            });
-            thread.IsBackground = true;
-            thread.Start();
-        }
-
         public void Connect(string host, int port)
         {
             client.eConnect(host, port, ClientId);
@@ -307,14 +304,6 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public Task<IList<PositionInfo>> GetAllPositionsForAllAccountsAsync()
-        {
-            allPositionRequestTCS = new TaskCompletionSource<IList<PositionInfo>>();
-            allPositions = new List<PositionInfo>();
-            client.reqPositions();
-            return allPositionRequestTCS.Task;
-        }
-
         public void PlaceBuyOrder(int totalQuantity, int tickType = TickType.ASK)
         {
             PlaceOrder(OrderActions.BUY, totalQuantity, GetTick(tickType));
@@ -335,6 +324,47 @@ namespace TradeBot
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             order.Account = TradedAccount;
             client.placeOrder(nextValidOrderId++, contract, order);
+        }
+
+        public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
+        {
+            var request = new TaskCompletionSource<IList<PositionInfo>>();
+            var positions = new List<PositionInfo>();
+
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            {
+                request.SetResult(null);
+            });
+
+            var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
+            {
+                positions.Add(new PositionInfo(account, contract, position, avgCost));
+            });
+
+            var onPositionEnd = new Action(() =>
+            {
+                if (request.Task.IsCompleted)
+                {
+                    return;
+                }
+
+                request.SetResult(positions);
+            });
+
+            Error += onError;
+            Position += onPosition;
+            PositionEnd += onPositionEnd;
+
+            request.Task.ContinueWith(t =>
+            {
+                Error -= onError;
+                Position -= onPosition;
+                PositionEnd -= onPositionEnd;
+            });
+
+            client.reqPositions();
+
+            return request.Task;
         }
         #endregion
 
@@ -390,18 +420,6 @@ namespace TradeBot
         public void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
             UpdatePortfolioInfo(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
-        }
-
-        public void position(string account, Contract contract, double position, double avgCost)
-        {
-            allPositions.Add(new PositionInfo(account, contract, position, avgCost));
-        }
-
-        public void positionEnd()
-        {
-            allPositionRequestTCS.SetResult(allPositions);
-            allPositionRequestTCS = null;
-            allPositions = null;
         }
 
         public void error(int id, int errorCode, string errorMessage, Exception exception)
