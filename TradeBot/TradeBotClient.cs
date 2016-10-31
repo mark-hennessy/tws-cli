@@ -38,15 +38,15 @@ namespace TradeBot
 
         private void RegisterTwsEventHandlers()
         {
-            ConnectAck += connectAck;
-            ConnectionClosed += connectionClosed;
-            ManagedAccounts += managedAccounts;
-            NextValidId += nextValidId;
-            TickPrice += tickPrice;
-            TickSize += tickSize;
-            TickGeneric += tickGeneric;
-            UpdatePortfolio += updatePortfolio;
-            Error += error;
+            ConnectAck += OnConnectAck;
+            ConnectionClosed += OnConnectionClosed;
+            ManagedAccounts += OnManagedAccounts;
+            NextValidId += OnNextValidId;
+            TickPrice += OnTickPrice;
+            TickSize += OnTickSize;
+            TickGeneric += OnTickGeneric;
+            UpdatePortfolio += OnUpdatePortfolio;
+            Error += OnError;
         }
 
         private void initEReader()
@@ -369,7 +369,7 @@ namespace TradeBot
         #endregion
 
         #region TWS callbacks
-        public void connectAck()
+        public void OnConnectAck()
         {
             if (clientSocket.AsyncEConnect)
             {
@@ -379,12 +379,12 @@ namespace TradeBot
             IsConnected = true;
         }
 
-        public void connectionClosed()
+        public void OnConnectionClosed()
         {
             IsConnected = false;
         }
 
-        public void managedAccounts(string accounts)
+        public void OnManagedAccounts(string accounts)
         {
             Accounts = accounts
                 .Split(new string[] { "," }, StringSplitOptions.None)
@@ -392,22 +392,22 @@ namespace TradeBot
                 .ToArray();
         }
 
-        public void nextValidId(int nextValidOrderId)
+        public void OnNextValidId(int nextValidOrderId)
         {
             this.nextValidOrderId = nextValidOrderId;
         }
 
-        public void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public void OnTickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
             UpdateTickData(tickerId, field, price);
         }
 
-        public void tickSize(int tickerId, int field, int size)
+        public void OnTickSize(int tickerId, int field, int size)
         {
             UpdateTickData(tickerId, field, size);
         }
 
-        public void tickGeneric(int tickerId, int field, double value)
+        public void OnTickGeneric(int tickerId, int field, double value)
         {
             UpdateTickData(tickerId, field, value);
         }
@@ -422,12 +422,12 @@ namespace TradeBot
             UpdateTick(tickType, value);
         }
 
-        public void updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
+        public void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
             UpdatePortfolioInfo(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
         }
 
-        public void error(int id, int errorCode, string errorMessage, Exception exception)
+        public void OnError(int id, int errorCode, string errorMessage, Exception exception)
         {
             ErrorOccured?.Invoke(id, errorCode, errorMessage, exception);
 

@@ -301,15 +301,6 @@ namespace TradeBot
         #endregion
 
         #region Event handlers
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
-        }
-
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
@@ -317,8 +308,8 @@ namespace TradeBot
                 case nameof(client.IsConnected):
                     OnIsConnectedChanged(eventArgs);
                     break;
-                case nameof(client.ManagedAccounts):
-                    OnManagedAccountsChanged(eventArgs);
+                case nameof(client.Accounts):
+                    OnAccountsChanged(eventArgs);
                     break;
                 case nameof(client.TickerSymbol):
                     OnTickerSymbolChanged(eventArgs);
@@ -347,7 +338,7 @@ namespace TradeBot
             }
         }
 
-        private void OnManagedAccountsChanged(PropertyChangedEventArgs eventArgs)
+        private void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
             string[] accounts = client.Accounts;
             if (accounts != null && accounts.Length > 0)
@@ -424,6 +415,15 @@ namespace TradeBot
                 IO.ShowMessage(exception.Message, MessageType.ERROR);
                 IO.ShowMessage(exception.StackTrace, MessageType.ERROR);
             }
+        }
+
+        private bool OnWindowClose(CloseReason reason)
+        {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
         }
         #endregion
 
