@@ -251,22 +251,24 @@ namespace TradeBot
         private void ListPositionsCommand()
         {
             Portfolio portfolio = client.Portfolio;
-            if (portfolio == null)
+            if (portfolio != null)
             {
-                return;
+                foreach (var portfolioEntry in portfolio)
+                {
+                    string tickerSymbol = portfolioEntry.Key;
+                    PortfolioInfo position = portfolioEntry.Value;
+                    IO.ShowMessage(Messages.ListPositionsFormat,
+                        position.Position,
+                        position.Contract.Symbol,
+                        position.AverageCost.ToCurrencyString(),
+                        position.MarketPrice.ToCurrencyString(),
+                        position.UnrealisedPNL.ToCurrencyString(),
+                        position.MarketValue.ToCurrencyString());
+                }
             }
-
-            foreach (var portfolioEntry in portfolio)
+            else
             {
-                string tickerSymbol = portfolioEntry.Key;
-                PortfolioInfo position = portfolioEntry.Value;
-                IO.ShowMessage(Messages.ListPositionsFormat,
-                    position.Position,
-                    position.Contract.Symbol,
-                    position.AverageCost.ToCurrencyString(),
-                    position.MarketPrice.ToCurrencyString(),
-                    position.UnrealisedPNL.ToCurrencyString(),
-                    position.MarketValue.ToCurrencyString());
+                IO.ShowMessage(Messages.PortfolioNotFound, MessageType.ERROR);
             }
         }
 

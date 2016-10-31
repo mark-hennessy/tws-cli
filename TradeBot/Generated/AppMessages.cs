@@ -178,6 +178,9 @@ namespace TradeBot.Generated
         [JsonProperty("stepSizeNotSetError")]
         public string StepSizeNotSetError { get; set; }
 
+        [JsonProperty("portfolioNotFound")]
+        public string PortfolioNotFound { get; set; }
+
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
 

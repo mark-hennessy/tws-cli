@@ -59,6 +59,7 @@
   "invalidNonEmptyStringInputError": "Invalid input, expected non-empty text",
   "tickerSymbolNotSetError": "Ticker symbol not set",
   "stepSizeNotSetError": "Step size not set",
+  "portfolioNotFound": "Portfolio not found",
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
   "twsErrorFormat": "Error: {0}"
