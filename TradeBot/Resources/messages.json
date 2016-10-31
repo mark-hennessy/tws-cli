@@ -62,5 +62,6 @@
   "portfolioNotFound": "Portfolio not found",
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
-  "twsErrorFormat": "Error: {0}"
+  "twsErrorCodeFormat": "Error Code: {0}",
+  "twsErrorMessageFormat": "Error Message: {0}"
 }

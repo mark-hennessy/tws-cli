@@ -25,6 +25,9 @@ namespace TradeBot
 
         private readonly IList<int> ignoredErrorCodes = new List<int>
         {
+            ErrorCodes.TICKER_NOT_FOUND,
+            ErrorCodes.TICKER_ID_NOT_FOUND,
+
             ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
             ErrorCodes.MARKET_DATA_FARM_CONNECTED,
             ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
@@ -53,7 +56,21 @@ namespace TradeBot
         {
             client = new TradeBotClient(Preferences.ClientId);
             client.IgnoredDebugMessages = new string[] {
-                "connectAck", "connectionClosed", "tickString", "updateAccountValue", "updateAccountTime", "accountDownloadEnd"
+                "error",
+                "connectAck",
+                "connectionClosed",
+                "managedAccounts",
+                "nextValidId",
+                "tickPrice",
+                "tickSize",
+                "tickString",
+                "tickGeneric",
+                "updateAccountValue",
+                "updateAccountTime",
+                "accountDownloadEnd",
+                "updatePortfolio",
+                "position",
+                "positionEnd"
             };
         }
 
@@ -407,7 +424,12 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
-                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+                IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
+            }
+
+            if (errorCode > 0)
+            {
+                IO.ShowMessage(Messages.TwsErrorCodeFormat, MessageType.ERROR, errorCode);
             }
 
             if (exception != null)

@@ -93,6 +93,7 @@
     public static class ErrorCodes
     {
         public const int TICKER_NOT_FOUND = 200;
+        // Occurs when cancelMktData has already been called for a tickerId.
         public const int TICKER_ID_NOT_FOUND = 300;
 
         public const int MARKET_DATA_FARM_DISCONNECTED = 2103;
