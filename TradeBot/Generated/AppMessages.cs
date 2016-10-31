@@ -187,11 +187,8 @@ namespace TradeBot.Generated
         [JsonProperty("positionNotFoundError")]
         public string PositionNotFoundError { get; set; }
 
-        [JsonProperty("twsErrorCodeFormat")]
-        public string TwsErrorCodeFormat { get; set; }
-
-        [JsonProperty("twsErrorMessageFormat")]
-        public string TwsErrorMessageFormat { get; set; }
+        [JsonProperty("twsErrorFormat")]
+        public string TwsErrorFormat { get; set; }
     }
 
 }

@@ -25,7 +25,6 @@ namespace TradeBot
 
         private readonly IList<int> ignoredErrorCodes = new List<int>
         {
-            ErrorCodes.TICKER_NOT_FOUND,
             ErrorCodes.TICKER_ID_NOT_FOUND,
 
             ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
@@ -424,12 +423,7 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
-                IO.ShowMessage(Messages.TwsErrorMessageFormat, MessageType.ERROR, errorMessage);
-            }
-
-            if (errorCode > 0)
-            {
-                IO.ShowMessage(Messages.TwsErrorCodeFormat, MessageType.ERROR, errorCode);
+                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
             }
 
             if (exception != null)
