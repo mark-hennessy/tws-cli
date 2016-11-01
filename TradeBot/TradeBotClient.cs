@@ -372,6 +372,8 @@ namespace TradeBot
 
         private void OnConnectAck()
         {
+            // When this event is triggered within an asynchronous context, 
+            // the client will have to start the flow of information to TWS.
             if (clientSocket.AsyncEConnect)
             {
                 clientSocket.startApi();
