@@ -23,20 +23,6 @@ namespace TradeBot
             console.Start();
         }
 
-        private readonly IList<int> ignoredErrorCodes = new List<int>
-        {
-            ErrorCodes.TICKER_ID_NOT_FOUND,
-
-            ErrorCodes.MARKET_DATA_FARM_DISCONNECTED,
-            ErrorCodes.MARKET_DATA_FARM_CONNECTED,
-            ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED,
-            ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED,
-            ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE,
-            ErrorCodes.MARKET_DATA_FARM_INACTIVE,
-
-            ErrorCodes.CROSS_SIDE_WARNING
-        };
-
         private TradeBotClient client;
         private Menu menu;
 
@@ -420,9 +406,18 @@ namespace TradeBot
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
         {
-            if (ignoredErrorCodes.Contains(errorCode))
+            // Ignore common error codes
+            switch (errorCode)
             {
-                return;
+                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
+                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
+                case ErrorCodes.TICKER_ID_NOT_FOUND:
+                case ErrorCodes.CROSS_SIDE_WARNING:
+                    return;
             }
 
             if (!string.IsNullOrWhiteSpace(errorMessage))
