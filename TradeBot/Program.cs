@@ -68,7 +68,7 @@ namespace TradeBot
             Window.SetWindowCloseHandler(OnWindowClose);
 
             client.PropertyChanged += OnPropertyChanged;
-            client.ErrorOccured += OnError;
+            client.Error += OnError;
         }
 
         private void InitConsole()

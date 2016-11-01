@@ -19,10 +19,9 @@ namespace TradeBot
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
 
-        private Contract contract;
-
+        private Contract selectedContract;
+        private int selectedTickerId;
         private int nextValidOrderId;
-        private int currentTickerId;
 
         public TradeBotClient(int clientId = 0)
         {
@@ -44,6 +43,7 @@ namespace TradeBot
             PropertyChanged += OnPropertyChanged;
 
             // EWrapperImpl events
+            Error += OnError;
             ConnectAck += OnConnectAck;
             ConnectionClosed += OnConnectionClosed;
             ManagedAccounts += OnManagedAccounts;
@@ -52,12 +52,11 @@ namespace TradeBot
             TickSize += OnTickSize;
             TickGeneric += OnTickGeneric;
             UpdatePortfolio += OnUpdatePortfolio;
-            Error += OnError;
+            CommissionReport += OnCommissionReport;
         }
 
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
-        public event Action<int, int, string, Exception> ErrorOccured;
         #endregion
 
         #region Properties
@@ -187,75 +186,6 @@ namespace TradeBot
         }
         #endregion
 
-        #region Event Handlers
-        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
-        {
-            switch (eventArgs.PropertyName)
-            {
-                case nameof(TradedAccount):
-                    OnTradedAccountChanged(eventArgs);
-                    break;
-                case nameof(TickerSymbol):
-                    OnTickerSymbolChanged(eventArgs);
-                    break;
-            }
-        }
-
-        private void OnTradedAccountChanged(PropertyChangedEventArgs eventArgs)
-        {
-            var args = eventArgs as PropertyValueChangedEventArgs<string>;
-            var oldValue = args.OldValue;
-            var newValue = args.NewValue;
-
-            if (!string.IsNullOrWhiteSpace(oldValue))
-            {
-                clientSocket.reqAccountUpdates(false, oldValue);
-            }
-
-            if (!string.IsNullOrWhiteSpace(newValue))
-            {
-                Portfolio = new Portfolio();
-
-                clientSocket.reqAccountUpdates(true, newValue);
-            }
-            else
-            {
-                Portfolio = null;
-            }
-        }
-
-        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
-        {
-            var args = eventArgs as PropertyValueChangedEventArgs<string>;
-            var oldValue = args.OldValue;
-            var newValue = args.NewValue;
-
-            if (!string.IsNullOrWhiteSpace(oldValue))
-            {
-                clientSocket.cancelMktData(currentTickerId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(newValue))
-            {
-                TickData = new TickData();
-                contract = ContractFactory.CreateStockContract(newValue);
-
-                currentTickerId = NumberGenerator.RandomInt();
-                clientSocket.reqMktData(currentTickerId, contract, "", false, null);
-            }
-            else
-            {
-                TickData = null;
-                contract = null;
-            }
-        }
-
-        private int GenerateId()
-        {
-            return new Random().Next();
-        }
-        #endregion
-
         #region Public methods
         public void Connect(string host, int port)
         {
@@ -313,14 +243,14 @@ namespace TradeBot
 
         public void PlaceOrder(OrderActions action, int totalQuantity, double price)
         {
-            if (contract == null || price <= 0)
+            if (selectedContract == null || price <= 0)
             {
                 return;
             }
 
             Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
             order.Account = TradedAccount;
-            clientSocket.placeOrder(nextValidOrderId++, contract, order);
+            clientSocket.placeOrder(nextValidOrderId++, selectedContract, order);
         }
 
         public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
@@ -365,8 +295,82 @@ namespace TradeBot
         }
         #endregion
 
+        #region PropertyChanged callbacks
+        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            switch (eventArgs.PropertyName)
+            {
+                case nameof(TradedAccount):
+                    OnTradedAccountChanged(eventArgs);
+                    break;
+                case nameof(TickerSymbol):
+                    OnTickerSymbolChanged(eventArgs);
+                    break;
+            }
+        }
+
+        private void OnTradedAccountChanged(PropertyChangedEventArgs eventArgs)
+        {
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                clientSocket.reqAccountUpdates(false, oldValue);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                Portfolio = new Portfolio();
+
+                clientSocket.reqAccountUpdates(true, newValue);
+            }
+            else
+            {
+                Portfolio = null;
+            }
+        }
+
+        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
+        {
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                clientSocket.cancelMktData(selectedTickerId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                TickData = new TickData();
+                selectedContract = ContractFactory.CreateStockContract(newValue);
+
+                selectedTickerId = NumberGenerator.RandomInt();
+                clientSocket.reqMktData(selectedTickerId, selectedContract, "", false, null);
+            }
+            else
+            {
+                TickData = null;
+                selectedContract = null;
+            }
+        }
+        #endregion
+
         #region TWS callbacks
-        public void OnConnectAck()
+        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        {
+            switch (errorCode)
+            {
+                case ErrorCodes.TICKER_NOT_FOUND:
+                    TickerSymbol = null;
+                    break;
+            }
+        }
+
+        private void OnConnectAck()
         {
             if (clientSocket.AsyncEConnect)
             {
@@ -376,12 +380,12 @@ namespace TradeBot
             IsConnected = true;
         }
 
-        public void OnConnectionClosed()
+        private void OnConnectionClosed()
         {
             IsConnected = false;
         }
 
-        public void OnManagedAccounts(string accounts)
+        private void OnManagedAccounts(string accounts)
         {
             Accounts = accounts
                 .Split(new string[] { "," }, StringSplitOptions.None)
@@ -389,29 +393,29 @@ namespace TradeBot
                 .ToArray();
         }
 
-        public void OnNextValidId(int nextValidOrderId)
+        private void OnNextValidId(int orderId)
         {
-            this.nextValidOrderId = nextValidOrderId;
+            nextValidOrderId = orderId;
         }
 
-        public void OnTickPrice(int tickerId, int field, double price, int canAutoExecute)
+        private void OnTickPrice(int tickerId, int field, double price, int canAutoExecute)
         {
             UpdateTickData(tickerId, field, price);
         }
 
-        public void OnTickSize(int tickerId, int field, int size)
+        private void OnTickSize(int tickerId, int field, int size)
         {
             UpdateTickData(tickerId, field, size);
         }
 
-        public void OnTickGeneric(int tickerId, int field, double value)
+        private void OnTickGeneric(int tickerId, int field, double value)
         {
             UpdateTickData(tickerId, field, value);
         }
 
         private void UpdateTickData(int tickerId, int tickType, double value)
         {
-            if (tickerId != currentTickerId)
+            if (tickerId != selectedTickerId)
             {
                 return;
             }
@@ -419,21 +423,14 @@ namespace TradeBot
             UpdateTick(tickType, value);
         }
 
-        public void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
+        private void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
             UpdatePortfolioInfo(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
         }
 
-        public void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        private void OnCommissionReport(CommissionReport report)
         {
-            ErrorOccured?.Invoke(id, errorCode, errorMessage, exception);
 
-            switch (errorCode)
-            {
-                case ErrorCodes.TICKER_NOT_FOUND:
-                    TickerSymbol = null;
-                    break;
-            }
         }
         #endregion
     }
