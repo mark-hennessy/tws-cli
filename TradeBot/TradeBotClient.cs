@@ -170,6 +170,25 @@ namespace TradeBot
             }
         }
 
+        private IList<CommissionReport> _commissionReports = new List<CommissionReport>();
+        public IList<CommissionReport> CommissionReports
+        {
+            get
+            {
+                return _commissionReports;
+            }
+            private set
+            {
+                SetPropertyAndRaiseValueChangedEvent(ref _commissionReports, value);
+            }
+        }
+
+        private void AddCommissionReport(CommissionReport report)
+        {
+            CommissionReports.Add(report);
+            RaisePropertyValueChangedEvent(CommissionReports, nameof(CommissionReports));
+        }
+
         protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyValueChangedEventArgs<T>(propertyName, value, value));
@@ -432,7 +451,7 @@ namespace TradeBot
 
         private void OnCommissionReport(CommissionReport report)
         {
-
+            AddCommissionReport(report);
         }
         #endregion
     }
