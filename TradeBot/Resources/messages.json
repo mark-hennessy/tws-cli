@@ -11,10 +11,9 @@
   "titleOpenFormat": "Open: {0}",
   "titleDivider": "        ",
 
-  "menuTitle": "====================\nMenu\n====================\n",
+  "menuTitle": "====================\nMenu\n====================",
   "menuOptionInvalidEntry": "No such menu option",
   "menuOptionFormat": "{0} - {1}",
-  "menuOptionDivider": "\n",
   "menuOptionLongestKey": "r",
   "menuOptionEntries": {
     "reloadSavedState": [ "l", "Load saved state" ],

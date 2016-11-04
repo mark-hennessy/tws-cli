@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -262,18 +263,30 @@ namespace TradeBot
             Portfolio portfolio = client.Portfolio;
             if (portfolio != null)
             {
-                foreach (var portfolioEntry in portfolio)
+                StringBuilder builder = new StringBuilder();
+                var portfolioEntries = portfolio.ToList();
+                int lastIndex = portfolioEntries.LastIndex();
+                for (int i = 0; i < portfolioEntries.Count; i++)
                 {
+                    var portfolioEntry = portfolioEntries[i];
                     string tickerSymbol = portfolioEntry.Key;
                     PortfolioInfo position = portfolioEntry.Value;
-                    IO.ShowMessage(Messages.ListPositionsFormat,
+
+                    builder.AppendFormat(
+                        Messages.ListPositionsFormat,
                         position.Position,
                         position.Contract.Symbol,
                         position.AverageCost.ToCurrencyString(),
                         position.MarketPrice.ToCurrencyString(),
                         position.UnrealisedPNL.ToCurrencyString(),
                         position.MarketValue.ToCurrencyString());
+
+                    if (i != lastIndex)
+                    {
+                        builder.AppendLine();
+                    }
                 }
+                IO.ShowMessage(builder.ToString());
             }
             else
             {
@@ -283,14 +296,25 @@ namespace TradeBot
 
         private void ListAllPositionsCommand()
         {
+            StringBuilder builder = new StringBuilder();
             IList<PositionInfo> positions = client.RequestAllPositionsForAllAccountsAsync().Result;
-            foreach (var position in positions)
+            int lastIndex = positions.LastIndex();
+            for (int i = 0; i < positions.Count; i++)
             {
-                IO.ShowMessage(Messages.ListAllPositionsFormat,
+                var position = positions[i];
+
+                builder.AppendFormat(
+                    Messages.ListAllPositionsFormat,
                     position.PositionSize,
                     position.Contract.Symbol,
                     position.Account);
+
+                if (i != lastIndex)
+                {
+                    builder.AppendLine();
+                }
             }
+            IO.ShowMessage(builder.ToString());
         }
 
         private void ClearScreenCommand()

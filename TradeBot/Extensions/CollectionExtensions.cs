@@ -29,5 +29,10 @@ namespace TradeBot.Extensions
             }
             return !enumerable.Any();
         }
+
+        public static int LastIndex<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable.Count() - 1;
+        }
     }
 }

@@ -54,14 +54,12 @@ namespace TradeBot.MenuFramework
 
         public override string ToString()
         {
-            string menuOptionDivider = Messages.MenuOptionDivider;
-
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(Messages.MenuTitle);
+            stringBuilder.Append(Messages.MenuTitle).AppendLine();
 
             var menuOptionsAsStrings = menuOptions
                 .Select(menuOption => menuOption.ToString());
-            string joinedMenuOptionString = string.Join(menuOptionDivider, menuOptionsAsStrings);
+            string joinedMenuOptionString = string.Join(Environment.NewLine, menuOptionsAsStrings);
             stringBuilder.Append(joinedMenuOptionString);
 
             return stringBuilder.ToString();
