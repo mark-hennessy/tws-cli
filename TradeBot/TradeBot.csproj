@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events\PropertyValueChangedEventArgs.cs" />
+    <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="TwsAbstractions\Portfolio.cs" />
     <Compile Include="TwsAbstractions\PortfolioInfo.cs" />
     <Compile Include="TwsAbstractions\PositionInfo.cs" />

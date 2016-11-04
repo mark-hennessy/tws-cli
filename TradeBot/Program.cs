@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -57,6 +58,7 @@ namespace TradeBot
                 nameof(EWrapper.position),
                 nameof(EWrapper.positionEnd),
                 nameof(EWrapper.openOrder),
+                nameof(EWrapper.openOrderEnd),
                 nameof(EWrapper.orderStatus),
                 nameof(EWrapper.execDetails),
                 nameof(EWrapper.commissionReport)
@@ -130,7 +132,7 @@ namespace TradeBot
             }
             catch (Exception e)
             {
-                IO.ShowMessage(e.Message, MessageType.ERROR);
+                IO.ShowMessage(Messages.AppErrorFormat, MessageType.ERROR, e.Message, e.StackTrace);
             }
             finally
             {
@@ -307,6 +309,43 @@ namespace TradeBot
         #endregion
 
         #region Event handlers
+        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        {
+            // Ignore common error codes
+            switch (errorCode)
+            {
+                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
+                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
+                case ErrorCodes.TICKER_ID_NOT_FOUND:
+                case ErrorCodes.CROSS_SIDE_WARNING:
+                    return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+            }
+
+            if (exception != null)
+            {
+                IO.ShowMessage(exception.Message, MessageType.ERROR);
+                IO.ShowMessage(exception.StackTrace, MessageType.ERROR);
+            }
+        }
+
+        private bool OnWindowClose(CloseReason reason)
+        {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
+        }
+
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
@@ -328,6 +367,9 @@ namespace TradeBot
                     break;
                 case nameof(client.Portfolio):
                     OnPortfolioChanged(eventArgs);
+                    break;
+                case nameof(client.CommissionReports):
+                    OnCommissionReportsChanged(eventArgs);
                     break;
             }
         }
@@ -404,41 +446,22 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
         {
-            // Ignore common error codes
-            switch (errorCode)
+            IList<CommissionReport> reports = client.CommissionReports;
+            if (reports.IsNullOrEmpty())
             {
-                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
-                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
-                case ErrorCodes.TICKER_ID_NOT_FOUND:
-                case ErrorCodes.CROSS_SIDE_WARNING:
-                    return;
+                return;
             }
 
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
-            }
-
-            if (exception != null)
-            {
-                IO.ShowMessage(exception.Message, MessageType.ERROR);
-                IO.ShowMessage(exception.StackTrace, MessageType.ERROR);
-            }
-        }
-
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
+            CommissionReport lastReport = reports.Last();
+            double lastCommission = lastReport.Commission;
+            double totalCommissions = reports.Sum(report => report.Commission);
+            IO.ShowMessage(
+                Messages.CommissionFormat,
+                MessageType.STANDARD,
+                lastCommission.ToCurrencyString(),
+                totalCommissions.ToCurrencyString());
         }
         #endregion
 

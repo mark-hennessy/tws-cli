@@ -26,11 +26,6 @@ namespace TradeBot.Extensions
             return string.Format("{0:C}", currency);
         }
 
-        public static string ToCurrencyString(this decimal currency)
-        {
-            return string.Format("{0:C}", currency);
-        }
-
         public static string ToPrettyString(this object obj, int indentLevel = 0)
         {
             // Formatting is not necessary for strings and value types such as bool, int, double, etc.
