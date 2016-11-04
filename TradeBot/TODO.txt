@@ -1,3 +1,0 @@
-Figure out why requesting positions is not working
-
-Use TaskCompletionService like in example app

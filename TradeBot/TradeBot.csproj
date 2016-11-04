@@ -72,7 +72,7 @@
     <StartupObject>TradeBot.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Icons\uptrend_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\uptrend_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
@@ -141,22 +141,25 @@
     <Compile Include="TwsAbstractions\EWrapperImpl.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Icons\uptrend_icon.ico" />
     <None Include="App.config" />
     <None Include="Libs\JsonClassGenerator\LICENSE" />
-    <None Include="Resources\messages.json">
+    <Content Include="Resources\messages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\state.json">
+    </Content>
+    <Content Include="Resources\state.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\preferences.json">
+    </Content>
+    <Content Include="Resources\preferences.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="Scripts\generate_models_from_json.sh" />
     <None Include="Scripts\remove_git_index_lock_file.sh" />
     <None Include="Libs\NLog\LICENSE.txt" />
     <None Include="Libs\NLog\NLog.dll" />
-    <None Include="NLog.config" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -174,15 +177,14 @@
     <Content Include="Libs\JsonClassGenerator\Newtonsoft.Json.dll" />
     <Content Include="Libs\JsonClassGenerator\System.Data.Entity.Design.PluralizationServices.dll" />
     <Content Include="Libs\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll" />
-    <Content Include="Resources\Icons\uptrend_icon.ico" />
-    <Content Include="Resources\readme.txt" />
+    <Content Include="Resources\readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Libs\TWS\CSharpAPI.dll" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Libs\TWS\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

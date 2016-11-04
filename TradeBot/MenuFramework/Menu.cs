@@ -1,3 +1,4 @@
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace TradeBot.MenuFramework
 
         private void InvalidMenuOptionCommand()
         {
-            IO.ShowMessage(Messages.MenuOptionInvalidEntry, MessageType.ERROR);
+            IO.ShowMessage(Messages.MenuOptionInvalidEntry, LogLevel.Error);
         }
 
         public override string ToString()

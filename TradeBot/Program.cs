@@ -1,4 +1,5 @@
 ﻿using IBApi;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -132,7 +133,7 @@ namespace TradeBot
             }
             catch (Exception e)
             {
-                IO.ShowMessage(Messages.AppErrorFormat, MessageType.ERROR, e.Message, e.StackTrace);
+                IO.ShowMessage(Messages.ExceptionFormat, LogLevel.Fatal, e.Message, e.StackTrace);
             }
             finally
             {
@@ -276,7 +277,7 @@ namespace TradeBot
             }
             else
             {
-                IO.ShowMessage(Messages.PortfolioNotFound, MessageType.ERROR);
+                IO.ShowMessage(Messages.PortfolioNotFound, LogLevel.Error);
             }
         }
 
@@ -309,7 +310,7 @@ namespace TradeBot
         #endregion
 
         #region Event handlers
-        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        private void OnError(int id, int errorCode, string errorMessage, Exception e)
         {
             // Ignore common error codes
             switch (errorCode)
@@ -327,13 +328,12 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
-                IO.ShowMessage(Messages.TwsErrorFormat, MessageType.ERROR, errorMessage);
+                IO.ShowMessage(Messages.TwsErrorFormat, LogLevel.Error, errorMessage);
             }
 
-            if (exception != null)
+            if (e != null)
             {
-                IO.ShowMessage(exception.Message, MessageType.ERROR);
-                IO.ShowMessage(exception.StackTrace, MessageType.ERROR);
+                IO.ShowMessage(Messages.ExceptionFormat, LogLevel.Error, e.Message, e.StackTrace);
             }
         }
 
@@ -378,11 +378,11 @@ namespace TradeBot
         {
             if (client.IsConnected)
             {
-                IO.ShowMessage(Messages.TwsConnected, MessageType.SUCCESS);
+                IO.ShowMessage(Messages.TwsConnected, LogLevel.Warn);
             }
             else
             {
-                IO.ShowMessage(Messages.TwsDisconnected, MessageType.WARNING);
+                IO.ShowMessage(Messages.TwsDisconnected, LogLevel.Fatal);
             }
         }
 
@@ -396,16 +396,16 @@ namespace TradeBot
 
                 if (accounts.Length > 1)
                 {
-                    IO.ShowMessage(Messages.MultipleAccountsWarningFormat, MessageType.WARNING, tradedAccount);
+                    IO.ShowMessage(Messages.MultipleAccountsWarningFormat, LogLevel.Error, tradedAccount);
                 }
 
                 if (tradedAccount.StartsWith(Messages.PaperAccountPrefix, StringComparison.InvariantCulture))
                 {
-                    IO.ShowMessage(Messages.AccountTypePaper, MessageType.SUCCESS);
+                    IO.ShowMessage(Messages.AccountTypePaper, LogLevel.Warn);
                 }
                 else
                 {
-                    IO.ShowMessage(Messages.AccountTypeLive, MessageType.WARNING);
+                    IO.ShowMessage(Messages.AccountTypeLive, LogLevel.Error);
                 }
             }
         }
@@ -459,7 +459,7 @@ namespace TradeBot
             double totalCommissions = reports.Sum(report => report.Commission);
             IO.ShowMessage(
                 Messages.CommissionFormat,
-                MessageType.STANDARD,
+                LogLevel.Info,
                 lastCommission.ToCurrencyString(),
                 totalCommissions.ToCurrencyString());
         }
@@ -475,12 +475,12 @@ namespace TradeBot
         private void SaveState()
         {
             client.SaveState();
-            IO.ShowMessage(Messages.SavedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(Messages.SavedStateFormat, LogLevel.Warn, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
         {
-            IO.ShowMessage(Messages.LoadedStateFormat, MessageType.SUCCESS, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(Messages.LoadedStateFormat, LogLevel.Warn, PropertyFiles.STATE_FILE);
             client.LoadState();
         }
 
@@ -595,7 +595,7 @@ namespace TradeBot
                 }
                 else
                 {
-                    IO.ShowMessage(errorMessage, MessageType.VALIDATION_ERROR);
+                    IO.ShowMessage(errorMessage, LogLevel.Error);
                 }
                 return valid;
             };

@@ -1,75 +1,44 @@
+using NLog;
 using System;
-using System.Runtime.InteropServices;
-using static TradeBot.Properties;
 
 namespace TradeBot.Gui
 {
-    public enum MessageType { STANDARD, SUCCESS, WARNING, ERROR, VALIDATION_ERROR, DEBUG }
-
     /// <summary>
     /// A helper class for console window input/output.
     /// </summary>
     public static class IO
     {
-        private static readonly object threadLock = new object();
-
-        public static string PromptForInput([Optional] string message)
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        public static string PromptForInput(string message = null)
         {
-            ShowMessage(message);
-            return Console.ReadLine() ?? string.Empty;
+            if (!string.IsNullOrEmpty(message))
+            {
+                ShowMessage(message);
+            }
+            string input = Console.ReadLine() ?? string.Empty;
+            ShowMessage(input, LogLevel.Debug);
+            return input;
         }
 
-        public static char PromptForChar([Optional] string message)
+        public static char PromptForChar(string message = null)
         {
-            ShowMessage(message);
-            return Console.ReadKey().KeyChar;
+            if (!string.IsNullOrEmpty(message))
+            {
+                ShowMessage(message);
+            }
+            char input = Console.ReadKey().KeyChar;
+            ShowMessage(input.ToString(), LogLevel.Debug);
+            return input;
         }
 
         public static void ShowMessage(string message, params object[] args)
         {
-            ShowMessage(message, MessageType.STANDARD, args);
+            ShowMessage(message, LogLevel.Info, args);
         }
 
-        public static void ShowMessage(string message, MessageType type, params object[] args)
+        public static void ShowMessage(string message, LogLevel logLevel, params object[] args)
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                return;
-            }
-
-            switch (type)
-            {
-                case MessageType.STANDARD:
-                    ShowMessage(message, ConsoleColor.White, args);
-                    break;
-                case MessageType.DEBUG:
-                    if (Preferences.ShowDebugMessages)
-                    {
-                        ShowMessage(message, ConsoleColor.DarkGray, args);
-                    }
-                    break;
-                case MessageType.SUCCESS:
-                    ShowMessage(message, ConsoleColor.Green, args);
-                    break;
-                case MessageType.WARNING:
-                case MessageType.ERROR:
-                case MessageType.VALIDATION_ERROR:
-                    ShowMessage(message, ConsoleColor.Red, args);
-                    break;
-            }
-        }
-
-        private static void ShowMessage(string message, ConsoleColor color, params object[] args)
-        {
-            lock (threadLock)
-            {
-                ConsoleColor originalForgroundColor = Console.ForegroundColor;
-                Console.ForegroundColor = color;
-
-                Console.WriteLine(string.Format(message, args) + Environment.NewLine);
-
-                Console.ForegroundColor = originalForgroundColor;
-            }
+            logger.Log(logLevel, message, args);
         }
     }
 

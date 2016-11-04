@@ -26,7 +26,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd "${DIR}"
 
 # Important: The exe and dll's must be in the same directory!
-ASSEMBLY_DIR="../References/JsonClassGenerator/"
+ASSEMBLY_DIR="../Libs/JsonClassGenerator/"
 EXE="${ASSEMBLY_DIR}model_generator.exe"
 RES_DIR="../Resources/"
 GEN_DIR="../Generated/"

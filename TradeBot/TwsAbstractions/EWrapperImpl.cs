@@ -1,11 +1,12 @@
+using IBApi;
+using NLog;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
-using IBApi;
-using TradeBot.Gui;
 using TradeBot.Extensions;
+using TradeBot.Gui;
 
 namespace TradeBot.TwsAbstractions
 {
@@ -539,19 +540,19 @@ namespace TradeBot.TwsAbstractions
             // but we only care about the actual method name, i.e. connectAck
             string methodName = callingMethod.Name.Split('.').Last();
 
-            if (IgnoredDebugMessages?.Contains(methodName) ?? false)
-            {
-                return;
-            }
+            bool showDebugMessage = IgnoredDebugMessages != null
+                && !IgnoredDebugMessages.Contains(methodName);
 
-            var parameterNameValuePairs = callingMethod.GetParameters()
-                .Select((p, i) => new KeyValuePair<string, object>(p.Name, parameterValues[i]));
+            LogLevel logLevel = showDebugMessage ? LogLevel.Debug : LogLevel.Trace;
+
+            var parameters = callingMethod.GetParameters().Select((p, i) =>
+                new KeyValuePair<string, object>(p.Name, parameterValues[i]));
 
             IO.ShowMessage(
                 "{0} : {1}",
-                MessageType.DEBUG,
+                logLevel,
                 methodName,
-                parameterNameValuePairs.ToPrettyString());
+                parameters.ToPrettyString());
         }
     }
 }

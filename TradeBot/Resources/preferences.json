@@ -4,6 +4,5 @@
   "clientUrl": "127.0.0.1",
   "windowWidth": 900,
   "windowHeight": 600,
-  "centerWindow": true,
-  "showDebugMessages": true
+  "centerWindow": true
 }

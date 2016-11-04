@@ -63,6 +63,6 @@
   "portfolioNotFound": "Portfolio not found",
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
-  "appErrorFormat": "App Exception:\n{0}\n\nStack Trace:\n{1}",
-  "twsErrorFormat": "{0}"
+  "twsErrorFormat": "{0}",
+  "exceptionFormat": "App Exception:\n{0}\n\nStack Trace:\n{1}"
 }

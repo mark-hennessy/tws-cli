@@ -29,9 +29,6 @@ namespace TradeBot.Generated
 
         [JsonProperty("centerWindow")]
         public bool CenterWindow { get; set; }
-
-        [JsonProperty("showDebugMessages")]
-        public bool ShowDebugMessages { get; set; }
     }
 
 }
