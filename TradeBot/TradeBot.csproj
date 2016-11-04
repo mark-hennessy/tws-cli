@@ -105,6 +105,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>Libs\NLog\NLog.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events\PropertyValueChangedEventArgs.cs" />
@@ -139,7 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="References\JsonClassGenerator\LICENSE" />
+    <None Include="Libs\JsonClassGenerator\LICENSE" />
     <None Include="Resources\messages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -151,6 +154,9 @@
     </None>
     <None Include="Scripts\generate_models_from_json.sh" />
     <None Include="Scripts\remove_git_index_lock_file.sh" />
+    <None Include="Libs\NLog\LICENSE.txt" />
+    <None Include="Libs\NLog\NLog.dll" />
+    <None Include="NLog.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -165,15 +171,18 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="References\CSharpAPI.dll" />
-    <Content Include="References\JsonClassGenerator\Newtonsoft.Json.dll" />
-    <Content Include="References\JsonClassGenerator\System.Data.Entity.Design.PluralizationServices.dll" />
-    <Content Include="References\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll" />
+    <Content Include="Libs\JsonClassGenerator\Newtonsoft.Json.dll" />
+    <Content Include="Libs\JsonClassGenerator\System.Data.Entity.Design.PluralizationServices.dll" />
+    <Content Include="Libs\JsonClassGenerator\Xamasoft.JsonClassGenerator.dll" />
     <Content Include="Resources\Icons\uptrend_icon.ico" />
     <Content Include="Resources\readme.txt" />
+    <Content Include="Libs\TWS\CSharpAPI.dll" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Libs\TWS\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
