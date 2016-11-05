@@ -21,11 +21,11 @@ namespace TradeBot.Generated
         [JsonProperty("clearTickerSymbol")]
         public IList<string> ClearTickerSymbol { get; set; }
 
-        [JsonProperty("setStepSize")]
-        public IList<string> SetStepSize { get; set; }
+        [JsonProperty("setStepQuantity")]
+        public IList<string> SetStepQuantity { get; set; }
 
-        [JsonProperty("setStepSizeFromCash")]
-        public IList<string> SetStepSizeFromCash { get; set; }
+        [JsonProperty("setStepQuantityFromCash")]
+        public IList<string> SetStepQuantityFromCash { get; set; }
 
         [JsonProperty("buy")]
         public IList<string> Buy { get; set; }
@@ -67,11 +67,11 @@ namespace TradeBot.Generated
         [JsonProperty("titleTickerSymbolNotSelected")]
         public string TitleTickerSymbolNotSelected { get; set; }
 
-        [JsonProperty("titlePositionSize")]
-        public string TitlePositionSize { get; set; }
+        [JsonProperty("titleStepQuantity")]
+        public string TitleStepQuantity { get; set; }
 
-        [JsonProperty("titleStepSize")]
-        public string TitleStepSize { get; set; }
+        [JsonProperty("titlePosition")]
+        public string TitlePosition { get; set; }
 
         [JsonProperty("titleLastFormat")]
         public string TitleLastFormat { get; set; }
@@ -133,11 +133,11 @@ namespace TradeBot.Generated
         [JsonProperty("selectTickerPrompt")]
         public string SelectTickerPrompt { get; set; }
 
-        [JsonProperty("stepSizePrompt")]
-        public string StepSizePrompt { get; set; }
+        [JsonProperty("stepQuantityPrompt")]
+        public string StepQuantityPrompt { get; set; }
 
-        [JsonProperty("stepSizeFromCashPrompt")]
-        public string StepSizeFromCashPrompt { get; set; }
+        [JsonProperty("stepQuantityFromCashPrompt")]
+        public string StepQuantityFromCashPrompt { get; set; }
 
         [JsonProperty("tickerSymbolSetFormat")]
         public string TickerSymbolSetFormat { get; set; }
@@ -145,8 +145,8 @@ namespace TradeBot.Generated
         [JsonProperty("tickerSymbolClearedFormat")]
         public string TickerSymbolClearedFormat { get; set; }
 
-        [JsonProperty("stepSizeSetFormat")]
-        public string StepSizeSetFormat { get; set; }
+        [JsonProperty("stepQuantitySetFormat")]
+        public string StepQuantitySetFormat { get; set; }
 
         [JsonProperty("loadedStateFormat")]
         public string LoadedStateFormat { get; set; }
@@ -175,8 +175,8 @@ namespace TradeBot.Generated
         [JsonProperty("tickerSymbolNotSetError")]
         public string TickerSymbolNotSetError { get; set; }
 
-        [JsonProperty("stepSizeNotSetError")]
-        public string StepSizeNotSetError { get; set; }
+        [JsonProperty("stepQuantityNotSetError")]
+        public string StepQuantityNotSetError { get; set; }
 
         [JsonProperty("portfolioNotFound")]
         public string PortfolioNotFound { get; set; }

@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="Events\PropertyValueChangedEventArgs.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="TwsAbstractions\Portfolio.cs" />
     <Compile Include="TwsAbstractions\PortfolioInfo.cs" />
     <Compile Include="TwsAbstractions\PositionInfo.cs" />
@@ -120,11 +121,11 @@
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />
     <Compile Include="FileIO\PropertyFiles.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Properties.cs" />
+    <Compile Include="AppProperties.cs" />
     <Compile Include="Generated\AppMessages.cs" />
     <Compile Include="Generated\AppPreferences.cs" />
     <Compile Include="Generated\AppState.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="TradeBotConsole.cs" />
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />

@@ -543,16 +543,17 @@ namespace TradeBot.TwsAbstractions
             bool showDebugMessage = IgnoredDebugMessages != null
                 && !IgnoredDebugMessages.Contains(methodName);
 
-            LogLevel logLevel = showDebugMessage ? LogLevel.Debug : LogLevel.Trace;
+            if (showDebugMessage)
+            {
+                var parameters = callingMethod.GetParameters().Select((p, i) =>
+                    new KeyValuePair<string, object>(p.Name, parameterValues[i]));
 
-            var parameters = callingMethod.GetParameters().Select((p, i) =>
-                new KeyValuePair<string, object>(p.Name, parameterValues[i]));
-
-            IO.ShowMessage(
-                "{0} : {1}",
-                logLevel,
-                methodName,
-                parameters.ToPrettyString());
+                IO.ShowMessage(
+                    "{0} : {1}",
+                    LogLevel.Debug,
+                    methodName,
+                    parameters.ToPrettyString());
+            }
         }
     }
 }

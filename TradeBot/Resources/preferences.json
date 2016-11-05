@@ -1,7 +1,7 @@
 {
   "clientId": 0,
-  "clientPort": 7496,
   "clientUrl": "127.0.0.1",
+  "clientPort": 7496,
   "windowWidth": 900,
   "windowHeight": 600,
   "centerWindow": true

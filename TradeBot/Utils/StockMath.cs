@@ -3,7 +3,7 @@ namespace TradeBot.Utils
 {
     public static class StockMath
     {
-        public static int CalculateStepSizeFromCashValue(double cash, double sharePrice)
+        public static int CalculateSharesFromCashValue(double cash, double sharePrice)
         {
             return (int)Math.Floor(cash / sharePrice);
         }

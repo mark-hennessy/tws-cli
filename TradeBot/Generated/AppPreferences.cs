@@ -15,11 +15,11 @@ namespace TradeBot.Generated
         [JsonProperty("clientId")]
         public int ClientId { get; set; }
 
-        [JsonProperty("clientPort")]
-        public int ClientPort { get; set; }
-
         [JsonProperty("clientUrl")]
         public string ClientUrl { get; set; }
+
+        [JsonProperty("clientPort")]
+        public int ClientPort { get; set; }
 
         [JsonProperty("windowWidth")]
         public int WindowWidth { get; set; }

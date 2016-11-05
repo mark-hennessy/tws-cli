@@ -23,7 +23,7 @@ namespace TradeBot
         private int selectedTickerId;
         private int nextValidOrderId;
 
-        public TradeBotClient(int clientId = 0)
+        public TradeBotClient(int clientId)
         {
             ClientId = clientId;
 
@@ -158,7 +158,7 @@ namespace TradeBot
         }
 
         private int _stepSize;
-        public int StepSize
+        public int StepQuantity
         {
             get
             {
@@ -206,9 +206,9 @@ namespace TradeBot
         #endregion
 
         #region Public methods
-        public void Connect(string host, int port)
+        public void Connect(string clientUrl, int clientPort)
         {
-            clientSocket.eConnect(host, port, ClientId);
+            clientSocket.eConnect(clientUrl, clientPort, ClientId);
 
             // Create a reader to consume incoming messages 
             // and store them in a queue.
@@ -238,14 +238,14 @@ namespace TradeBot
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
             TickerSymbol = state.TickerSymbol;
-            StepSize = state.StepSize ?? 0;
+            StepQuantity = state.StepQuantity ?? 0;
         }
 
         public void SaveState()
         {
             AppState state = new AppState();
             state.TickerSymbol = TickerSymbol;
-            state.StepSize = StepSize;
+            state.StepQuantity = StepQuantity;
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }

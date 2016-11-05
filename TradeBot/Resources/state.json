@@ -1,4 +1,4 @@
 {
   "tickerSymbol": "GOOG",
-  "stepSize": 10
+  "stepQuantity": 10
 }
