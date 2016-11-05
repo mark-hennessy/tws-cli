@@ -49,7 +49,7 @@ namespace TradeBot.MenuFramework
 
         private void InvalidMenuOptionCommand()
         {
-            IO.ShowMessage(Messages.MenuOptionInvalidEntry, LogLevel.Error);
+            IO.ShowMessage(LogLevel.Error, Messages.MenuOptionInvalidEntry);
         }
 
         public override string ToString()

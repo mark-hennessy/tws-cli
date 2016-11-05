@@ -549,8 +549,8 @@ namespace TradeBot.TwsAbstractions
                     new KeyValuePair<string, object>(p.Name, parameterValues[i]));
 
                 IO.ShowMessage(
-                    "{0} : {1}",
                     LogLevel.Debug,
+                    "{0} : {1}",
                     methodName,
                     parameters.ToPrettyString());
             }

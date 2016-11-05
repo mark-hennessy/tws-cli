@@ -13,10 +13,10 @@ namespace TradeBot.Gui
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowMessage(message);
+                ShowPromptMessage(message);
             }
             string input = Console.ReadLine() ?? string.Empty;
-            ShowMessage(input, LogLevel.Debug);
+            ShowMessage(LogLevel.Trace, input);
             return input;
         }
 
@@ -24,21 +24,22 @@ namespace TradeBot.Gui
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowMessage(message);
+                ShowPromptMessage(message);
             }
             char input = Console.ReadKey().KeyChar;
-            ShowMessage(input.ToString(), LogLevel.Debug);
+            ShowMessage(LogLevel.Trace, input.ToString());
             return input;
         }
 
-        public static void ShowMessage(string message, params object[] args)
-        {
-            ShowMessage(message, LogLevel.Info, args);
-        }
-
-        public static void ShowMessage(string message, LogLevel logLevel, params object[] args)
+        public static void ShowMessage(LogLevel logLevel, string message, params object[] args)
         {
             logger.Log(logLevel, message, args);
+        }
+
+        private static void ShowPromptMessage(string message, params object[] args)
+        {
+            Console.Write(message, args);
+            logger.Log(LogLevel.Trace, message, args);
         }
     }
 

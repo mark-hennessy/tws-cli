@@ -18,9 +18,6 @@ namespace TradeBot.Generated
         [JsonProperty("setTickerSymbol")]
         public IList<string> SetTickerSymbol { get; set; }
 
-        [JsonProperty("clearTickerSymbol")]
-        public IList<string> ClearTickerSymbol { get; set; }
-
         [JsonProperty("setStepQuantity")]
         public IList<string> SetStepQuantity { get; set; }
 
