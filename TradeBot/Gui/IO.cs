@@ -9,11 +9,12 @@ namespace TradeBot.Gui
     public static class IO
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static string PromptForInput(string message = null)
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowPromptMessage(message);
+                ShowAndLogPromptMessage(message);
             }
             string input = Console.ReadLine() ?? string.Empty;
             ShowMessage(LogLevel.Trace, input);
@@ -24,7 +25,7 @@ namespace TradeBot.Gui
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowPromptMessage(message);
+                ShowAndLogPromptMessage(message);
             }
             char input = Console.ReadKey().KeyChar;
             ShowMessage(LogLevel.Trace, input.ToString());
@@ -36,10 +37,10 @@ namespace TradeBot.Gui
             logger.Log(logLevel, message, args);
         }
 
-        private static void ShowPromptMessage(string message, params object[] args)
+        private static void ShowAndLogPromptMessage(string message, params object[] args)
         {
             Console.Write(message, args);
-            logger.Log(LogLevel.Trace, message, args);
+            ShowMessage(LogLevel.Trace, message, args);
         }
     }
 
