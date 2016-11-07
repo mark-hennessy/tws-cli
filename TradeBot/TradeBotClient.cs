@@ -146,9 +146,9 @@ namespace TradeBot
             }
         }
 
-        public double GetTick(int tickType)
+        public double? GetTick(int tickType)
         {
-            return TickData?.Get(tickType) ?? -1;
+            return TickData?.Get(tickType);
         }
 
         private void UpdateTick(int tickType, double value)
@@ -250,17 +250,17 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public void PlaceBuyOrder(int totalQuantity, int tickType = TickType.ASK)
+        public void PlaceBuyLimitOrder(int totalQuantity, int tickType = TickType.ASK)
         {
-            PlaceOrder(OrderActions.BUY, totalQuantity, GetTick(tickType));
+            PlaceLimitOrder(OrderActions.BUY, totalQuantity, GetTick(tickType) ?? -1);
         }
 
-        public void PlaceSellOrder(int totalQuantity, int tickType = TickType.BID)
+        public void PlaceSellLimitOrder(int totalQuantity, int tickType = TickType.BID)
         {
-            PlaceOrder(OrderActions.SELL, totalQuantity, GetTick(tickType));
+            PlaceLimitOrder(OrderActions.SELL, totalQuantity, GetTick(tickType) ?? -1);
         }
 
-        public void PlaceOrder(OrderActions action, int totalQuantity, double price)
+        public void PlaceLimitOrder(OrderActions action, int totalQuantity, double price)
         {
             if (selectedContract == null || price <= 0)
             {

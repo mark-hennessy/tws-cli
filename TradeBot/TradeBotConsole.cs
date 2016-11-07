@@ -155,7 +155,7 @@ namespace TradeBot
         private void PromptForTickerSymbol()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
-            IfNotNullOrWhiteSpace(tickerSymbol)(() =>
+            Validate(new Validator[] { IfNotNullOrWhiteSpace(tickerSymbol) }, () =>
             {
                 client.TickerSymbol = tickerSymbol;
             });
@@ -165,7 +165,7 @@ namespace TradeBot
         {
             string stepQuantityInput = IO.PromptForInput(Messages.StepQuantityPrompt);
             int? stepQuantity = stepQuantityInput.ToInt();
-            IfHasValue(stepQuantity)(() =>
+            Validate(new Validator[] { IfHasValue(stepQuantity) }, () =>
             {
                 client.StepQuantity = stepQuantity.Value;
             });
@@ -173,82 +173,58 @@ namespace TradeBot
 
         private void PromptForStepQuantityFromCash()
         {
-            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
-            Validate(validators, () =>
-            {
-                string cashInput = IO.PromptForInput(Messages.StepQuantityFromCashPrompt);
-                double? cash = cashInput.ToDouble();
-                IfHasValue(cash)(() =>
-                {
-                    double sharePrice = client.GetTick(TickType.LAST);
-                    client.StepQuantity = StockMath.CalculateSharesFromCashValue(cash.Value, sharePrice);
-                });
-            });
+            Validate(new Validator[] { IfTickerSet(), IfCommonTickDataAvailable() }, () =>
+             {
+                 double sharePrice = client.GetTick(TickType.LAST).Value;
+                 string cashInput = IO.PromptForInput(Messages.StepQuantityFromCashPrompt);
+                 double? cash = cashInput.ToDouble();
+                 Validate(new Validator[] { IfHasValue(cash) }, () =>
+                 {
+                     client.StepQuantity = StockMath.CalculateSharesFromCashValue(cash.Value, sharePrice);
+                 });
+             });
         }
 
         private void Buy()
         {
-            Validator[] validators = { IfTickerSet(), IfStepQuantitySet(), IfPriceDataAvailable() };
-            Validate(validators, () =>
+            Validate(new Validator[] { IfTickerSet(), IfStepQuantitySet(), IfCommonTickDataAvailable() }, () =>
             {
-                client.PlaceBuyOrder(client.StepQuantity);
+                client.PlaceBuyLimitOrder(client.StepQuantity);
             });
         }
 
         private void Sell()
         {
-            Validator[] validators = { IfTickerSet(), IfStepQuantitySet(), IfPriceDataAvailable() };
-            Validate(validators, () =>
+            Validate(new Validator[] { IfTickerSet(), IfStepQuantitySet(), IfCommonTickDataAvailable() }, () =>
             {
-                client.PlaceSellOrder(client.StepQuantity);
+                client.PlaceSellLimitOrder(client.StepQuantity);
             });
         }
 
         private void ReversePosition()
         {
-            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
-            Validate(validators, () =>
-            {
-                PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
-                IfPositionExists(position)(() =>
-                {
-                    int positionSize = (int)position.Position;
-                    int orderSize = Math.Abs(positionSize) * 2;
-
-                    if (positionSize > 0)
-                    {
-                        client.PlaceSellOrder(orderSize);
-
-                    }
-                    else if (positionSize < 0)
-                    {
-                        client.PlaceBuyOrder(orderSize);
-                    }
-                });
-            });
+            ScalePosition(-2);
         }
 
         private void ClosePosition()
         {
-            Validator[] validators = { IfTickerSet(), IfPriceDataAvailable() };
-            Validate(validators, () =>
+            ScalePosition(-1);
+        }
+
+        private void ScalePosition(double percent)
+        {
+            PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
+            Validate(new Validator[] { IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable() }, () =>
             {
-                PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
-                IfPositionExists(position)(() =>
+                int orderSize = (int)Math.Round(position.Position * percent);
+                if (orderSize > 0)
                 {
-                    int positionSize = (int)position.Position;
-                    int orderSize = Math.Abs(positionSize);
-
-                    if (positionSize > 0)
-                    {
-                        client.PlaceSellOrder(orderSize);
-
-                    }
-                    else if (positionSize < 0)
-                    {
-                        client.PlaceBuyOrder(orderSize);
-                    }
-                });
+                    client.PlaceBuyLimitOrder(orderSize);
+                }
+                else if (orderSize < 0)
+                {
+                    client.PlaceSellLimitOrder(orderSize);
+                }
             });
         }
 
@@ -514,7 +490,7 @@ namespace TradeBot
 
             string tickerSymbol = client.TickerSymbol;
             bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
-            string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleTickerSymbolNotSelected;
+            string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
             infoStrings.Add(string.Format(Messages.TitleStepQuantity, client.StepQuantity));
 
@@ -522,14 +498,24 @@ namespace TradeBot
             {
                 double position = client.Portfolio?.Get(tickerSymbol)?.Position ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePosition, position));
-                infoStrings.Add(string.Format(Messages.TitleLastFormat, client.GetTick(TickType.LAST)));
-                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, client.GetTick(TickType.BID), client.GetTick(TickType.ASK)));
-                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, client.GetTick(TickType.VOLUME)));
-                infoStrings.Add(string.Format(Messages.TitleCloseFormat, client.GetTick(TickType.CLOSE)));
-                infoStrings.Add(string.Format(Messages.TitleOpenFormat, client.GetTick(TickType.OPEN)));
+                infoStrings.Add(string.Format(Messages.TitleLastFormat, GetTickAsCurrencyString(TickType.LAST)));
+                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, GetTickAsCurrencyString(TickType.BID), GetTickAsCurrencyString(TickType.ASK)));
+                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, GetTickAsString(TickType.VOLUME)));
+                infoStrings.Add(string.Format(Messages.TitleCloseFormat, GetTickAsCurrencyString(TickType.CLOSE)));
+                infoStrings.Add(string.Format(Messages.TitleOpenFormat, GetTickAsCurrencyString(TickType.OPEN)));
             }
 
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
+        }
+
+        private string GetTickAsString(int tickType)
+        {
+            return client.GetTick(tickType)?.ToString() ?? Messages.TitleUnavailable;
+        }
+
+        private string GetTickAsCurrencyString(int tickType)
+        {
+            return client.GetTick(tickType)?.ToCurrencyString() ?? Messages.TitleUnavailable;
         }
         #endregion
 
@@ -564,10 +550,17 @@ namespace TradeBot
                 Messages.StepQuantityNotSetError);
         }
 
-        private Validator IfPriceDataAvailable()
+        private Validator IfTickDataAvailable(params int[] tickTypes)
+        {
+            return CreateValidator(
+                () => tickTypes.All(t => client.GetTick(t).HasValue),
+                Messages.PriceDataUnavailableError);
+        }
+
+        private Validator IfCommonTickDataAvailable()
         {
             Func<int, bool> ifAvailable = (tickType)
-                => client.GetTick(tickType) > 0;
+                => client.GetTick(tickType).HasValue;
 
             return CreateValidator(
                 () => ifAvailable(TickType.LAST) && ifAvailable(TickType.ASK) && ifAvailable(TickType.BID),

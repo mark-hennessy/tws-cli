@@ -4,11 +4,11 @@ namespace TradeBot.TwsAbstractions
 {
     public class TickData : Dictionary<int, double>
     {
-        public double Get(int tickType)
+        public double? Get(int tickType)
         {
             double result;
             return TryGetValue(tickType, out result)
-                ? result : -1;
+                ? (double?)result : null;
         }
 
         public void Update(int field, double value)

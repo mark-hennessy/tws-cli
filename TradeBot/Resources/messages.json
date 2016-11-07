@@ -1,7 +1,7 @@
 ﻿{
   "appName": "",
   "titleTickerSymbol": "{0}",
-  "titleTickerSymbolNotSelected": "????",
+  "titleUnavailable": "?",
   "titleStepQuantity": "Step Qty: {0}",
   "titlePosition": "Pos: {0}",
   "titleLastFormat": "Last: {0}",
