@@ -1,29 +1,10 @@
 #!/bin/bash
 
-# This script generates C# models classes from json.
+# This script generates C# models classes from json
 
-# Windows Setup Instructions
-# ==
-# 1. Install the NuGet package manager and add it to your PATH
-# 2. Run the following command to install the latest C# compiler:
-#    nuget install Microsoft.Net.Compilers
-# 3. Add the folder containing csc.exe to your PATH
-
-# Mac/Unix Setup Instructions
-# ==
-# 1. Install MonoDevelop. This should install the mcs and mono commands
-
-# Notes
-# ==
-# Windows and Mac/Unix use parallel but different commands to compile
-# and executable a C# application. This script will always run both versions
-# of the commands for robustness and simplicity. The "Command not found"
-# warnings can be ignored.
-
-# This will change to the directory where the script is stored
-# no matter how the script is run.
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd "${DIR}"
+# Change to the directory where the script is stored no matter how the script is run
+SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "${SCRIPT_DIR}"
 
 # Important: The exe and dll's must be in the same directory!
 ASSEMBLY_DIR="../Libs/JsonClassGenerator/"
@@ -59,6 +40,5 @@ NAMESPACE="TradeBot.Generated"
 # Delete the executable
 rm -f $EXE
 
-# Prevent the terminal from auto-closing on Windows.
-# Comment out if debugging the script.
+# Prevent the terminal from auto-closing on Windows
 #read -rsp $'Press any key to continue...\n' -n1
