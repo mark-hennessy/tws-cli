@@ -126,7 +126,7 @@ namespace TradeBot
 
             try
             {
-                client.Connect(Preferences.ClientUrl, Preferences.ClientPort);
+                client.Connect(clientUrl, clientPort);
                 LoadState();
                 while (!shouldExitApplication)
                 {
