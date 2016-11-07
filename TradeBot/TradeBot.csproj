@@ -158,7 +158,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="Scripts\readme.txt" />
-    <Content Include="TradeBot.sh">
+    <Content Include="Scripts\TradeBot.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
