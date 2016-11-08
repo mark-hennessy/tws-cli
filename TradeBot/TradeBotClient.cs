@@ -250,24 +250,35 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
-        public void PlaceBuyLimitOrder(int totalQuantity, int tickType = TickType.ASK)
+        public void PlaceBuyLimitOrder(int quantity, int tickType = TickType.ASK)
         {
-            PlaceLimitOrder(OrderActions.BUY, totalQuantity, GetTick(tickType) ?? -1);
+            PlaceLimitOrder(OrderActions.BUY, quantity, tickType);
         }
 
-        public void PlaceSellLimitOrder(int totalQuantity, int tickType = TickType.BID)
+        public void PlaceSellLimitOrder(int quantity, int tickType = TickType.BID)
         {
-            PlaceLimitOrder(OrderActions.SELL, totalQuantity, GetTick(tickType) ?? -1);
+            PlaceLimitOrder(OrderActions.SELL, quantity, tickType);
         }
 
-        public void PlaceLimitOrder(OrderActions action, int totalQuantity, double price)
+        public void PlaceLimitOrder(OrderActions action, int quantity, int tickType)
+        {
+            double? price = GetTick(tickType);
+            if (!price.HasValue)
+            {
+                return;
+            }
+
+            PlaceLimitOrder(action, quantity, price.Value);
+        }
+
+        public void PlaceLimitOrder(OrderActions action, int quantity, double price)
         {
             if (selectedContract == null || price <= 0)
             {
                 return;
             }
 
-            Order order = OrderFactory.CreateLimitOrder(action, totalQuantity, price);
+            Order order = OrderFactory.CreateLimitOrder(action, quantity, price);
             order.Account = TradedAccount;
             clientSocket.placeOrder(nextValidOrderId++, selectedContract, order);
         }

@@ -222,14 +222,16 @@ namespace TradeBot
             PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
             DoIfValid(() =>
             {
-                int orderSize = (int)Math.Round(position.Position * percent);
-                if (orderSize > 0)
+                int orderDelta = (int)Math.Round(position.Position * percent);
+                int orderQuantity = Math.Abs(orderDelta);
+
+                if (orderDelta > 0)
                 {
-                    client.PlaceBuyLimitOrder(orderSize);
+                    client.PlaceBuyLimitOrder(orderQuantity);
                 }
-                else if (orderSize < 0)
+                else if (orderDelta < 0)
                 {
-                    client.PlaceSellLimitOrder(orderSize);
+                    client.PlaceSellLimitOrder(orderQuantity);
                 }
             },
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
