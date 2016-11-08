@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using TradeBot.Events;
-using TradeBot.FileIO;
-using TradeBot.Generated;
 using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
 
@@ -157,19 +155,6 @@ namespace TradeBot
             RaisePropertyValueChangedEvent(TickData, nameof(TickData));
         }
 
-        private int _stepSize;
-        public int StepQuantity
-        {
-            get
-            {
-                return _stepSize;
-            }
-            set
-            {
-                SetPropertyAndRaiseValueChangedEvent(ref _stepSize, Math.Abs(value));
-            }
-        }
-
         private IList<CommissionReport> _commissionReports = new List<CommissionReport>();
         public IList<CommissionReport> CommissionReports
         {
@@ -231,23 +216,6 @@ namespace TradeBot
         {
             clientSocket.eDisconnect();
             IsConnected = false;
-        }
-
-        public void LoadState()
-        {
-            AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
-
-            TickerSymbol = state.TickerSymbol;
-            StepQuantity = state.StepQuantity ?? 0;
-        }
-
-        public void SaveState()
-        {
-            AppState state = new AppState();
-            state.TickerSymbol = TickerSymbol;
-            state.StepQuantity = StepQuantity;
-
-            PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
         }
 
         public void PlaceBuyLimitOrder(int quantity, int tickType = TickType.ASK)

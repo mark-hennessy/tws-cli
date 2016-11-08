@@ -105,8 +105,8 @@ namespace TradeBot
             MenuOptionEntries entries = Messages.MenuOptionEntries;
             addMenuOption(entries.ReloadSavedState, ReloadSavedState);
             addMenuOption(entries.SetTickerSymbol, PromptForTickerSymbol);
-            addMenuOption(entries.SetStepQuantity, PromptForStepQuantity);
-            addMenuOption(entries.SetStepQuantityFromCash, PromptForStepQuantityFromCash);
+            addMenuOption(entries.SetShares, PromptForShares);
+            addMenuOption(entries.SetCash, PromptForCash);
             addMenuOption(entries.Buy, Buy);
             addMenuOption(entries.Sell, Sell);
             addMenuOption(entries.ReversePosition, ReversePosition);
@@ -116,6 +116,22 @@ namespace TradeBot
             addMenuOption(entries.ClearScreen, ClearScreen);
             addMenuOption(entries.Help, Help);
             addMenuOption(entries.ExitApplication, ExitApplication);
+        }
+        #endregion
+
+        #region Properties
+        private int _shares;
+        private int Shares
+        {
+            get
+            {
+                return _shares;
+            }
+            set
+            {
+                _shares = value;
+                IO.ShowMessage(LogLevel.Info, Messages.SharesSetFormat, value);
+            }
         }
         #endregion
 
@@ -155,56 +171,56 @@ namespace TradeBot
         private void PromptForTickerSymbol()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
-            DoIfValid(() =>
+            Do(() =>
             {
                 client.TickerSymbol = tickerSymbol;
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
 
-        private void PromptForStepQuantity()
+        private void PromptForCash()
         {
-            string stepQuantityInput = IO.PromptForInput(Messages.StepQuantityPrompt);
-            int? stepQuantity = stepQuantityInput.ToInt();
-            DoIfValid(() =>
+            Do(() =>
             {
-                client.StepQuantity = stepQuantity.Value;
+                double sharePrice = client.GetTick(TickType.LAST).Value;
+                string cashInput = IO.PromptForInput(Messages.CashPrompt);
+                double? cash = cashInput.ToDouble();
+                Do(() =>
+                {
+                    Shares = StockMath.CalculateSharesFromCashValue(cash.Value, sharePrice);
+                },
+                IfHasValue(cash));
             },
-            IfHasValue(stepQuantity));
+             IfTickerSet(), IfCommonTickDataAvailable());
         }
 
-        private void PromptForStepQuantityFromCash()
+        private void PromptForShares()
         {
-            DoIfValid(() =>
-             {
-                 double sharePrice = client.GetTick(TickType.LAST).Value;
-                 string cashInput = IO.PromptForInput(Messages.StepQuantityFromCashPrompt);
-                 double? cash = cashInput.ToDouble();
-                 DoIfValid(() =>
-                 {
-                     client.StepQuantity = StockMath.CalculateSharesFromCashValue(cash.Value, sharePrice);
-                 },
-                 IfHasValue(cash));
-             },
-             IfTickerSet(), IfCommonTickDataAvailable());
+            string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
+            int? shares = sharesInput.ToInt();
+            Do(() =>
+            {
+                Shares = shares.Value;
+            },
+            IfHasValue(shares));
         }
 
         private void Buy()
         {
-            DoIfValid(() =>
+            Do(() =>
             {
-                client.PlaceBuyLimitOrder(client.StepQuantity);
+                client.PlaceBuyLimitOrder(Shares);
             },
-            IfTickerSet(), IfStepQuantitySet(), IfCommonTickDataAvailable());
+            IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
         private void Sell()
         {
-            DoIfValid(() =>
+            Do(() =>
             {
-                client.PlaceSellLimitOrder(client.StepQuantity);
+                client.PlaceSellLimitOrder(Shares);
             },
-            IfTickerSet(), IfStepQuantitySet(), IfCommonTickDataAvailable());
+            IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
         private void ReversePosition()
@@ -220,7 +236,7 @@ namespace TradeBot
         private void ScalePosition(double percent)
         {
             PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
-            DoIfValid(() =>
+            Do(() =>
             {
                 int orderDelta = (int)Math.Round(position.Position * percent);
                 int orderQuantity = Math.Abs(orderDelta);
@@ -362,9 +378,6 @@ namespace TradeBot
                 case nameof(client.TickerSymbol):
                     OnTickerSymbolChanged(eventArgs);
                     break;
-                case nameof(client.StepQuantity):
-                    OnStepSizeChanged(eventArgs);
-                    break;
                 case nameof(client.TickData):
                     OnTickDataChanged(eventArgs);
                     break;
@@ -432,13 +445,6 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnStepSizeChanged(PropertyChangedEventArgs eventArgs)
-        {
-            IO.ShowMessage(LogLevel.Info, Messages.StepQuantitySetFormat, client.StepQuantity);
-
-            UpdateConsoleTitle();
-        }
-
         private void OnTickDataChanged(PropertyChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
@@ -477,14 +483,23 @@ namespace TradeBot
 
         private void SaveState()
         {
-            client.SaveState();
+            AppState state = new AppState();
+            state.TickerSymbol = client.TickerSymbol;
+            state.Shares = Shares;
+
+            PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
+
             IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
         {
+            AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
+
+            client.TickerSymbol = state.TickerSymbol;
+            Shares = state.Shares ?? 0;
+
             IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
-            client.LoadState();
         }
 
         private void UpdateConsoleTitle()
@@ -501,7 +516,7 @@ namespace TradeBot
             bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
             string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
-            infoStrings.Add(string.Format(Messages.TitleStepQuantity, client.StepQuantity));
+            infoStrings.Add(string.Format(Messages.TitleShares, Shares));
 
             if (isTickerSet)
             {
@@ -545,7 +560,7 @@ namespace TradeBot
         private delegate bool Validation();
         private delegate bool Validator(Action ifValidCallback);
 
-        private void DoIfValid(Action ifValidCallback, params Validator[] validators)
+        private void Do(Action ifValidCallback, params Validator[] validators)
         {
             bool valid = true;
             foreach (var validator in validators)
@@ -565,11 +580,11 @@ namespace TradeBot
                 Messages.TickerSymbolNotSetError);
         }
 
-        private Validator IfStepQuantitySet()
+        private Validator IfSharesSet()
         {
             return CreateValidator(
-                () => client.StepQuantity > 0,
-                Messages.StepQuantityNotSetError);
+                () => Shares > 0,
+                Messages.SharesNotSetError);
         }
 
         private Validator IfTickDataAvailable(params int[] tickTypes)
