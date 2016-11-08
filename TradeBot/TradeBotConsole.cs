@@ -515,17 +515,22 @@ namespace TradeBot
             Console.Title = string.Join(Messages.TitleDivider, infoStrings);
         }
 
-        private string GetTickAsCurrencyString(int tickType)
+        private string GetTickAsString(int tickType)
         {
-            return GetTickAsString(tickType).ToCurrencyString();
+            return GetTickAsFormattedString(tickType, (v) => v.ToString());
         }
 
-        private string GetTickAsString(int tickType)
+        private string GetTickAsCurrencyString(int tickType)
+        {
+            return GetTickAsFormattedString(tickType, (v) => v.ToCurrencyString());
+        }
+
+        private string GetTickAsFormattedString(int tickType, Func<double, string> formatter)
         {
             double? tick = client.GetTick(tickType);
             if (tick.HasValue && tick.Value >= 0)
             {
-                return tick.Value.ToString();
+                return formatter(tick.Value);
             }
             else
             {

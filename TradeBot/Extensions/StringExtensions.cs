@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -22,11 +23,6 @@ namespace TradeBot.Extensions
         }
 
         public static string ToCurrencyString(this double currencyValue)
-        {
-            return ToCurrencyString(currencyValue.ToString());
-        }
-
-        public static string ToCurrencyString(this string currencyValue)
         {
             return string.Format("{0:C}", currencyValue);
         }
