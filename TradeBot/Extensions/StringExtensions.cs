@@ -21,9 +21,14 @@ namespace TradeBot.Extensions
             return validInput ? result : default(double?);
         }
 
-        public static string ToCurrencyString(this double currency)
+        public static string ToCurrencyString(this double currencyValue)
         {
-            return string.Format("{0:C}", currency);
+            return ToCurrencyString(currencyValue.ToString());
+        }
+
+        public static string ToCurrencyString(this string currencyValue)
+        {
+            return string.Format("{0:C}", currencyValue);
         }
 
         public static string ToPrettyString(this object obj, int indentLevel = 0)

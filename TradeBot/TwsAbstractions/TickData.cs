@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TradeBot.TwsAbstractions
 {
@@ -9,6 +10,11 @@ namespace TradeBot.TwsAbstractions
             double result;
             return TryGetValue(tickType, out result)
                 ? (double?)result : null;
+        }
+
+        public bool ContainsKeys(params int[] keys)
+        {
+            return keys.All(k => ContainsKey(k));
         }
 
         public void Update(int field, double value)

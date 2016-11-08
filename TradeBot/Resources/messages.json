@@ -1,7 +1,6 @@
 ﻿{
   "appName": "",
-  "titleTickerSymbol": "{0}",
-  "titleUnavailable": "?",
+  "titleTickerSymbol": "Symbol: {0}",
   "titleStepQuantity": "Step Qty: {0}",
   "titlePosition": "Pos: {0}",
   "titleLastFormat": "Last: {0}",
@@ -9,6 +8,7 @@
   "titleVolumeFormat": "Vol: {0}",
   "titleCloseFormat": "Close: {0}",
   "titleOpenFormat": "Open: {0}",
+  "titleUnavailable": "?",
   "titleDivider": "        ",
 
   "menuTitle": "====================\nMenu\n====================",

@@ -339,15 +339,10 @@ namespace TradeBot
                 clientSocket.reqAccountUpdates(false, oldValue);
             }
 
+            Portfolio = new Portfolio();
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                Portfolio = new Portfolio();
-
                 clientSocket.reqAccountUpdates(true, newValue);
-            }
-            else
-            {
-                Portfolio = null;
             }
         }
 
@@ -362,9 +357,9 @@ namespace TradeBot
                 clientSocket.cancelMktData(selectedTickerId);
             }
 
+            TickData = new TickData();
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                TickData = new TickData();
                 selectedContract = ContractFactory.CreateStockContract(newValue);
 
                 selectedTickerId = NumberGenerator.RandomInt();
@@ -372,7 +367,6 @@ namespace TradeBot
             }
             else
             {
-                TickData = null;
                 selectedContract = null;
             }
         }

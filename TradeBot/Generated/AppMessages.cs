@@ -61,9 +61,6 @@ namespace TradeBot.Generated
         [JsonProperty("titleTickerSymbol")]
         public string TitleTickerSymbol { get; set; }
 
-        [JsonProperty("titleUnavailable")]
-        public string TitleUnavailable { get; set; }
-
         [JsonProperty("titleStepQuantity")]
         public string TitleStepQuantity { get; set; }
 
@@ -84,6 +81,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("titleOpenFormat")]
         public string TitleOpenFormat { get; set; }
+
+        [JsonProperty("titleUnavailable")]
+        public string TitleUnavailable { get; set; }
 
         [JsonProperty("titleDivider")]
         public string TitleDivider { get; set; }
