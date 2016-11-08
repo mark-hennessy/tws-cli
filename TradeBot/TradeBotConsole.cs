@@ -12,7 +12,6 @@ using TradeBot.Generated;
 using TradeBot.Gui;
 using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
-using TradeBot.Utils;
 using static TradeBot.AppProperties;
 using static TradeBot.Gui.Window;
 
@@ -133,6 +132,20 @@ namespace TradeBot
                 IO.ShowMessage(LogLevel.Info, Messages.SharesSetFormat, value);
             }
         }
+
+        private double _cash;
+        private double Cash
+        {
+            get
+            {
+                return _cash;
+            }
+            set
+            {
+                _cash = value;
+                IO.ShowMessage(LogLevel.Info, Messages.CashSetFormat, value.ToCurrencyString());
+            }
+        }
         #endregion
 
         #region Public methods
@@ -178,22 +191,6 @@ namespace TradeBot
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
 
-        private void PromptForCash()
-        {
-            Do(() =>
-            {
-                double sharePrice = client.GetTick(TickType.LAST).Value;
-                string cashInput = IO.PromptForInput(Messages.CashPrompt);
-                double? cash = cashInput.ToDouble();
-                Do(() =>
-                {
-                    Shares = StockMath.CalculateSharesFromCashValue(cash.Value, sharePrice);
-                },
-                IfHasValue(cash));
-            },
-             IfTickerSet(), IfCommonTickDataAvailable());
-        }
-
         private void PromptForShares()
         {
             string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
@@ -202,7 +199,19 @@ namespace TradeBot
             {
                 Shares = shares.Value;
             },
-            IfHasValue(shares));
+            IfHasValue(shares), IfPositive(shares ?? -1));
+        }
+
+        private void PromptForCash()
+        {
+            string cashInput = IO.PromptForInput(Messages.CashPrompt);
+            double? cash = cashInput.ToDouble();
+            Do(() =>
+            {
+                Cash = cash.Value;
+                SetSharesFromCash();
+            },
+            IfHasValue(cash), IfPositive(cash ?? -1));
         }
 
         private void Buy()
@@ -440,6 +449,8 @@ namespace TradeBot
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 IO.ShowMessage(LogLevel.Info, Messages.TickerSymbolSetFormat, newValue);
+
+                SetSharesFromCash();
             }
 
             UpdateConsoleTitle();
@@ -486,6 +497,7 @@ namespace TradeBot
             AppState state = new AppState();
             state.TickerSymbol = client.TickerSymbol;
             state.Shares = Shares;
+            state.Cash = Cash;
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
 
@@ -498,8 +510,20 @@ namespace TradeBot
 
             client.TickerSymbol = state.TickerSymbol;
             Shares = state.Shares ?? 0;
+            Cash = state.Cash ?? 0;
 
             IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+        }
+
+        private void SetSharesFromCash()
+        {
+            double? sharePrice = client.GetTick(TickType.LAST);
+            if (!sharePrice.HasValue || Cash <= 0)
+            {
+                return;
+            }
+
+            Shares = (int)Math.Floor(Cash / sharePrice.Value);
         }
 
         private void UpdateConsoleTitle()
@@ -615,18 +639,32 @@ namespace TradeBot
                 Messages.InvalidNonEmptyStringInputError);
         }
 
-        private Validator IfHasValue(int? nullable)
+        private Validator IfHasValue(int? value)
         {
             return CreateValidator(
-                () => nullable.HasValue,
+                () => value.HasValue,
                 Messages.InvalidIntegerInputError);
         }
 
-        private Validator IfHasValue(double? nullable)
+        private Validator IfHasValue(double? value)
         {
             return CreateValidator(
-                () => nullable.HasValue,
+                () => value.HasValue,
                 Messages.InvalidDecimalInputError);
+        }
+
+        private Validator IfPositive(int value)
+        {
+            return CreateValidator(
+                () => value >= 0,
+                Messages.InvalidPositiveInputError);
+        }
+
+        private Validator IfPositive(double value)
+        {
+            return CreateValidator(
+                () => value >= 0,
+                Messages.InvalidPositiveInputError);
         }
 
         private Validator CreateValidator(Validation validation, string errorMessage)

@@ -133,7 +133,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Gui\Window.cs" />
     <Compile Include="Gui\OS.cs" />
-    <Compile Include="Utils\StockMath.cs" />
     <Compile Include="Utils\NumberGenerator.cs" />
     <Compile Include="TwsAbstractions\EWrapperImpl.cs" />
   </ItemGroup>

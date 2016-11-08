@@ -6,7 +6,7 @@ namespace TradeBot.Utils
     {
         private static readonly Random random = new Random();
 
-        public static int RandomInt()
+        public static int NextRandomInt()
         {
             return random.Next();
         }

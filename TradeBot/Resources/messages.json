@@ -48,20 +48,23 @@
   "sharesPrompt": "Shares: ",
   "sharesSetFormat": "Shares set to {0}",
   "sharesNotSetError": "Shares not set",
-  
+
   "cashPrompt": "Cash: ",
+  "cashSetFormat": "Cash set to {0}",
 
   "loadedStateFormat": "Loaded state from {0}",
   "savedStateFormat": "Saved state to {0}",
 
   "listPositionsFormat": "{0} {1}, Bought: {2}, Last: {3}, UnPnL: {4}, Value: {5}",
   "listAllPositionsFormat": "{0} {1}, {2}",
-  
+
   "commissionFormat": "Commission: {0}, Total: {1}",
 
-  "invalidIntegerInputError": "Invalid input, expected an integer",
-  "invalidDecimalInputError": "Invalid input, expected a decimal",
-  "invalidNonEmptyStringInputError": "Invalid input, expected non-empty text",
+  "invalidIntegerInputError": "Expected an integer",
+  "invalidDecimalInputError": "Expected a decimal",
+  "invalidPositiveInputError": "Expected a positive value",
+  "invalidNonEmptyStringInputError": "Expected non-empty text",
+
   "portfolioNotFound": "Portfolio not found",
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",

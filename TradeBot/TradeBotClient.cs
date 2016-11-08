@@ -341,7 +341,7 @@ namespace TradeBot
             {
                 selectedContract = ContractFactory.CreateStockContract(newValue);
 
-                selectedTickerId = NumberGenerator.RandomInt();
+                selectedTickerId = NumberGenerator.NextRandomInt();
                 clientSocket.reqMktData(selectedTickerId, selectedContract, "", false, null);
             }
             else

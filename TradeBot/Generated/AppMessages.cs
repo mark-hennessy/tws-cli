@@ -151,6 +151,9 @@ namespace TradeBot.Generated
         [JsonProperty("cashPrompt")]
         public string CashPrompt { get; set; }
 
+        [JsonProperty("cashSetFormat")]
+        public string CashSetFormat { get; set; }
+
         [JsonProperty("loadedStateFormat")]
         public string LoadedStateFormat { get; set; }
 
@@ -171,6 +174,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("invalidDecimalInputError")]
         public string InvalidDecimalInputError { get; set; }
+
+        [JsonProperty("invalidPositiveInputError")]
+        public string InvalidPositiveInputError { get; set; }
 
         [JsonProperty("invalidNonEmptyStringInputError")]
         public string InvalidNonEmptyStringInputError { get; set; }

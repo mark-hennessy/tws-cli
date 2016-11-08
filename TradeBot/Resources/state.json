@@ -1,4 +1,5 @@
 {
   "tickerSymbol": "GOOG",
-  "shares": 10
+  "shares": 10,
+  "cash": 10000.00
 }
