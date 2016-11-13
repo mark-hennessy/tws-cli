@@ -24,16 +24,21 @@ namespace TradeBot.Extensions
             return collection?.IsEmpty() ?? enumerable.IsEmpty();
         }
 
-        public static bool IsEmpty<T>(this ICollection<T> enumerable)
+        public static bool IsEmpty<T>(this ICollection<T> collection)
         {
             // Use the Count property for efficiency. 
             // The Count property is O(1) while IEnumerable.Count() is O(N). 
-            return enumerable.Count == 0;
+            return collection.Count == 0;
         }
 
         public static bool IsEmpty<T>(this IEnumerable<T> enumerable)
         {
             return !enumerable.Any();
+        }
+
+        public static int LastIndex<T>(this ICollection<T> collection)
+        {
+            return collection.Count - 1;
         }
 
         public static int LastIndex<T>(this IEnumerable<T> enumerable)
