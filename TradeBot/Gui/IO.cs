@@ -32,15 +32,15 @@ namespace TradeBot.Gui
             return input;
         }
 
-        public static void ShowMessage(LogLevel logLevel, string message, params object[] args)
+        public static void ShowMessage(LogLevel logLevel, string message, params object[] messageArgs)
         {
-            logger.Log(logLevel, message, args);
+            logger.Log(logLevel, message, messageArgs);
         }
 
-        private static void ShowAndLogPromptMessage(string message, params object[] args)
+        private static void ShowAndLogPromptMessage(string message, params object[] messageArgs)
         {
-            Console.Write(message, args);
-            ShowMessage(LogLevel.Trace, message, args);
+            Console.Write(message, messageArgs);
+            ShowMessage(LogLevel.Trace, message, messageArgs);
         }
     }
 

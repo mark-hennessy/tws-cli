@@ -128,8 +128,7 @@ namespace TradeBot
             }
             set
             {
-                _shares = value;
-                IO.ShowMessage(LogLevel.Info, Messages.SharesSetFormat, value);
+                SetProperty(ref _shares, value, Messages.SharesSetFormat, value);
             }
         }
 
@@ -142,8 +141,21 @@ namespace TradeBot
             }
             set
             {
-                _cash = value;
-                IO.ShowMessage(LogLevel.Info, Messages.CashSetFormat, value.ToCurrencyString());
+                SetProperty(ref _cash, value, Messages.CashSetFormat, value.ToCurrencyString());
+            }
+        }
+
+        protected void SetProperty<T>(ref T field, T newValue, string message = null, params object[] messageArgs)
+        {
+            T oldValue = field;
+            if (!Equals(oldValue, newValue))
+            {
+                field = newValue;
+
+                if (!message.IsNullOrEmpty())
+                {
+                    IO.ShowMessage(LogLevel.Info, message, messageArgs);
+                }
             }
         }
         #endregion
@@ -511,6 +523,7 @@ namespace TradeBot
             client.TickerSymbol = state.TickerSymbol;
             Shares = state.Shares ?? 0;
             Cash = state.Cash ?? 0;
+            SetSharesFromCash();
 
             IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
@@ -522,16 +535,12 @@ namespace TradeBot
                 return;
             }
 
-            const int priceTickType = TickType.LAST;
-
             Do(() =>
             {
-                double? sharePrice = client.GetTick(priceTickType);
+                double? sharePrice = client.GetTick(TickType.LAST);
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
-            CreateValidator(
-                () => client.HasTicks(priceTickType),
-                Messages.SharesCouldNotBeCalculatedFromCashError));
+            IfCommonTickDataAvailable());
         }
 
         private void UpdateConsoleTitle()
@@ -574,12 +583,12 @@ namespace TradeBot
             return GetTickAsFormattedString(tickType, (v) => v.ToCurrencyString());
         }
 
-        private string GetTickAsFormattedString(int tickType, Func<double, string> formatter)
+        private string GetTickAsFormattedString(int tickType, Func<double, string> messageFormatter)
         {
             double? tick = client.GetTick(tickType);
             if (tick.HasValue && tick.Value >= 0)
             {
-                return formatter(tick.Value);
+                return messageFormatter(tick.Value);
             }
             else
             {

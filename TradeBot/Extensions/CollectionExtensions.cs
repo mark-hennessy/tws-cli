@@ -20,13 +20,19 @@ namespace TradeBot.Extensions
                 return true;
             }
 
-            // If this is a list, use the Count property for efficiency. 
-            // The Count property is O(1) while IEnumerable.Count() is O(N). 
             var collection = enumerable as ICollection<T>;
-            if (collection != null)
-            {
-                return collection.Count < 1;
-            }
+            return collection?.IsEmpty() ?? enumerable.IsEmpty();
+        }
+
+        public static bool IsEmpty<T>(this ICollection<T> enumerable)
+        {
+            // Use the Count property for efficiency. 
+            // The Count property is O(1) while IEnumerable.Count() is O(N). 
+            return enumerable.Count == 0;
+        }
+
+        public static bool IsEmpty<T>(this IEnumerable<T> enumerable)
+        {
             return !enumerable.Any();
         }
 

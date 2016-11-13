@@ -67,7 +67,6 @@
 
   "portfolioNotFound": "Portfolio not found",
   "priceDataUnavailableError": "Price data unavailable",
-  "sharesCouldNotBeCalculatedFromCashError": "Shares could not be calculated from cash. Price data unavailable",
   "positionNotFoundError": "Position not found",
   "twsErrorFormat": "{0}",
   "exceptionFormat": "App Exception:\n{0}\n\nStack Trace:\n{1}"
