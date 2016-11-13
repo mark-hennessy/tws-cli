@@ -187,6 +187,9 @@ namespace TradeBot.Generated
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
 
+        [JsonProperty("sharesCouldNotBeCalculatedFromCashError")]
+        public string SharesCouldNotBeCalculatedFromCashError { get; set; }
+
         [JsonProperty("positionNotFoundError")]
         public string PositionNotFoundError { get; set; }
 

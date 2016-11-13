@@ -517,13 +517,21 @@ namespace TradeBot
 
         private void SetSharesFromCash()
         {
-            double? sharePrice = client.GetTick(TickType.LAST);
-            if (!sharePrice.HasValue || Cash <= 0)
+            if (Cash <= 0)
             {
                 return;
             }
 
-            Shares = (int)Math.Floor(Cash / sharePrice.Value);
+            const int priceTickType = TickType.LAST;
+
+            Do(() =>
+            {
+                double? sharePrice = client.GetTick(priceTickType);
+                Shares = (int)Math.Floor(Cash / sharePrice.Value);
+            },
+            CreateValidator(
+                () => client.HasTicks(priceTickType),
+                Messages.SharesCouldNotBeCalculatedFromCashError));
         }
 
         private void UpdateConsoleTitle()
@@ -581,9 +589,28 @@ namespace TradeBot
         #endregion
 
         #region Validations
+        /// <summary>
+        /// A closure around an isValid condition
+        /// such as value != null or value >= 0
+        /// </summary>
+        /// <returns>true if valid</returns>
         private delegate bool Validation();
+
+        /// <summary>
+        /// A closure around a single validation and a corresponding error message.
+        /// If valid, then the given callback will be invoked.
+        /// If not valid, then the enclosed error message will be shown.
+        /// </summary>
+        /// <param name="ifValidCallback">the callback to invoke if valid</param>
+        /// <returns>true if valid</returns>
         private delegate bool Validator(Action ifValidCallback);
 
+        /// <summary>
+        /// Iterates through the given list of validators and invokes the given ifValidCallback 
+        /// a single time if all validators are valid.
+        /// </summary>
+        /// <param name="ifValidCallback">the callback to invoke if valid</param>
+        /// <param name="validators">the list of validators</param>
         private void Do(Action ifValidCallback, params Validator[] validators)
         {
             bool valid = true;
@@ -614,14 +641,14 @@ namespace TradeBot
         private Validator IfTickDataAvailable(params int[] tickTypes)
         {
             return CreateValidator(
-                () => client.TickData?.ContainsKeys(tickTypes) ?? false,
+                () => client.HasTicks(tickTypes),
                 Messages.PriceDataUnavailableError);
         }
 
         private Validator IfCommonTickDataAvailable()
         {
             return CreateValidator(
-                () => client.TickData?.ContainsKeys(TickType.LAST, TickType.ASK, TickType.BID) ?? false,
+                () => client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID),
                 Messages.PriceDataUnavailableError);
         }
 

@@ -149,6 +149,11 @@ namespace TradeBot
             return TickData?.Get(tickType);
         }
 
+        public bool HasTicks(params int[] tickTypes)
+        {
+            return TickData?.ContainsKeys(tickTypes) ?? false;
+        }
+
         private void UpdateTick(int tickType, double value)
         {
             TickData.Update(tickType, value);
