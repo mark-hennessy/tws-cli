@@ -152,8 +152,49 @@ namespace TradeBot
 
         public bool HasTicks(params int[] tickTypes)
         {
-            var withPositiveValues = new Func<int, double, bool>((key, value) => value >= 0);
-            return TickData?.ContainsKeys(withPositiveValues, tickTypes) ?? false;
+            var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
+            return TickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
+        }
+
+        public Task<bool> HasTicksAsync(params int[] tickTypes)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            var onTickUpdated = new TickUpdatedEventHandler((sender, tickType, value) =>
+            {
+                if (HasTicks(tickTypes))
+                {
+                    tcs.SafelySetResult(true);
+                }
+            });
+
+            var onPropertyChanged = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                switch (eventArgs.PropertyName)
+                {
+                    case nameof(TickData):
+                        tcs.SafelySetResult(false);
+                        break;
+                }
+            });
+
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            {
+                tcs.SafelySetResult(false);
+            });
+
+            tcs.Task.ContinueWith(t =>
+            {
+                TickUpdated -= onTickUpdated;
+                PropertyChanged -= onPropertyChanged;
+                Error -= onError;
+            });
+
+            TickUpdated += onTickUpdated;
+            PropertyChanged += onPropertyChanged;
+            Error += onError;
+
+            return tcs.Task;
         }
 
         private void UpdateTick(int tickType, double value)
