@@ -1,7 +1,6 @@
 using IBApi;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -12,7 +11,7 @@ using TradeBot.Utils;
 
 namespace TradeBot
 {
-    public class TradeBotClient : EWrapperImpl, INotifyPropertyChanged
+    public class TradeBotClient : EWrapperImpl
     {
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
@@ -55,6 +54,7 @@ namespace TradeBot
 
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
+        public event TickUpdatedEventHandler TickUpdated;
         #endregion
 
         #region Properties
@@ -157,7 +157,7 @@ namespace TradeBot
         private void UpdateTick(int tickType, double value)
         {
             TickData.Update(tickType, value);
-            RaisePropertyValueChangedEvent(TickData, nameof(TickData));
+            TickUpdated?.Invoke(this, tickType, value);
         }
 
         private IList<CommissionReport> _commissionReports = new List<CommissionReport>();
@@ -261,9 +261,14 @@ namespace TradeBot
             var request = new TaskCompletionSource<IList<PositionInfo>>();
             var positions = new List<PositionInfo>();
 
-            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            var setResult = new Action<IList<PositionInfo>>((result) =>
             {
-                request.SetResult(null);
+                if (request.Task.IsCompleted)
+                {
+                    return;
+                }
+
+                request.SetResult(result);
             });
 
             var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
@@ -271,26 +276,26 @@ namespace TradeBot
                 positions.Add(new PositionInfo(account, contract, position, avgCost));
             });
 
-            var onPositionEnd = new Action(() =>
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
             {
-                if (request.Task.IsCompleted)
-                {
-                    return;
-                }
-
-                request.SetResult(positions);
+                setResult(null);
             });
 
-            Error += onError;
-            Position += onPosition;
-            PositionEnd += onPositionEnd;
+            var onPositionEnd = new Action(() =>
+            {
+                setResult(positions);
+            });
 
             request.Task.ContinueWith(t =>
             {
-                Error -= onError;
                 Position -= onPosition;
+                Error -= onError;
                 PositionEnd -= onPositionEnd;
             });
+
+            Position += onPosition;
+            Error += onError;
+            PositionEnd += onPositionEnd;
 
             clientSocket.reqPositions();
 

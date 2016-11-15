@@ -2,9 +2,9 @@
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -70,10 +70,11 @@ namespace TradeBot
 
         private void InitEventHandlers()
         {
-            Window.SetWindowCloseHandler(OnWindowClose);
 
             client.PropertyChanged += OnPropertyChanged;
+            client.TickUpdated += OnTickUpdated;
             client.Error += OnError;
+            Window.SetWindowCloseHandler(OnWindowClose);
         }
 
         private void InitConsole()
@@ -350,42 +351,6 @@ namespace TradeBot
         #endregion
 
         #region Event handlers
-        private void OnError(int id, int errorCode, string errorMessage, Exception e)
-        {
-            // Ignore common error codes
-            switch (errorCode)
-            {
-                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
-                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
-                case ErrorCodes.TICKER_ID_NOT_FOUND:
-                case ErrorCodes.CROSS_SIDE_WARNING:
-                    return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
-            }
-
-            if (e != null)
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.ExceptionFormat, e.Message, e.StackTrace);
-            }
-        }
-
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
-        }
-
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
@@ -473,6 +438,11 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
+        private void OnTickUpdated(object sender, int tickType, double value)
+        {
+            UpdateConsoleTitle();
+        }
+
         private void OnPortfolioChanged(PropertyChangedEventArgs eventArgs)
         {
             UpdateConsoleTitle();
@@ -494,6 +464,42 @@ namespace TradeBot
                 Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
                 totalCommissions.ToCurrencyString());
+        }
+
+        private void OnError(int id, int errorCode, string errorMessage, Exception e)
+        {
+            // Ignore common error codes
+            switch (errorCode)
+            {
+                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
+                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
+                case ErrorCodes.TICKER_ID_NOT_FOUND:
+                case ErrorCodes.CROSS_SIDE_WARNING:
+                    return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
+            }
+
+            if (e != null)
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.ExceptionFormat, e.Message, e.StackTrace);
+            }
+        }
+
+        private bool OnWindowClose(CloseReason reason)
+        {
+            Shutdown();
+
+            // return false since we didn't handle the control signal, 
+            // i.e. Environment.Exit(-1);
+            return false;
         }
         #endregion
 
@@ -523,7 +529,8 @@ namespace TradeBot
             client.TickerSymbol = state.TickerSymbol;
             Shares = state.Shares ?? 0;
             Cash = state.Cash ?? 0;
-            SetSharesFromCash();
+
+            SetSharesFromCashAsync().Wait();
 
             IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
@@ -541,6 +548,54 @@ namespace TradeBot
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
             IfCommonTickDataAvailable());
+        }
+
+        private Task<bool> SetSharesFromCashAsync()
+        {
+            var request = new TaskCompletionSource<bool>();
+
+            var setResult = new Action<bool>((result) =>
+            {
+                if (request.Task.IsCompleted)
+                {
+                    return;
+                }
+
+                request.SetResult(result);
+            });
+
+            var tickHandler = new TickUpdatedEventHandler((sender, tickType, value) =>
+            {
+                if (!IsCommonTickDataAvailable())
+                {
+                    return;
+                }
+
+                SetSharesFromCash();
+
+                setResult(true);
+            });
+
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            {
+                setResult(false);
+            });
+
+            request.Task.ContinueWith(t =>
+            {
+                client.TickUpdated -= tickHandler;
+                client.Error -= onError;
+            });
+
+            client.TickUpdated += tickHandler;
+            client.Error += onError;
+
+            return request.Task;
+        }
+
+        private bool IsCommonTickDataAvailable()
+        {
+            return client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID);
         }
 
         private void UpdateConsoleTitle()
@@ -657,7 +712,7 @@ namespace TradeBot
         private Validator IfCommonTickDataAvailable()
         {
             return CreateValidator(
-                () => client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID),
+                () => IsCommonTickDataAvailable(),
                 Messages.PriceDataUnavailableError);
         }
 

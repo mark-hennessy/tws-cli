@@ -106,7 +106,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Events\PropertyValueChangedEventArgs.cs" />
+    <Compile Include="Events\PropertyChangedEvent.cs" />
+    <Compile Include="Events\TickUpdatedEvent.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="TwsAbstractions\Portfolio.cs" />
