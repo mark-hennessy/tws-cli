@@ -18,8 +18,8 @@
   "menuOptionEntries": {
     "reloadSavedState": [ "l", "Load saved state" ],
     "setTickerSymbol": [ "t", "Set the ticker symbol to trade" ],
-    "setCash": [ "Y", "Set the amount of cash to trade" ],
-    "setShares": [ "y", "Set the amount of shares to trade" ],
+    "setCash": [ "k", "Set the amount of cash to trade" ],
+    "setShares": [ "K", "Set the amount of shares to trade" ],
     "buy": [ "b", "Buy" ],
     "sell": [ "s", "Sell" ],
     "reversePosition": [ "r", "Reverse position" ],
