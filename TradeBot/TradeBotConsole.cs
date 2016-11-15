@@ -19,6 +19,8 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
+        const int REQUEST_TIMEOUT = 3 * 1000;
+
         private TradeBotClient client;
         private Menu menu;
 
@@ -530,7 +532,7 @@ namespace TradeBot
             Shares = state.Shares ?? 0;
             Cash = state.Cash ?? 0;
 
-            SetSharesFromCashAsync().Wait();
+            SetSharesFromCashAsync().Wait(REQUEST_TIMEOUT);
 
             IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
@@ -564,6 +566,35 @@ namespace TradeBot
                 SetSharesFromCash();
 
                 tcs.SafelySetResult(true);
+            });
+
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            {
+                tcs.SafelySetResult(false);
+            });
+
+            tcs.Task.ContinueWith(t =>
+            {
+                client.TickUpdated -= tickHandler;
+                client.Error -= onError;
+            });
+
+            client.TickUpdated += tickHandler;
+            client.Error += onError;
+
+            return tcs.Task;
+        }
+
+        private Task<bool> IsCommonTickDataAvailableAsync()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            var tickHandler = new TickUpdatedEventHandler((sender, tickType, value) =>
+            {
+                if (IsCommonTickDataAvailable())
+                {
+                    tcs.SafelySetResult(true);
+                }
             });
 
             var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>

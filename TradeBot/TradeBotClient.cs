@@ -152,7 +152,8 @@ namespace TradeBot
 
         public bool HasTicks(params int[] tickTypes)
         {
-            return TickData?.ContainsKeys(tickTypes) ?? false;
+            var withPositiveValues = new Func<int, double, bool>((key, value) => value >= 0);
+            return TickData?.ContainsKeys(withPositiveValues, tickTypes) ?? false;
         }
 
         private void UpdateTick(int tickType, double value)

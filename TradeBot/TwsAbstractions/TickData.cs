@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TradeBot.TwsAbstractions
@@ -14,7 +15,17 @@ namespace TradeBot.TwsAbstractions
 
         public bool ContainsKeys(params int[] keys)
         {
-            return keys.All(k => ContainsKey(k));
+            return ContainsKeys(null, keys);
+        }
+
+        public bool ContainsKeys(Func<int, double, bool> criteria, params int[] keys)
+        {
+            return keys.All(key =>
+            {
+                double value;
+                bool containsKey = TryGetValue(key, out value);
+                return containsKey && (criteria?.Invoke(key, value) ?? true);
+            });
         }
 
         public void Update(int field, double value)
