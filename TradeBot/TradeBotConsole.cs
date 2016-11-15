@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -18,7 +19,7 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        const int REQUEST_TIMEOUT = 3 * 1000;
+        const int REQUEST_TIMEOUT = 2 * 1000;
 
         private TradeBotClient client;
         private Menu menu;
@@ -543,6 +544,8 @@ namespace TradeBot
                 return;
             }
 
+            IsCommonTickDataAvailableAsync().Wait(REQUEST_TIMEOUT);
+
             Do(() =>
             {
                 double? sharePrice = client.GetTick(TickType.LAST);
@@ -554,6 +557,11 @@ namespace TradeBot
         private bool IsCommonTickDataAvailable()
         {
             return client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID);
+        }
+
+        private Task<bool> IsCommonTickDataAvailableAsync()
+        {
+            return client.HasTicksAsync(TickType.LAST, TickType.ASK, TickType.BID);
         }
 
         private void UpdateConsoleTitle()
