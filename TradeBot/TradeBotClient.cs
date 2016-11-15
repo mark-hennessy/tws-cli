@@ -113,12 +113,6 @@ namespace TradeBot
             }
         }
 
-        private void UpdatePortfolioInfo(PortfolioInfo info)
-        {
-            Portfolio.Update(info);
-            RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
-        }
-
         private string _tickerSymbol;
         public string TickerSymbol
         {
@@ -145,64 +139,6 @@ namespace TradeBot
             }
         }
 
-        public double? GetTick(int tickType)
-        {
-            return TickData?.Get(tickType);
-        }
-
-        public bool HasTicks(params int[] tickTypes)
-        {
-            var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
-            return TickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
-        }
-
-        public Task<bool> HasTicksAsync(params int[] tickTypes)
-        {
-            var tcs = new TaskCompletionSource<bool>();
-
-            var onTickUpdated = new TickUpdatedEventHandler((sender, tickType, value) =>
-            {
-                if (HasTicks(tickTypes))
-                {
-                    tcs.SafelySetResult(true);
-                }
-            });
-
-            var onPropertyChanged = new PropertyChangedEventHandler((sender, eventArgs) =>
-            {
-                switch (eventArgs.PropertyName)
-                {
-                    case nameof(TickData):
-                        tcs.SafelySetResult(false);
-                        break;
-                }
-            });
-
-            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
-            {
-                tcs.SafelySetResult(false);
-            });
-
-            tcs.Task.ContinueWith(t =>
-            {
-                TickUpdated -= onTickUpdated;
-                PropertyChanged -= onPropertyChanged;
-                Error -= onError;
-            });
-
-            TickUpdated += onTickUpdated;
-            PropertyChanged += onPropertyChanged;
-            Error += onError;
-
-            return tcs.Task;
-        }
-
-        private void UpdateTick(int tickType, double value)
-        {
-            TickData.Update(tickType, value);
-            TickUpdated?.Invoke(this, tickType, value);
-        }
-
         private IList<CommissionReport> _commissionReports = new List<CommissionReport>();
         public IList<CommissionReport> CommissionReports
         {
@@ -214,12 +150,6 @@ namespace TradeBot
             {
                 SetPropertyAndRaiseValueChangedEvent(ref _commissionReports, value);
             }
-        }
-
-        private void AddCommissionReport(CommissionReport report)
-        {
-            CommissionReports.Add(report);
-            RaisePropertyValueChangedEvent(CommissionReports, nameof(CommissionReports));
         }
 
         protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
@@ -333,6 +263,67 @@ namespace TradeBot
             clientSocket.reqPositions();
 
             return tcs.Task;
+        }
+
+        public bool HasTicks(params int[] tickTypes)
+        {
+            var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
+            return TickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
+        }
+
+        public Task<bool> HasTicksAsync(params int[] tickTypes)
+        {
+            // If we already have the tick data, then there is no need 
+            // to wait for the next round of tick updates.
+            if (HasTicks(tickTypes))
+            {
+                return Task.FromResult(true);
+            }
+
+            // Otherwise, proceed with fancy asynchronous code!
+            var tcs = new TaskCompletionSource<bool>();
+
+            var onTickUpdated = new TickUpdatedEventHandler((sender, tickType, value) =>
+            {
+                if (HasTicks(tickTypes))
+                {
+                    tcs.SafelySetResult(true);
+                }
+            });
+
+            var onPropertyChanged = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                switch (eventArgs.PropertyName)
+                {
+                    case nameof(TickData):
+                        // If the TickData collection was re-assigned, then abort.
+                        tcs.SafelySetResult(false);
+                        break;
+                }
+            });
+
+            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
+            {
+                tcs.SafelySetResult(false);
+            });
+
+            tcs.Task.ContinueWith(t =>
+            {
+                TickUpdated -= onTickUpdated;
+                PropertyChanged -= onPropertyChanged;
+                Error -= onError;
+            });
+
+            TickUpdated += onTickUpdated;
+            PropertyChanged += onPropertyChanged;
+            Error += onError;
+
+            return tcs.Task;
+        }
+
+        public double? GetTick(int tickType)
+        {
+            return TickData?.Get(tickType);
         }
         #endregion
 
@@ -457,17 +448,21 @@ namespace TradeBot
                 return;
             }
 
-            UpdateTick(tickType, value);
+            TickData.Update(tickType, value);
+            TickUpdated?.Invoke(this, tickType, value);
         }
 
         private void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            UpdatePortfolioInfo(new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account));
+            var info = new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account);
+            Portfolio.Update(info);
+            RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
         }
 
         private void OnCommissionReport(CommissionReport report)
         {
-            AddCommissionReport(report);
+            CommissionReports.Add(report);
+            RaisePropertyValueChangedEvent(CommissionReports, nameof(CommissionReports));
         }
         #endregion
     }

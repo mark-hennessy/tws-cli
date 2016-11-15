@@ -224,7 +224,7 @@ namespace TradeBot
             Do(() =>
             {
                 Cash = cash.Value;
-                SetSharesFromCash();
+                SetSharesFromCashAsync();
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
@@ -429,7 +429,7 @@ namespace TradeBot
             {
                 IO.ShowMessage(LogLevel.Info, Messages.TickerSymbolSetFormat, newValue);
 
-                SetSharesFromCash();
+                SetSharesFromCashAsync();
             }
 
             UpdateConsoleTitle();
@@ -532,7 +532,7 @@ namespace TradeBot
             Cash = state.Cash ?? 0;
             if (Cash > 0)
             {
-                SetSharesFromCash();
+                SetSharesFromCashAsync();
             }
             else
             {
@@ -542,14 +542,14 @@ namespace TradeBot
             IO.ShowMessage(LogLevel.Info, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
-        private void SetSharesFromCash()
+        private void SetSharesFromCashAsync()
         {
             if (Cash <= 0)
             {
                 return;
             }
 
-            IsCommonTickDataAvailableAsync().Wait(REQUEST_TIMEOUT);
+            HasCommonTicksAsync().Wait(REQUEST_TIMEOUT);
 
             Do(() =>
             {
@@ -559,12 +559,12 @@ namespace TradeBot
             IfCommonTickDataAvailable());
         }
 
-        private bool IsCommonTickDataAvailable()
+        private bool HasCommonTicks()
         {
             return client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID);
         }
 
-        private Task<bool> IsCommonTickDataAvailableAsync()
+        private Task<bool> HasCommonTicksAsync()
         {
             return client.HasTicksAsync(TickType.LAST, TickType.ASK, TickType.BID);
         }
@@ -683,7 +683,7 @@ namespace TradeBot
         private Validator IfCommonTickDataAvailable()
         {
             return CreateValidator(
-                () => IsCommonTickDataAvailable(),
+                () => HasCommonTicks(),
                 Messages.PriceDataUnavailableError);
         }
 
