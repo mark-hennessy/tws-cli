@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -19,7 +18,8 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        const int REQUEST_TIMEOUT = 2 * 1000;
+        private const int REQUEST_TIMEOUT = 2 * 1000;
+        private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
         private TradeBotClient client;
         private Menu menu;
@@ -224,7 +224,7 @@ namespace TradeBot
             Do(() =>
             {
                 Cash = cash.Value;
-                SetSharesFromCashAsync();
+                SetSharesFromCash();
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
@@ -429,7 +429,7 @@ namespace TradeBot
             {
                 IO.ShowMessage(LogLevel.Info, Messages.TickerSymbolSetFormat, newValue);
 
-                SetSharesFromCashAsync();
+                SetSharesFromCash();
             }
 
             UpdateConsoleTitle();
@@ -532,7 +532,7 @@ namespace TradeBot
             Cash = state.Cash ?? 0;
             if (Cash > 0)
             {
-                SetSharesFromCashAsync();
+                SetSharesFromCash();
             }
             else
             {
@@ -542,14 +542,14 @@ namespace TradeBot
             IO.ShowMessage(LogLevel.Info, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
-        private void SetSharesFromCashAsync()
+        private void SetSharesFromCash()
         {
             if (Cash <= 0)
             {
                 return;
             }
 
-            HasCommonTicksAsync().Wait(REQUEST_TIMEOUT);
+            client.HasTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
 
             Do(() =>
             {
@@ -557,16 +557,6 @@ namespace TradeBot
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
             IfCommonTickDataAvailable());
-        }
-
-        private bool HasCommonTicks()
-        {
-            return client.HasTicks(TickType.LAST, TickType.ASK, TickType.BID);
-        }
-
-        private Task<bool> HasCommonTicksAsync()
-        {
-            return client.HasTicksAsync(TickType.LAST, TickType.ASK, TickType.BID);
         }
 
         private void UpdateConsoleTitle()
@@ -683,7 +673,7 @@ namespace TradeBot
         private Validator IfCommonTickDataAvailable()
         {
             return CreateValidator(
-                () => HasCommonTicks(),
+                () => client.HasTicks(COMMON_TICKS),
                 Messages.PriceDataUnavailableError);
         }
 
