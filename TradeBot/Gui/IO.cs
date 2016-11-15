@@ -14,7 +14,7 @@ namespace TradeBot.Gui
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowAndLogPromptMessage(message);
+                ShowInlineMessage(message);
             }
             string input = Console.ReadLine() ?? string.Empty;
             ShowMessage(LogLevel.Trace, input);
@@ -25,7 +25,7 @@ namespace TradeBot.Gui
         {
             if (!string.IsNullOrEmpty(message))
             {
-                ShowAndLogPromptMessage(message);
+                ShowInlineMessage(message);
             }
             char input = Console.ReadKey().KeyChar;
             ShowMessage(LogLevel.Trace, input.ToString());
@@ -37,9 +37,14 @@ namespace TradeBot.Gui
             logger.Log(logLevel, message, messageArgs);
         }
 
-        private static void ShowAndLogPromptMessage(string message, params object[] messageArgs)
+        private static void ShowInlineMessage(string message, params object[] messageArgs)
         {
+            // We don't want a new line after the message in the console,
+            // but we do want a new line after the message in the log file.
+
+            // Console.Write to circumnavigate the logging.
             Console.Write(message, messageArgs);
+            // Trace the message to circumnavigate the console.
             ShowMessage(LogLevel.Trace, message, messageArgs);
         }
     }

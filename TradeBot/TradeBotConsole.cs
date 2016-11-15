@@ -521,7 +521,7 @@ namespace TradeBot
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
 
-            IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(LogLevel.Info, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
@@ -529,12 +529,17 @@ namespace TradeBot
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
             client.TickerSymbol = state.TickerSymbol;
-            Shares = state.Shares ?? 0;
             Cash = state.Cash ?? 0;
+            if (Cash > 0)
+            {
+                SetSharesFromCash();
+            }
+            else
+            {
+                Shares = state.Shares ?? 0;
+            }
 
-            SetSharesFromCash();
-
-            IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(LogLevel.Info, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void SetSharesFromCash()

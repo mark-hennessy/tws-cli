@@ -15,11 +15,11 @@ namespace TradeBot.Generated
         [JsonProperty("tickerSymbol")]
         public string TickerSymbol { get; set; }
 
-        [JsonProperty("shares")]
-        public int? Shares { get; set; }
-
         [JsonProperty("cash")]
         public double? Cash { get; set; }
+
+        [JsonProperty("shares")]
+        public int? Shares { get; set; }
     }
 
 }
