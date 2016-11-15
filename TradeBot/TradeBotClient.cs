@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using TradeBot.Events;
+using TradeBot.Extensions;
 using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
 
@@ -258,18 +259,8 @@ namespace TradeBot
 
         public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
         {
-            var request = new TaskCompletionSource<IList<PositionInfo>>();
+            var tcs = new TaskCompletionSource<IList<PositionInfo>>();
             var positions = new List<PositionInfo>();
-
-            var setResult = new Action<IList<PositionInfo>>((result) =>
-            {
-                if (request.Task.IsCompleted)
-                {
-                    return;
-                }
-
-                request.SetResult(result);
-            });
 
             var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
             {
@@ -278,15 +269,15 @@ namespace TradeBot
 
             var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
             {
-                setResult(null);
+                tcs.SafelySetResult(null);
             });
 
             var onPositionEnd = new Action(() =>
             {
-                setResult(positions);
+                tcs.SafelySetResult(positions);
             });
 
-            request.Task.ContinueWith(t =>
+            tcs.Task.ContinueWith(t =>
             {
                 Position -= onPosition;
                 Error -= onError;
@@ -299,7 +290,7 @@ namespace TradeBot
 
             clientSocket.reqPositions();
 
-            return request.Task;
+            return tcs.Task;
         }
         #endregion
 

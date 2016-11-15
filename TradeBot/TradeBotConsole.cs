@@ -552,17 +552,7 @@ namespace TradeBot
 
         private Task<bool> SetSharesFromCashAsync()
         {
-            var request = new TaskCompletionSource<bool>();
-
-            var setResult = new Action<bool>((result) =>
-            {
-                if (request.Task.IsCompleted)
-                {
-                    return;
-                }
-
-                request.SetResult(result);
-            });
+            var tcs = new TaskCompletionSource<bool>();
 
             var tickHandler = new TickUpdatedEventHandler((sender, tickType, value) =>
             {
@@ -573,15 +563,15 @@ namespace TradeBot
 
                 SetSharesFromCash();
 
-                setResult(true);
+                tcs.SafelySetResult(true);
             });
 
             var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
             {
-                setResult(false);
+                tcs.SafelySetResult(false);
             });
 
-            request.Task.ContinueWith(t =>
+            tcs.Task.ContinueWith(t =>
             {
                 client.TickUpdated -= tickHandler;
                 client.Error -= onError;
@@ -590,7 +580,7 @@ namespace TradeBot
             client.TickUpdated += tickHandler;
             client.Error += onError;
 
-            return request.Task;
+            return tcs.Task;
         }
 
         private bool IsCommonTickDataAvailable()
