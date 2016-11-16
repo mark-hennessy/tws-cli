@@ -105,19 +105,20 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
-            addMenuOption(entries.ReloadSavedState, ReloadSavedState);
-            addMenuOption(entries.SetTickerSymbol, PromptForTickerSymbol);
-            addMenuOption(entries.SetShares, PromptForShares);
-            addMenuOption(entries.SetCash, PromptForCash);
-            addMenuOption(entries.Buy, Buy);
-            addMenuOption(entries.Sell, Sell);
-            addMenuOption(entries.ReversePosition, ReversePosition);
-            addMenuOption(entries.ClosePosition, ClosePosition);
-            addMenuOption(entries.ListPositions, ListPositions);
-            addMenuOption(entries.ListAllPositions, ListAllPositions);
-            addMenuOption(entries.ClearScreen, ClearScreen);
-            addMenuOption(entries.Help, Help);
-            addMenuOption(entries.ExitApplication, ExitApplication);
+            addMenuOption(entries.ReloadSavedState, ReloadSavedStateCommand);
+            addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
+            addMenuOption(entries.SetShares, SetSharesCommand);
+            addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
+            addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
+            addMenuOption(entries.Buy, BuyCommand);
+            addMenuOption(entries.Sell, SellCommand);
+            addMenuOption(entries.ReversePosition, ReversePositionCommand);
+            addMenuOption(entries.ClosePosition, ClosePositionCommand);
+            addMenuOption(entries.ListPositions, ListPositionsCommand);
+            addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
+            addMenuOption(entries.ClearScreen, ClearScreenCommand);
+            addMenuOption(entries.Help, HelpCommand);
+            addMenuOption(entries.ExitApplication, ExitApplicationCommand);
         }
         #endregion
 
@@ -191,12 +192,12 @@ namespace TradeBot
             }
         }
 
-        private void ReloadSavedState()
+        private void ReloadSavedStateCommand()
         {
             LoadState();
         }
 
-        private void PromptForTickerSymbol()
+        private void SetTickerSymbolCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             Do(() =>
@@ -206,7 +207,7 @@ namespace TradeBot
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
 
-        private void PromptForShares()
+        private void SetSharesCommand()
         {
             string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
@@ -217,7 +218,7 @@ namespace TradeBot
             IfHasValue(shares), IfPositive(shares ?? -1));
         }
 
-        private void PromptForCash()
+        private void SetSharesFromCashCommand()
         {
             string cashInput = IO.PromptForInput(Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
@@ -229,7 +230,12 @@ namespace TradeBot
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
 
-        private void Buy()
+        private void SetSharesFromPositionCommand()
+        {
+
+        }
+
+        private void BuyCommand()
         {
             Do(() =>
             {
@@ -238,7 +244,7 @@ namespace TradeBot
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
-        private void Sell()
+        private void SellCommand()
         {
             Do(() =>
             {
@@ -247,12 +253,12 @@ namespace TradeBot
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
-        private void ReversePosition()
+        private void ReversePositionCommand()
         {
             ScalePosition(-2);
         }
 
-        private void ClosePosition()
+        private void ClosePositionCommand()
         {
             ScalePosition(-1);
         }
@@ -277,7 +283,7 @@ namespace TradeBot
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
         }
 
-        private void ListPositions()
+        private void ListPositionsCommand()
         {
             Portfolio portfolio = service.Portfolio;
             if (portfolio != null)
@@ -313,7 +319,7 @@ namespace TradeBot
             }
         }
 
-        private void ListAllPositions()
+        private void ListAllPositionsCommand()
         {
             StringBuilder builder = new StringBuilder();
             IList<PositionInfo> positions = service.RequestAllPositionsForAllAccountsAsync().Result;
@@ -336,17 +342,17 @@ namespace TradeBot
             IO.ShowMessage(LogLevel.Info, builder.ToString());
         }
 
-        private void ClearScreen()
+        private void ClearScreenCommand()
         {
             Console.Clear();
         }
 
-        private void Help()
+        private void HelpCommand()
         {
             IO.ShowMessage(LogLevel.Info, menu.ToString());
         }
 
-        private void ExitApplication()
+        private void ExitApplicationCommand()
         {
             shouldExitApplication = true;
         }

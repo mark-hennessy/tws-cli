@@ -12,17 +12,17 @@ namespace TradeBot.Generated
     public class MenuOptionEntries
     {
 
-        [JsonProperty("reloadSavedState")]
-        public IList<string> ReloadSavedState { get; set; }
-
         [JsonProperty("setTickerSymbol")]
         public IList<string> SetTickerSymbol { get; set; }
 
-        [JsonProperty("setCash")]
-        public IList<string> SetCash { get; set; }
-
         [JsonProperty("setShares")]
         public IList<string> SetShares { get; set; }
+
+        [JsonProperty("setSharesFromCash")]
+        public IList<string> SetSharesFromCash { get; set; }
+
+        [JsonProperty("setSharesFromPosition")]
+        public IList<string> SetSharesFromPosition { get; set; }
 
         [JsonProperty("buy")]
         public IList<string> Buy { get; set; }
@@ -47,6 +47,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("help")]
         public IList<string> Help { get; set; }
+
+        [JsonProperty("reloadSavedState")]
+        public IList<string> ReloadSavedState { get; set; }
 
         [JsonProperty("exitApplication")]
         public IList<string> ExitApplication { get; set; }
