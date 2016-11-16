@@ -33,7 +33,7 @@
     "clearScreen": [ ".", "Clear screen" ],
     "help": [ "?", "Help" ],
 
-    "reloadSavedState": [ "l", "Load saved state" ],
+    "loadSavedState": [ "l", "Load saved state" ],
     "exitApplication": [ "q", "Save and exit" ]
   },
 

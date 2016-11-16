@@ -48,8 +48,8 @@ namespace TradeBot.Generated
         [JsonProperty("help")]
         public IList<string> Help { get; set; }
 
-        [JsonProperty("reloadSavedState")]
-        public IList<string> ReloadSavedState { get; set; }
+        [JsonProperty("loadSavedState")]
+        public IList<string> LoadSavedState { get; set; }
 
         [JsonProperty("exitApplication")]
         public IList<string> ExitApplication { get; set; }

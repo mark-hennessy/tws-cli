@@ -105,7 +105,7 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
-            addMenuOption(entries.ReloadSavedState, ReloadSavedStateCommand);
+            addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
             addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
             addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
@@ -168,14 +168,17 @@ namespace TradeBot
         public void Start()
         {
             IO.ShowMessage(LogLevel.Info, Messages.WelcomeMessage);
-
             try
             {
                 service.Connect(clientUrl, clientPort);
-                LoadState();
-                while (!shouldExitApplication)
+                if (service.IsConnected)
                 {
-                    menu.PromptForMenuOption().Command();
+                    LoadState();
+                    while (service.IsConnected && !shouldExitApplication)
+                    {
+                        menu.PromptForMenuOption().Command();
+                    }
+                    Shutdown();
                 }
             }
             catch (Exception e)
@@ -184,7 +187,6 @@ namespace TradeBot
             }
             finally
             {
-                Shutdown();
                 if (OS.IsWindows())
                 {
                     IO.PromptForChar(Messages.PressAnyKeyToExit);
@@ -192,7 +194,7 @@ namespace TradeBot
             }
         }
 
-        private void ReloadSavedStateCommand()
+        private void LoadSavedStateCommand()
         {
             LoadState();
         }
@@ -476,9 +478,9 @@ namespace TradeBot
 
         private void OnError(int id, int errorCode, string errorMessage, Exception e)
         {
-            // Ignore common error codes
             switch (errorCode)
             {
+                // Ignore common error codes
                 case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
                 case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
                 case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
@@ -514,8 +516,12 @@ namespace TradeBot
         #region Private helper methods
         private void Shutdown()
         {
-            service.Disconnect();
             SaveState();
+
+            if (service.IsConnected)
+            {
+                service.Disconnect();
+            }
         }
 
         private void SaveState()

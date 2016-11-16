@@ -96,6 +96,8 @@
         // Occurs when cancelMktData has already been called for a tickerId.
         public const int TICKER_ID_NOT_FOUND = 300;
 
+        public const int NOT_CONNECTED = 504;
+
         public const int MARKET_DATA_FARM_DISCONNECTED = 2103;
         public const int MARKET_DATA_FARM_CONNECTED = 2104;
         public const int HISTORICAL_DATA_FARM_DISCONNECTED = 2105;
