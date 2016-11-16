@@ -131,7 +131,7 @@
     <Compile Include="Gui\IO.cs" />
     <Compile Include="MenuFramework\Menu.cs" />
     <Compile Include="MenuFramework\MenuOption.cs" />
-    <Compile Include="TradeBotClient.cs" />
+    <Compile Include="TradeBotService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Gui\Window.cs" />
     <Compile Include="Gui\OS.cs" />

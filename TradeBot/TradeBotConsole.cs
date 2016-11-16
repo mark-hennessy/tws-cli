@@ -21,7 +21,7 @@ namespace TradeBot
         private const int REQUEST_TIMEOUT = 2 * 1000;
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
-        private TradeBotClient client;
+        private TradeBotService service;
         private Menu menu;
 
         private int clientId;
@@ -36,17 +36,17 @@ namespace TradeBot
             this.clientUrl = clientUrl;
             this.clientPort = clientPort;
 
-            InitClient();
+            InitService();
             InitConsole();
             InitMenu();
             InitEventHandlers();
         }
 
         #region Initialization
-        private void InitClient()
+        private void InitService()
         {
-            client = new TradeBotClient(clientId);
-            client.IgnoredDebugMessages = new string[] {
+            service = new TradeBotService(clientId);
+            service.IgnoredDebugMessages = new string[] {
                 nameof(EWrapper.error),
                 nameof(EWrapper.connectAck),
                 nameof(EWrapper.connectionClosed),
@@ -73,9 +73,9 @@ namespace TradeBot
         private void InitEventHandlers()
         {
 
-            client.PropertyChanged += OnPropertyChanged;
-            client.TickUpdated += OnTickUpdated;
-            client.Error += OnError;
+            service.PropertyChanged += OnPropertyChanged;
+            service.TickUpdated += OnTickUpdated;
+            service.Error += OnError;
             Window.SetWindowCloseHandler(OnWindowClose);
         }
 
@@ -170,7 +170,7 @@ namespace TradeBot
 
             try
             {
-                client.Connect(clientUrl, clientPort);
+                service.Connect(clientUrl, clientPort);
                 LoadState();
                 while (!shouldExitApplication)
                 {
@@ -201,7 +201,7 @@ namespace TradeBot
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             Do(() =>
             {
-                client.TickerSymbol = tickerSymbol;
+                service.TickerSymbol = tickerSymbol;
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
@@ -233,7 +233,7 @@ namespace TradeBot
         {
             Do(() =>
             {
-                client.PlaceBuyLimitOrder(Shares);
+                service.PlaceBuyLimitOrder(Shares);
             },
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
@@ -242,7 +242,7 @@ namespace TradeBot
         {
             Do(() =>
             {
-                client.PlaceSellLimitOrder(Shares);
+                service.PlaceSellLimitOrder(Shares);
             },
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
@@ -259,7 +259,7 @@ namespace TradeBot
 
         private void ScalePosition(double percent)
         {
-            PortfolioInfo position = client.Portfolio?.Get(client.TickerSymbol);
+            PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
             Do(() =>
             {
                 int orderDelta = (int)Math.Round(position.Position * percent);
@@ -267,11 +267,11 @@ namespace TradeBot
 
                 if (orderDelta > 0)
                 {
-                    client.PlaceBuyLimitOrder(orderQuantity);
+                    service.PlaceBuyLimitOrder(orderQuantity);
                 }
                 else if (orderDelta < 0)
                 {
-                    client.PlaceSellLimitOrder(orderQuantity);
+                    service.PlaceSellLimitOrder(orderQuantity);
                 }
             },
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
@@ -279,7 +279,7 @@ namespace TradeBot
 
         private void ListPositions()
         {
-            Portfolio portfolio = client.Portfolio;
+            Portfolio portfolio = service.Portfolio;
             if (portfolio != null)
             {
                 StringBuilder builder = new StringBuilder();
@@ -316,7 +316,7 @@ namespace TradeBot
         private void ListAllPositions()
         {
             StringBuilder builder = new StringBuilder();
-            IList<PositionInfo> positions = client.RequestAllPositionsForAllAccountsAsync().Result;
+            IList<PositionInfo> positions = service.RequestAllPositionsForAllAccountsAsync().Result;
             int lastIndex = positions.LastIndex();
             for (int i = 0; i < positions.Count; i++)
             {
@@ -357,22 +357,22 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
-                case nameof(client.IsConnected):
+                case nameof(service.IsConnected):
                     OnIsConnectedChanged(eventArgs);
                     break;
-                case nameof(client.Accounts):
+                case nameof(service.Accounts):
                     OnAccountsChanged(eventArgs);
                     break;
-                case nameof(client.TickerSymbol):
+                case nameof(service.TickerSymbol):
                     OnTickerSymbolChanged(eventArgs);
                     break;
-                case nameof(client.TickData):
+                case nameof(service.TickData):
                     OnTickDataChanged(eventArgs);
                     break;
-                case nameof(client.Portfolio):
+                case nameof(service.Portfolio):
                     OnPortfolioChanged(eventArgs);
                     break;
-                case nameof(client.CommissionReports):
+                case nameof(service.CommissionReports):
                     OnCommissionReportsChanged(eventArgs);
                     break;
             }
@@ -380,7 +380,7 @@ namespace TradeBot
 
         private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)
         {
-            if (client.IsConnected)
+            if (service.IsConnected)
             {
                 IO.ShowMessage(LogLevel.Trace, Messages.TwsConnected);
             }
@@ -392,11 +392,11 @@ namespace TradeBot
 
         private void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
-            string[] accounts = client.Accounts;
+            string[] accounts = service.Accounts;
             if (accounts != null && accounts.Length > 0)
             {
                 string tradedAccount = accounts[0];
-                client.TradedAccount = tradedAccount;
+                service.TradedAccount = tradedAccount;
 
                 if (accounts.Length > 1)
                 {
@@ -452,7 +452,7 @@ namespace TradeBot
 
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
         {
-            IList<CommissionReport> reports = client.CommissionReports;
+            IList<CommissionReport> reports = service.CommissionReports;
             if (reports.IsNullOrEmpty())
             {
                 return;
@@ -508,14 +508,14 @@ namespace TradeBot
         #region Private helper methods
         private void Shutdown()
         {
-            client.Disconnect();
+            service.Disconnect();
             SaveState();
         }
 
         private void SaveState()
         {
             AppState state = new AppState();
-            state.TickerSymbol = client.TickerSymbol;
+            state.TickerSymbol = service.TickerSymbol;
             state.Shares = Shares;
             state.Cash = Cash;
 
@@ -528,7 +528,7 @@ namespace TradeBot
         {
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
-            client.TickerSymbol = state.TickerSymbol;
+            service.TickerSymbol = state.TickerSymbol;
             Cash = state.Cash ?? 0;
             if (Cash > 0)
             {
@@ -549,11 +549,11 @@ namespace TradeBot
                 return;
             }
 
-            client.HasTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
+            service.HasTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
 
             Do(() =>
             {
-                double? sharePrice = client.GetTick(TickType.LAST);
+                double? sharePrice = service.GetTick(TickType.LAST);
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
             IfCommonTickDataAvailable());
@@ -569,7 +569,7 @@ namespace TradeBot
                 infoStrings.Add(appName);
             }
 
-            string tickerSymbol = client.TickerSymbol;
+            string tickerSymbol = service.TickerSymbol;
             bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
             string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
@@ -577,7 +577,7 @@ namespace TradeBot
 
             if (isTickerSet)
             {
-                double position = client.Portfolio?.Get(tickerSymbol)?.Position ?? 0;
+                double position = service.Portfolio?.Get(tickerSymbol)?.Position ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePosition, position));
                 infoStrings.Add(string.Format(Messages.TitleLastFormat, GetTickAsCurrencyString(TickType.LAST)));
                 infoStrings.Add(string.Format(Messages.TitleBidAskFormat, GetTickAsCurrencyString(TickType.BID), GetTickAsCurrencyString(TickType.ASK)));
@@ -601,7 +601,7 @@ namespace TradeBot
 
         private string GetTickAsFormattedString(int tickType, Func<double, string> messageFormatter)
         {
-            double? tick = client.GetTick(tickType);
+            double? tick = service.GetTick(tickType);
             if (tick.HasValue && tick.Value >= 0)
             {
                 return messageFormatter(tick.Value);
@@ -652,7 +652,7 @@ namespace TradeBot
         private Validator IfTickerSet()
         {
             return CreateValidator(
-                () => client.TickerSymbol != null,
+                () => service.TickerSymbol != null,
                 Messages.TickerSymbolNotSetError);
         }
 
@@ -666,14 +666,14 @@ namespace TradeBot
         private Validator IfTickDataAvailable(params int[] tickTypes)
         {
             return CreateValidator(
-                () => client.HasTicks(tickTypes),
+                () => service.HasTicks(tickTypes),
                 Messages.PriceDataUnavailableError);
         }
 
         private Validator IfCommonTickDataAvailable()
         {
             return CreateValidator(
-                () => client.HasTicks(COMMON_TICKS),
+                () => service.HasTicks(COMMON_TICKS),
                 Messages.PriceDataUnavailableError);
         }
 

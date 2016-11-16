@@ -12,7 +12,7 @@ using TradeBot.Utils;
 
 namespace TradeBot
 {
-    public class TradeBotClient : EWrapperImpl
+    public class TradeBotService : EWrapperImpl
     {
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
@@ -21,7 +21,7 @@ namespace TradeBot
         private int selectedTickerId;
         private int nextValidOrderId;
 
-        public TradeBotClient(int clientId)
+        public TradeBotService(int clientId)
         {
             ClientId = clientId;
 
