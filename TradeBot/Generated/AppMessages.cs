@@ -196,8 +196,11 @@ namespace TradeBot.Generated
         [JsonProperty("twsErrorFormat")]
         public string TwsErrorFormat { get; set; }
 
-        [JsonProperty("exceptionFormat")]
-        public string ExceptionFormat { get; set; }
+        [JsonProperty("appExceptionMessageFormat")]
+        public string AppExceptionMessageFormat { get; set; }
+
+        [JsonProperty("appExceptionStackTraceFormat")]
+        public string AppExceptionStackTraceFormat { get; set; }
     }
 
 }

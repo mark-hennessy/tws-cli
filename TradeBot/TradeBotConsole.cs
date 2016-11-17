@@ -105,19 +105,24 @@ namespace TradeBot
                 => menu.AddMenuOption(entry[0], entry[1], command);
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
-            addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
+
             addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
             addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
+
             addMenuOption(entries.Buy, BuyCommand);
             addMenuOption(entries.Sell, SellCommand);
             addMenuOption(entries.ReversePosition, ReversePositionCommand);
             addMenuOption(entries.ClosePosition, ClosePositionCommand);
+
             addMenuOption(entries.ListPositions, ListPositionsCommand);
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
+
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
             addMenuOption(entries.Help, HelpCommand);
+
+            addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
             addMenuOption(entries.ExitApplication, ExitApplicationCommand);
         }
         #endregion
@@ -183,7 +188,7 @@ namespace TradeBot
             }
             catch (Exception e)
             {
-                IO.ShowMessage(LogLevel.Fatal, Messages.ExceptionFormat, e.Message, e.StackTrace);
+                ShowException(e, LogLevel.Fatal);
             }
             finally
             {
@@ -476,7 +481,7 @@ namespace TradeBot
                 totalCommissions.ToCurrencyString());
         }
 
-        private void OnError(int id, int errorCode, string errorMessage, Exception e)
+        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
         {
             switch (errorCode)
             {
@@ -497,9 +502,9 @@ namespace TradeBot
                 IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
             }
 
-            if (e != null)
+            if (exception != null)
             {
-                IO.ShowMessage(LogLevel.Error, Messages.ExceptionFormat, e.Message, e.StackTrace);
+                ShowException(exception);
             }
         }
 
@@ -514,6 +519,15 @@ namespace TradeBot
         #endregion
 
         #region Private helper methods
+        private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
+        {
+            messageLogLevel = messageLogLevel ?? LogLevel.Error;
+            stackTraceLogLevel = stackTraceLogLevel ?? LogLevel.Trace;
+
+            IO.ShowMessage(messageLogLevel, Messages.AppExceptionMessageFormat, exception.Message);
+            IO.ShowMessage(stackTraceLogLevel, Messages.AppExceptionStackTraceFormat, exception.StackTrace);
+        }
+
         private void Shutdown()
         {
             SaveState();

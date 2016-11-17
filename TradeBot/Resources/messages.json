@@ -12,39 +12,39 @@
   "titleDivider": "   ",
 
   "menuTitle": "====================\nMenu\n====================",
-  "menuOptionInvalidEntry": "No such menu option",
+  "menuOptionInvalidEntry": "Invalid menu option. Enter '?' to show the menu.",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionLongestKey": "r",
   "menuOptionEntries": {
-        
+
     "setTickerSymbol": [ "t", "Set the ticker symbol to trade" ],
     "setShares": [ "o", "Set the amount of shares to trade" ],
     "setSharesFromCash": [ "k", "Set the amount of shares to trade based on a given cash value and the current share price" ],
-    "setSharesFromPosition": [ "u", "Set the amount of shares to trade based on your current position" ],
+    "setSharesFromPosition": [ "u", "Set the amount of shares to trade equal to your current position" ],
 
-    "buy": [ "b", "Buy" ],
-    "sell": [ "s", "Sell" ],
-    "reversePosition": [ "r", "Reverse position" ],
-    "closePosition": [ "c", "Close position" ],
+    "buy": [ "b", "Place a limit order to Buy at the current ask price" ],
+    "sell": [ "s", "Place a limit order to Sell at the current bid price" ],
+    "reversePosition": [ "r", "Place a limit order to Reverse your current position" ],
+    "closePosition": [ "c", "Place a limit order to Close your current position" ],
 
     "listPositions": [ "a", "List positions for the traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
 
     "clearScreen": [ ".", "Clear screen" ],
-    "help": [ "?", "Help" ],
+    "help": [ "?", "Show menu" ],
 
     "loadSavedState": [ "l", "Load saved state" ],
     "exitApplication": [ "q", "Save and exit" ]
   },
 
-  "welcomeMessage": "Welcome to TradeBot. Enter '?' to show the menu",
+  "welcomeMessage": "Welcome to TradeBot",
   "twsConnected": "Connection to TWS established",
   "twsDisconnected": "Connection to TWS closed",
-  "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded",
+  "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded.",
   "paperAccountPrefix": "D",
   "accountTypePaper": "Paper Trading",
   "accountTypeLive": "Live Trading",
-  "pressAnyKeyToExit": "Goodbye! Press any key to exit...",
+  "pressAnyKeyToExit": "Press any key to exit...",
 
   "selectTickerPrompt": "Ticker symbol: ",
   "tickerSymbolSetFormat": "Ticker symbol set to {0}",
@@ -75,5 +75,6 @@
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
   "twsErrorFormat": "{0}",
-  "exceptionFormat": "App Exception:\n{0}\n\nStack Trace:\n{1}"
+  "appExceptionMessageFormat": "{0}",
+  "appExceptionStackTraceFormat": "{0}"
 }
