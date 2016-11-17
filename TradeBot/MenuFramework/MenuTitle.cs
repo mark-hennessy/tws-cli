@@ -4,14 +4,14 @@ namespace TradeBot.MenuFramework
 {
     public class MenuTitle : MenuItem
     {
-        public MenuTitle(string title, string divider = null)
+        public MenuTitle(string title, MenuDivider divider = null)
         {
             Title = title;
             Divider = divider;
         }
 
         public string Title { get; set; }
-        public string Divider { get; set; }
+        public MenuDivider Divider { get; set; }
 
         public string Render()
         {
@@ -20,16 +20,17 @@ namespace TradeBot.MenuFramework
                 return string.Empty;
             }
 
-            if (string.IsNullOrEmpty(Divider))
+            string div = Divider?.Render();
+            if (string.IsNullOrEmpty(div))
             {
                 return Title;
             }
 
-            int titlePadding = Divider.Length / 2 + Title.Length / 2;
+            int titlePadding = div.Length / 2 + Title.Length / 2;
             return string.Join(Environment.NewLine,
-                Divider,
+                div,
                 Title.PadLeft(titlePadding),
-                Divider);
+                div);
         }
     }
 }

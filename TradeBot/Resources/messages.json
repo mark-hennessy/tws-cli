@@ -12,8 +12,8 @@
   "titleDivider": "   ",
 
   "menuTitle": "Menu",
-  "menuTitleDivider": "========================================",
-  "menuOptionDivider": "----------------------------------------",
+  "menuTitleDividerChar": "=",
+  "menuOptionDividerChar": "-",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionEntries": {
 

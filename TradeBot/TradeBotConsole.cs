@@ -100,14 +100,16 @@ namespace TradeBot
         private void InitMenu()
         {
             menu = new Menu();
-            menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, Messages.MenuTitleDivider));
 
-            Action<IList<string>, Action> addMenuOption = (entry, command)
-                => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command));
+            var titleDivider = new MenuDivider(Messages.MenuTitleDividerChar);
+            menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, titleDivider));
 
-            var divider = new MenuDivider(Messages.MenuOptionDivider);
-            Action addMenuDivider = ()
-                => menu.AddMenuItem(divider);
+            var addMenuOption = new Action<IList<string>, Action>((entry, command)
+                => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command)));
+
+            var menuOptionDivider = new MenuDivider(Messages.MenuOptionDividerChar);
+            var addMenuDivider = new Action(()
+                => menu.AddMenuItem(menuOptionDivider));
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
@@ -134,6 +136,8 @@ namespace TradeBot
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
             addMenuOption(entries.Help, HelpCommand);
             addMenuDivider();
+
+            int dividerLength = menu.GetLongestMenuEntryLength();
         }
         #endregion
 
