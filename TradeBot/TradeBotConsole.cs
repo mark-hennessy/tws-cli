@@ -100,9 +100,14 @@ namespace TradeBot
         private void InitMenu()
         {
             menu = new Menu();
+            menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, Messages.MenuTitleDivider));
 
             Action<IList<string>, Action> addMenuOption = (entry, command)
-                => menu.AddMenuOption(entry[0], entry[1], command);
+                => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command));
+
+            var divider = new MenuDivider(Messages.MenuOptionDivider);
+            Action addMenuDivider = ()
+                => menu.AddMenuItem(divider);
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
@@ -110,20 +115,25 @@ namespace TradeBot
             addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
+            addMenuDivider();
 
             addMenuOption(entries.Buy, BuyCommand);
             addMenuOption(entries.Sell, SellCommand);
             addMenuOption(entries.ReversePosition, ReversePositionCommand);
             addMenuOption(entries.ClosePosition, ClosePositionCommand);
+            addMenuDivider();
 
             addMenuOption(entries.ListPositions, ListPositionsCommand);
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
-
-            addMenuOption(entries.ClearScreen, ClearScreenCommand);
-            addMenuOption(entries.Help, HelpCommand);
+            addMenuDivider();
 
             addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
             addMenuOption(entries.ExitApplication, ExitApplicationCommand);
+            addMenuDivider();
+
+            addMenuOption(entries.ClearScreen, ClearScreenCommand);
+            addMenuOption(entries.Help, HelpCommand);
+            addMenuDivider();
         }
         #endregion
 
@@ -356,7 +366,7 @@ namespace TradeBot
 
         private void HelpCommand()
         {
-            IO.ShowMessage(LogLevel.Info, menu.ToString());
+            IO.ShowMessage(LogLevel.Info, menu.Render());
         }
 
         private void ExitApplicationCommand()

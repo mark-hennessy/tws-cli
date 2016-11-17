@@ -42,17 +42,17 @@ namespace TradeBot.Generated
         [JsonProperty("listAllPositions")]
         public IList<string> ListAllPositions { get; set; }
 
-        [JsonProperty("clearScreen")]
-        public IList<string> ClearScreen { get; set; }
-
-        [JsonProperty("help")]
-        public IList<string> Help { get; set; }
-
         [JsonProperty("loadSavedState")]
         public IList<string> LoadSavedState { get; set; }
 
         [JsonProperty("exitApplication")]
         public IList<string> ExitApplication { get; set; }
+
+        [JsonProperty("clearScreen")]
+        public IList<string> ClearScreen { get; set; }
+
+        [JsonProperty("help")]
+        public IList<string> Help { get; set; }
     }
 
     public class AppMessages
@@ -94,17 +94,23 @@ namespace TradeBot.Generated
         [JsonProperty("menuTitle")]
         public string MenuTitle { get; set; }
 
-        [JsonProperty("menuOptionInvalidEntry")]
-        public string MenuOptionInvalidEntry { get; set; }
+        [JsonProperty("menuTitleDivider")]
+        public string MenuTitleDivider { get; set; }
+
+        [JsonProperty("menuOptionDivider")]
+        public string MenuOptionDivider { get; set; }
 
         [JsonProperty("menuOptionFormat")]
         public string MenuOptionFormat { get; set; }
 
-        [JsonProperty("menuOptionLongestKey")]
-        public string MenuOptionLongestKey { get; set; }
-
         [JsonProperty("menuOptionEntries")]
         public MenuOptionEntries MenuOptionEntries { get; set; }
+
+        [JsonProperty("longestMenuOptionKey")]
+        public string LongestMenuOptionKey { get; set; }
+
+        [JsonProperty("invalidMenuOption")]
+        public string InvalidMenuOption { get; set; }
 
         [JsonProperty("welcomeMessage")]
         public string WelcomeMessage { get; set; }

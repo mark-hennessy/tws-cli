@@ -11,10 +11,10 @@
   "titleUnavailable": "?",
   "titleDivider": "   ",
 
-  "menuTitle": "====================\nMenu\n====================",
-  "menuOptionInvalidEntry": "Invalid menu option",
+  "menuTitle": "Menu",
+  "menuTitleDivider": "========================================",
+  "menuOptionDivider": "----------------------------------------",
   "menuOptionFormat": "{0} - {1}",
-  "menuOptionLongestKey": "r",
   "menuOptionEntries": {
 
     "setTickerSymbol": [ "t", "Set the ticker symbol to trade" ],
@@ -30,12 +30,14 @@
     "listPositions": [ "a", "List positions for the traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
 
-    "clearScreen": [ ".", "Clear screen" ],
-    "help": [ "?", "Show menu" ],
-
     "loadSavedState": [ "l", "Load saved state" ],
-    "exitApplication": [ "q", "Save and exit" ]
+    "exitApplication": [ "q", "Save and exit" ],
+
+    "clearScreen": [ ".", "Clear screen" ],
+    "help": [ "?", "Show menu" ]
   },
+  "longestMenuOptionKey": "r",
+  "invalidMenuOption": "Invalid menu option",
 
   "welcomeMessage": "Welcome to TradeBot. Enter '?' to show the menu.",
   "twsConnected": "Connection to TWS established",

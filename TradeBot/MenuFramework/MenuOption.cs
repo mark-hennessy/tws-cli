@@ -3,7 +3,7 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot.MenuFramework
 {
-    public class MenuOption
+    public class MenuOption : MenuItem
     {
         public MenuOption(string key, string description, Action command)
         {
@@ -13,12 +13,12 @@ namespace TradeBot.MenuFramework
         }
 
         public string Key { get; }
-        public string Description { get; }
-        public Action Command { get; }
+        public string Description { get; set; }
+        public Action Command { get; set; }
 
-        public override string ToString()
+        public string Render()
         {
-            string paddedKey = Key.PadRight(Messages.MenuOptionLongestKey.Length);
+            string paddedKey = Key.PadRight(Messages.LongestMenuOptionKey.Length);
             return string.Format(Messages.MenuOptionFormat, paddedKey, Description);
         }
     }
