@@ -12,7 +12,7 @@
   "titleDivider": "   ",
 
   "menuTitle": "====================\nMenu\n====================",
-  "menuOptionInvalidEntry": "Invalid menu option. Enter '?' to show the menu.",
+  "menuOptionInvalidEntry": "Invalid menu option",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionLongestKey": "r",
   "menuOptionEntries": {
@@ -37,7 +37,7 @@
     "exitApplication": [ "q", "Save and exit" ]
   },
 
-  "welcomeMessage": "Welcome to TradeBot",
+  "welcomeMessage": "Welcome to TradeBot. Enter '?' to show the menu.",
   "twsConnected": "Connection to TWS established",
   "twsDisconnected": "Connection to TWS closed",
   "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded.",
