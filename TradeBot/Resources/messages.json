@@ -15,7 +15,7 @@
   "menuTitleDividerChar": "=",
   "menuOptionDividerChar": "",
   "menuEndDividerChar": "-",
-  "menuOptionFormat": "{0} - {1}",
+  "menuOptionFormat": "{0}  {1}",
   "menuOptionEntries": {
 
     "setTickerSymbol": [ "t", "Set ticker symbol to trade" ],
