@@ -100,6 +100,9 @@ namespace TradeBot.Generated
         [JsonProperty("menuOptionDividerChar")]
         public string MenuOptionDividerChar { get; set; }
 
+        [JsonProperty("menuEndDividerChar")]
+        public string MenuEndDividerChar { get; set; }
+
         [JsonProperty("menuOptionFormat")]
         public string MenuOptionFormat { get; set; }
 

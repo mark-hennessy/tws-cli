@@ -18,7 +18,7 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        private const int REQUEST_TIMEOUT = 2 * 1000;
+        private const int REQUEST_TIMEOUT = 1 * 1000;
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
         private TradeBotService service;
@@ -101,14 +101,14 @@ namespace TradeBot
         {
             menu = new Menu();
 
-            var titleDivider = new MenuDivider(Messages.MenuTitleDividerChar);
+            var titleDivider = new MenuDivider();
             menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, titleDivider));
 
             var addMenuOption = new Action<IList<string>, Action>((entry, command)
                 => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command)));
 
-            var menuOptionDivider = new MenuDivider(Messages.MenuOptionDividerChar);
-            var addMenuDivider = new Action(()
+            var menuOptionDivider = new MenuDivider();
+            var addMenuOptionDivider = new Action(()
                 => menu.AddMenuItem(menuOptionDivider));
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
@@ -117,27 +117,38 @@ namespace TradeBot
             addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
-            addMenuDivider();
+            addMenuOptionDivider();
 
             addMenuOption(entries.Buy, BuyCommand);
             addMenuOption(entries.Sell, SellCommand);
             addMenuOption(entries.ReversePosition, ReversePositionCommand);
             addMenuOption(entries.ClosePosition, ClosePositionCommand);
-            addMenuDivider();
+            addMenuOptionDivider();
 
             addMenuOption(entries.ListPositions, ListPositionsCommand);
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
-            addMenuDivider();
+            addMenuOptionDivider();
 
             addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
             addMenuOption(entries.ExitApplication, ExitApplicationCommand);
-            addMenuDivider();
+            addMenuOptionDivider();
 
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
             addMenuOption(entries.Help, HelpCommand);
-            addMenuDivider();
+
+            var menuEndDivider = new MenuDivider();
+            menu.AddMenuItem(menuEndDivider);
 
             int dividerLength = menu.GetLongestMenuEntryLength();
+            var createDividerString = new Func<string, string>((charString) =>
+            {
+                return !string.IsNullOrEmpty(charString)
+                    ? new string(charString.First(), dividerLength)
+                    : string.Empty;
+            });
+            titleDivider.DividerString = createDividerString(Messages.MenuTitleDividerChar);
+            menuOptionDivider.DividerString = createDividerString(Messages.MenuOptionDividerChar);
+            menuEndDivider.DividerString = createDividerString(Messages.MenuEndDividerChar);
         }
         #endregion
 

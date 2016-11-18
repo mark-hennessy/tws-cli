@@ -2,16 +2,21 @@
 {
     public class MenuDivider : MenuItem
     {
-        public MenuDivider(string divider)
+        public MenuDivider(string dividerString = null)
         {
-            Divider = divider;
+            DividerString = dividerString;
         }
 
-        public string Divider { get; set; }
+        public string DividerString { get; set; }
 
         public string Render()
         {
-            return Divider;
+            if (DividerString == null)
+            {
+                return string.Empty;
+            }
+
+            return DividerString;
         }
     }
 }

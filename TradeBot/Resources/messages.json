@@ -13,19 +13,20 @@
 
   "menuTitle": "Menu",
   "menuTitleDividerChar": "=",
-  "menuOptionDividerChar": "-",
+  "menuOptionDividerChar": "",
+  "menuEndDividerChar": "-",
   "menuOptionFormat": "{0} - {1}",
   "menuOptionEntries": {
 
-    "setTickerSymbol": [ "t", "Set the ticker symbol to trade" ],
-    "setShares": [ "o", "Set the amount of shares to trade" ],
-    "setSharesFromCash": [ "k", "Set the amount of shares to trade based on a given cash value and the current share price" ],
-    "setSharesFromPosition": [ "u", "Set the amount of shares to trade equal to your current position" ],
+    "setTickerSymbol": [ "t", "Set ticker symbol to trade" ],
+    "setShares": [ "o", "Set shares to trade" ],
+    "setSharesFromCash": [ "k", "Set shares to trade based on a given cash value and the current share price" ],
+    "setSharesFromPosition": [ "u", "Set shares to trade equal to your current position" ],
 
-    "buy": [ "b", "Place a limit order to Buy at the current ask price" ],
-    "sell": [ "s", "Place a limit order to Sell at the current bid price" ],
-    "reversePosition": [ "r", "Place a limit order to Reverse your current position" ],
-    "closePosition": [ "c", "Place a limit order to Close your current position" ],
+    "buy": [ "b", "Place limit order to Buy @ ask price" ],
+    "sell": [ "s", "Place limit order to Sell @ bid price" ],
+    "reversePosition": [ "r", "Place limit order to Reverse position" ],
+    "closePosition": [ "c", "Place limit order to Close position" ],
 
     "listPositions": [ "a", "List positions for the traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
