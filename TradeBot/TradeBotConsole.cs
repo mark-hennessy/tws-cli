@@ -114,8 +114,8 @@ namespace TradeBot
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
             addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
-            addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
+            addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
             addMenuOptionDivider();
 
