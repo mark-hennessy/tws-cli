@@ -329,7 +329,7 @@ namespace TradeBot
                 Shares = state.Shares ?? 0;
             }
 
-            IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void SaveStateCommand()
@@ -341,7 +341,7 @@ namespace TradeBot
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
 
-            IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void ClearScreenCommand()
