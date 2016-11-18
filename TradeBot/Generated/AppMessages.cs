@@ -127,17 +127,14 @@ namespace TradeBot.Generated
         [JsonProperty("multipleAccountsWarningFormat")]
         public string MultipleAccountsWarningFormat { get; set; }
 
-        [JsonProperty("paperAccountPrefix")]
-        public string PaperAccountPrefix { get; set; }
+        [JsonProperty("accountTypeLive")]
+        public string AccountTypeLive { get; set; }
 
         [JsonProperty("accountTypePaper")]
         public string AccountTypePaper { get; set; }
 
-        [JsonProperty("accountTypeLive")]
-        public string AccountTypeLive { get; set; }
-
-        [JsonProperty("pressAnyKeyToExit")]
-        public string PressAnyKeyToExit { get; set; }
+        [JsonProperty("paperAccountPrefix")]
+        public string PaperAccountPrefix { get; set; }
 
         [JsonProperty("selectTickerPrompt")]
         public string SelectTickerPrompt { get; set; }
@@ -166,20 +163,32 @@ namespace TradeBot.Generated
         [JsonProperty("cashSetFormat")]
         public string CashSetFormat { get; set; }
 
-        [JsonProperty("loadedStateFormat")]
-        public string LoadedStateFormat { get; set; }
-
-        [JsonProperty("savedStateFormat")]
-        public string SavedStateFormat { get; set; }
-
         [JsonProperty("listPositionsFormat")]
         public string ListPositionsFormat { get; set; }
 
         [JsonProperty("listAllPositionsFormat")]
         public string ListAllPositionsFormat { get; set; }
 
+        [JsonProperty("loadedStateFormat")]
+        public string LoadedStateFormat { get; set; }
+
+        [JsonProperty("savedStateFormat")]
+        public string SavedStateFormat { get; set; }
+
         [JsonProperty("commissionFormat")]
         public string CommissionFormat { get; set; }
+
+        [JsonProperty("pressAnyKeyToExit")]
+        public string PressAnyKeyToExit { get; set; }
+
+        [JsonProperty("priceDataUnavailableError")]
+        public string PriceDataUnavailableError { get; set; }
+
+        [JsonProperty("positionNotFoundError")]
+        public string PositionNotFoundError { get; set; }
+
+        [JsonProperty("portfolioNotFound")]
+        public string PortfolioNotFound { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }
@@ -192,15 +201,6 @@ namespace TradeBot.Generated
 
         [JsonProperty("invalidNonEmptyStringInputError")]
         public string InvalidNonEmptyStringInputError { get; set; }
-
-        [JsonProperty("portfolioNotFound")]
-        public string PortfolioNotFound { get; set; }
-
-        [JsonProperty("priceDataUnavailableError")]
-        public string PriceDataUnavailableError { get; set; }
-
-        [JsonProperty("positionNotFoundError")]
-        public string PositionNotFoundError { get; set; }
 
         [JsonProperty("twsErrorFormat")]
         public string TwsErrorFormat { get; set; }

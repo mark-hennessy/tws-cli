@@ -1,5 +1,6 @@
 ﻿{
   "appName": "",
+
   "titleTickerSymbol": "Symbol: {0}",
   "titleShares": "Shares: {0}",
   "titlePosition": "Pos: {0}",
@@ -45,10 +46,10 @@
   "twsConnected": "Connection to TWS established",
   "twsDisconnected": "Connection to TWS closed",
   "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded.",
-  "paperAccountPrefix": "D",
-  "accountTypePaper": "Paper Trading",
+  
   "accountTypeLive": "Live Trading",
-  "pressAnyKeyToExit": "Press any key to exit...",
+  "accountTypePaper": "Paper Trading",
+  "paperAccountPrefix": "D",
 
   "selectTickerPrompt": "Ticker symbol: ",
   "tickerSymbolSetFormat": "Ticker symbol set to {0}",
@@ -62,22 +63,25 @@
   "cashPrompt": "Cash: ",
   "cashSetFormat": "Cash set to {0}",
 
-  "loadedStateFormat": "Loaded state from {0}",
-  "savedStateFormat": "Saved state to {0}",
-
   "listPositionsFormat": "{0} {1}, Bought: {2}, Last: {3}, UnPnL: {4}, Value: {5}",
   "listAllPositionsFormat": "{0} {1}, {2}",
 
+  "loadedStateFormat": "Loaded state from {0}",
+  "savedStateFormat": "Saved state to {0}",
+
   "commissionFormat": "Commission: {0}, Total: {1}",
+
+  "pressAnyKeyToExit": "Press any key to exit...",
+
+  "priceDataUnavailableError": "Price data unavailable",
+  "positionNotFoundError": "Position not found",
+  "portfolioNotFound": "Portfolio not found",
 
   "invalidIntegerInputError": "Expected an integer",
   "invalidDecimalInputError": "Expected a decimal",
   "invalidPositiveInputError": "Expected a positive value",
   "invalidNonEmptyStringInputError": "Expected non-empty text",
 
-  "portfolioNotFound": "Portfolio not found",
-  "priceDataUnavailableError": "Price data unavailable",
-  "positionNotFoundError": "Position not found",
   "twsErrorFormat": "{0}",
   "appExceptionMessageFormat": "{0}",
   "appExceptionStackTraceFormat": "{0}"
