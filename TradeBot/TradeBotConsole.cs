@@ -12,7 +12,6 @@ using TradeBot.Gui;
 using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
 using static TradeBot.AppProperties;
-using static TradeBot.Gui.Window;
 
 namespace TradeBot
 {
@@ -24,26 +23,14 @@ namespace TradeBot
         private TradeBotService service;
         private Menu menu;
 
-        private int clientId;
-        private string clientUrl;
-        private int clientPort;
-
-        private bool shouldExitApplication;
-
-        public TradeBotConsole(int clientId, string clientUrl, int clientPort)
+        public TradeBotConsole(int clientId)
         {
-            this.clientId = clientId;
-            this.clientUrl = clientUrl;
-            this.clientPort = clientPort;
-
-            InitService();
-            InitConsole();
+            InitService(clientId);
             InitMenu();
-            InitEventHandlers();
         }
 
         #region Initialization
-        private void InitService()
+        private void InitService(int clientId)
         {
             service = new TradeBotService(clientId);
             service.IgnoredDebugMessages = new string[] {
@@ -68,33 +55,10 @@ namespace TradeBot
                 nameof(EWrapper.execDetails),
                 nameof(EWrapper.commissionReport)
             };
-        }
-
-        private void InitEventHandlers()
-        {
 
             service.PropertyChanged += OnPropertyChanged;
             service.TickUpdated += OnTickUpdated;
             service.Error += OnError;
-            Window.SetWindowCloseHandler(OnWindowClose);
-        }
-
-        private void InitConsole()
-        {
-            UpdateConsoleTitle();
-
-            // The following settings are only supported on Windows.
-            if (OS.IsWindows())
-            {
-                // Set the console buffer height to the maximum allowed value.
-                Console.BufferHeight = Int16.MaxValue - 1;
-                if (Preferences.CenterWindow)
-                {
-                    Window.SetWindowSizeAndCenter(
-                        Preferences.WindowWidth,
-                        Preferences.WindowHeight);
-                }
-            }
         }
 
         private void InitMenu()
@@ -114,6 +78,8 @@ namespace TradeBot
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
             addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
+            addMenuOptionDivider();
+
             addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
             addMenuOption(entries.SetShares, SetSharesCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
@@ -129,12 +95,12 @@ namespace TradeBot
             addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.LoadSavedState, LoadSavedStateCommand);
-            addMenuOption(entries.ExitApplication, ExitApplicationCommand);
+            addMenuOption(entries.LoadState, LoadStateCommand);
+            addMenuOption(entries.SaveState, SaveStateCommand);
             addMenuOptionDivider();
 
             addMenuOption(entries.ClearScreen, ClearScreenCommand);
-            addMenuOption(entries.Help, HelpCommand);
+            addMenuOption(entries.ShowMenu, ShowMenuCommand);
 
             var menuEndDivider = new MenuDivider();
             menu.AddMenuItem(menuEndDivider);
@@ -149,6 +115,34 @@ namespace TradeBot
             titleDivider.DividerString = createDividerString(Messages.MenuTitleDividerChar);
             menuOptionDivider.DividerString = createDividerString(Messages.MenuOptionDividerChar);
             menuEndDivider.DividerString = createDividerString(Messages.MenuEndDividerChar);
+        }
+
+        public void Connect(string clientUrl, int clientPort)
+        {
+            IO.ShowMessage(Messages.WelcomeMessage);
+            try
+            {
+                service.Connect(clientUrl, clientPort);
+                if (service.IsConnected)
+                {
+                    LoadStateCommand();
+                    while (service.IsConnected)
+                    {
+                        menu.PromptForMenuOption().Command();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e, LogLevel.Fatal);
+            }
+            finally
+            {
+                if (OS.IsWindows())
+                {
+                    IO.PromptForChar(Messages.PressAnyKeyToExit);
+                }
+            }
         }
         #endregion
 
@@ -194,41 +188,7 @@ namespace TradeBot
         }
         #endregion
 
-        #region Public methods
-        public void Start()
-        {
-            IO.ShowMessage(Messages.WelcomeMessage);
-            try
-            {
-                service.Connect(clientUrl, clientPort);
-                if (service.IsConnected)
-                {
-                    LoadState();
-                    while (service.IsConnected && !shouldExitApplication)
-                    {
-                        menu.PromptForMenuOption().Command();
-                    }
-                    Shutdown();
-                }
-            }
-            catch (Exception e)
-            {
-                ShowException(e, LogLevel.Fatal);
-            }
-            finally
-            {
-                if (OS.IsWindows())
-                {
-                    IO.PromptForChar(Messages.PressAnyKeyToExit);
-                }
-            }
-        }
-
-        private void LoadSavedStateCommand()
-        {
-            LoadState();
-        }
-
+        #region Menu commands
         private void SetTickerSymbolCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
@@ -237,17 +197,6 @@ namespace TradeBot
                 service.TickerSymbol = tickerSymbol;
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
-        }
-
-        private void SetSharesCommand()
-        {
-            string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
-            int? shares = sharesInput.ToInt();
-            Do(() =>
-            {
-                Shares = shares.Value;
-            },
-            IfHasValue(shares), IfPositive(shares ?? -1));
         }
 
         private void SetSharesFromCashCommand()
@@ -260,6 +209,17 @@ namespace TradeBot
                 SetSharesFromCash();
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
+        }
+
+        private void SetSharesCommand()
+        {
+            string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
+            int? shares = sharesInput.ToInt();
+            Do(() =>
+            {
+                Shares = shares.Value;
+            },
+            IfHasValue(shares), IfPositive(shares ?? -1));
         }
 
         private void SetSharesFromPositionCommand()
@@ -293,26 +253,6 @@ namespace TradeBot
         private void ClosePositionCommand()
         {
             ScalePosition(-1);
-        }
-
-        private void ScalePosition(double percent)
-        {
-            PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
-            Do(() =>
-            {
-                int orderDelta = (int)Math.Round(position.Position * percent);
-                int orderQuantity = Math.Abs(orderDelta);
-
-                if (orderDelta > 0)
-                {
-                    service.PlaceBuyLimitOrder(orderQuantity);
-                }
-                else if (orderDelta < 0)
-                {
-                    service.PlaceSellLimitOrder(orderQuantity);
-                }
-            },
-            IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
         }
 
         private void ListPositionsCommand()
@@ -374,19 +314,44 @@ namespace TradeBot
             IO.ShowMessage(builder.ToString());
         }
 
+        private void LoadStateCommand()
+        {
+            AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
+
+            service.TickerSymbol = state.TickerSymbol;
+            Cash = state.Cash ?? 0;
+            if (Cash > 0)
+            {
+                SetSharesFromCash();
+            }
+            else
+            {
+                Shares = state.Shares ?? 0;
+            }
+
+            IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+        }
+
+        private void SaveStateCommand()
+        {
+            AppState state = new AppState();
+            state.TickerSymbol = service.TickerSymbol;
+            state.Shares = Shares;
+            state.Cash = Cash;
+
+            PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
+
+            IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
+        }
+
         private void ClearScreenCommand()
         {
             Console.Clear();
         }
 
-        private void HelpCommand()
+        private void ShowMenuCommand()
         {
             IO.ShowMessage(menu.Render());
-        }
-
-        private void ExitApplicationCommand()
-        {
-            shouldExitApplication = true;
         }
         #endregion
 
@@ -531,67 +496,9 @@ namespace TradeBot
                 ShowException(exception);
             }
         }
-
-        private bool OnWindowClose(CloseReason reason)
-        {
-            Shutdown();
-
-            // return false since we didn't handle the control signal, 
-            // i.e. Environment.Exit(-1);
-            return false;
-        }
         #endregion
 
         #region Private helper methods
-        private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
-        {
-            messageLogLevel = messageLogLevel ?? LogLevel.Error;
-            stackTraceLogLevel = stackTraceLogLevel ?? LogLevel.Trace;
-
-            IO.ShowMessage(messageLogLevel, Messages.AppExceptionMessageFormat, exception.Message);
-            IO.ShowMessage(stackTraceLogLevel, Messages.AppExceptionStackTraceFormat, exception.StackTrace);
-        }
-
-        private void Shutdown()
-        {
-            SaveState();
-
-            if (service.IsConnected)
-            {
-                service.Disconnect();
-            }
-        }
-
-        private void SaveState()
-        {
-            AppState state = new AppState();
-            state.TickerSymbol = service.TickerSymbol;
-            state.Shares = Shares;
-            state.Cash = Cash;
-
-            PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
-
-            IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
-        }
-
-        private void LoadState()
-        {
-            AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
-
-            service.TickerSymbol = state.TickerSymbol;
-            Cash = state.Cash ?? 0;
-            if (Cash > 0)
-            {
-                SetSharesFromCash();
-            }
-            else
-            {
-                Shares = state.Shares ?? 0;
-            }
-
-            IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
-        }
-
         private void SetSharesFromCash()
         {
             if (Cash <= 0)
@@ -607,6 +514,35 @@ namespace TradeBot
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
             IfCommonTickDataAvailable());
+        }
+
+        private void ScalePosition(double percent)
+        {
+            PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
+            Do(() =>
+            {
+                int orderDelta = (int)Math.Round(position.Position * percent);
+                int orderQuantity = Math.Abs(orderDelta);
+
+                if (orderDelta > 0)
+                {
+                    service.PlaceBuyLimitOrder(orderQuantity);
+                }
+                else if (orderDelta < 0)
+                {
+                    service.PlaceSellLimitOrder(orderQuantity);
+                }
+            },
+            IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
+        }
+
+        private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
+        {
+            messageLogLevel = messageLogLevel ?? LogLevel.Error;
+            stackTraceLogLevel = stackTraceLogLevel ?? LogLevel.Trace;
+
+            IO.ShowMessage(messageLogLevel, Messages.AppExceptionMessageFormat, exception.Message);
+            IO.ShowMessage(stackTraceLogLevel, Messages.AppExceptionStackTraceFormat, exception.StackTrace);
         }
 
         private void UpdateConsoleTitle()

@@ -15,11 +15,11 @@ namespace TradeBot.Generated
         [JsonProperty("setTickerSymbol")]
         public IList<string> SetTickerSymbol { get; set; }
 
-        [JsonProperty("setShares")]
-        public IList<string> SetShares { get; set; }
-
         [JsonProperty("setSharesFromCash")]
         public IList<string> SetSharesFromCash { get; set; }
+
+        [JsonProperty("setShares")]
+        public IList<string> SetShares { get; set; }
 
         [JsonProperty("setSharesFromPosition")]
         public IList<string> SetSharesFromPosition { get; set; }
@@ -42,17 +42,17 @@ namespace TradeBot.Generated
         [JsonProperty("listAllPositions")]
         public IList<string> ListAllPositions { get; set; }
 
-        [JsonProperty("loadSavedState")]
-        public IList<string> LoadSavedState { get; set; }
+        [JsonProperty("loadState")]
+        public IList<string> LoadState { get; set; }
 
-        [JsonProperty("exitApplication")]
-        public IList<string> ExitApplication { get; set; }
+        [JsonProperty("saveState")]
+        public IList<string> SaveState { get; set; }
 
         [JsonProperty("clearScreen")]
         public IList<string> ClearScreen { get; set; }
 
-        [JsonProperty("help")]
-        public IList<string> Help { get; set; }
+        [JsonProperty("showMenu")]
+        public IList<string> ShowMenu { get; set; }
     }
 
     public class AppMessages

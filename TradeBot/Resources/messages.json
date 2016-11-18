@@ -19,6 +19,7 @@
   "menuOptionEntries": {
 
     "setTickerSymbol": [ "f", "Set ticker symbol to trade" ],
+
     "setSharesFromCash": [ "j", "Set shares to trade based on a cash value and the current share price" ],
     "setShares": [ "J", "Set shares to trade to a fixed value" ],
     "setSharesFromPosition": [ "u", "Set shares to trade equal to your current position" ],
@@ -31,11 +32,11 @@
     "listPositions": [ "a", "List positions for the traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
 
-    "loadSavedState": [ "l", "Load saved state" ],
-    "exitApplication": [ "q", "Save and exit" ],
+    "loadState": [ "l", "Load state" ],
+    "saveState": [ "p", "Save state" ],
 
     "clearScreen": [ ".", "Clear screen" ],
-    "help": [ "?", "Show menu" ]
+    "showMenu": [ "?", "Show menu" ]
   },
   "longestMenuOptionKey": "r",
   "invalidMenuOption": "Invalid menu option",

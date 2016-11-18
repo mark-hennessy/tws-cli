@@ -6,12 +6,8 @@ namespace TradeBot
     {
         public static void Main()
         {
-            TradeBotConsole console = new TradeBotConsole(
-                Preferences.ClientId,
-                Preferences.ClientUrl,
-                Preferences.ClientPort);
-
-            console.Start();
+            var console = new TradeBotConsole(Preferences.ClientId);
+            console.Connect(Preferences.ClientUrl, Preferences.ClientPort);
         }
     }
 }
