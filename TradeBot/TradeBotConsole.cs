@@ -572,7 +572,7 @@ namespace TradeBot
 
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
 
-            IO.ShowMessage(LogLevel.Info, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(LogLevel.Trace, Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void LoadState()
@@ -590,7 +590,7 @@ namespace TradeBot
                 Shares = state.Shares ?? 0;
             }
 
-            IO.ShowMessage(LogLevel.Info, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+            IO.ShowMessage(LogLevel.Trace, Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
         private void SetSharesFromCash()
