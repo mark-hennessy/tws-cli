@@ -32,6 +32,11 @@ namespace TradeBot.Gui
             return input;
         }
 
+        public static void ShowMessage(string message, params object[] messageArgs)
+        {
+            logger.Log(LogLevel.Info, message, messageArgs);
+        }
+
         public static void ShowMessage(LogLevel logLevel, string message, params object[] messageArgs)
         {
             logger.Log(logLevel, message, messageArgs);
@@ -40,13 +45,12 @@ namespace TradeBot.Gui
         private static void ShowInlineMessage(string message, params object[] messageArgs)
         {
             // We don't want a new line after the message in the console,
-            // but we do want a new line after the message in the log file.
+            // but we do want a new line after the message in the logs.
 
-            // Console.Write to circumnavigate the logging.
+            // Console.Write to hide the message from the logs
             Console.Write(message, messageArgs);
-            // Trace the message to circumnavigate the console.
+            // Trace the message to hide the message from the console
             ShowMessage(LogLevel.Trace, message, messageArgs);
         }
     }
-
 }

@@ -188,7 +188,7 @@ namespace TradeBot
 
                 if (!message.IsNullOrEmpty())
                 {
-                    IO.ShowMessage(LogLevel.Info, message, messageArgs);
+                    IO.ShowMessage(message, messageArgs);
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace TradeBot
         #region Public methods
         public void Start()
         {
-            IO.ShowMessage(LogLevel.Info, Messages.WelcomeMessage);
+            IO.ShowMessage(Messages.WelcomeMessage);
             try
             {
                 service.Connect(clientUrl, clientPort);
@@ -343,7 +343,7 @@ namespace TradeBot
                         builder.AppendLine();
                     }
                 }
-                IO.ShowMessage(LogLevel.Info, builder.ToString());
+                IO.ShowMessage(builder.ToString());
             }
             else
             {
@@ -371,7 +371,7 @@ namespace TradeBot
                     builder.AppendLine();
                 }
             }
-            IO.ShowMessage(LogLevel.Info, builder.ToString());
+            IO.ShowMessage(builder.ToString());
         }
 
         private void ClearScreenCommand()
@@ -381,7 +381,7 @@ namespace TradeBot
 
         private void HelpCommand()
         {
-            IO.ShowMessage(LogLevel.Info, menu.Render());
+            IO.ShowMessage(menu.Render());
         }
 
         private void ExitApplicationCommand()
@@ -465,7 +465,7 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                IO.ShowMessage(LogLevel.Info, Messages.TickerSymbolSetFormat, newValue);
+                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
 
                 SetSharesFromCash();
             }
@@ -500,7 +500,6 @@ namespace TradeBot
             double lastCommission = lastReport.Commission;
             double totalCommissions = reports.Sum(report => report.Commission);
             IO.ShowMessage(
-                LogLevel.Info,
                 Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
                 totalCommissions.ToCurrencyString());
