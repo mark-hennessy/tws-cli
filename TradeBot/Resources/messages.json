@@ -33,8 +33,8 @@
     "listPositions": [ "a", "List positions for the traded account" ],
     "listAllPositions": [ "A", "List all positions for all accounts" ],
 
-    "loadState": [ "l", "Load state" ],
-    "saveState": [ "p", "Save state" ],
+    "loadState": [ "l", "Load default state" ],
+    "saveState": [ "p", "Save current state as default state" ],
 
     "clearScreen": [ ".", "Clear screen" ],
     "showMenu": [ "?", "Show menu" ]
