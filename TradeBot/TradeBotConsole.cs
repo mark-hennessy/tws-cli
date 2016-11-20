@@ -224,7 +224,11 @@ namespace TradeBot
 
         private void SetSharesFromPositionCommand()
         {
-            Shares = service.GetCurrentPositionSize();
+            Do(() =>
+            {
+                Shares = service.GetCurrentPositionSize();
+            },
+            IfTickerSet());
         }
 
         private void BuyCommand()
