@@ -19,7 +19,7 @@ namespace TradeBot.Generated
         public double? Cash { get; set; }
 
         [JsonProperty("shares")]
-        public int? Shares { get; set; }
+        public double? Shares { get; set; }
     }
 
 }

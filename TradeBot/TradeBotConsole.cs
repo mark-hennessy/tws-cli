@@ -147,8 +147,8 @@ namespace TradeBot
         #endregion
 
         #region Properties
-        private int _shares;
-        private int Shares
+        private double _shares;
+        private double Shares
         {
             get
             {
@@ -224,7 +224,7 @@ namespace TradeBot
 
         private void SetSharesFromPositionCommand()
         {
-
+            Shares = service.GetCurrentPositionSize();
         }
 
         private void BuyCommand()
@@ -506,7 +506,7 @@ namespace TradeBot
                 return;
             }
 
-            service.HasTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
+            service.AwaitTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
 
             Do(() =>
             {

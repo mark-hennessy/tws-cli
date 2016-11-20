@@ -196,17 +196,17 @@ namespace TradeBot
             IsConnected = false;
         }
 
-        public void PlaceBuyLimitOrder(int quantity, int tickType = TickType.ASK)
+        public void PlaceBuyLimitOrder(double quantity, int tickType = TickType.ASK)
         {
             PlaceLimitOrder(OrderActions.BUY, quantity, tickType);
         }
 
-        public void PlaceSellLimitOrder(int quantity, int tickType = TickType.BID)
+        public void PlaceSellLimitOrder(double quantity, int tickType = TickType.BID)
         {
             PlaceLimitOrder(OrderActions.SELL, quantity, tickType);
         }
 
-        public void PlaceLimitOrder(OrderActions action, int quantity, int tickType)
+        public void PlaceLimitOrder(OrderActions action, double quantity, int tickType)
         {
             double? price = GetTick(tickType);
             if (!price.HasValue)
@@ -217,7 +217,7 @@ namespace TradeBot
             PlaceLimitOrder(action, quantity, price.Value);
         }
 
-        public void PlaceLimitOrder(OrderActions action, int quantity, double price)
+        public void PlaceLimitOrder(OrderActions action, double quantity, double price)
         {
             if (selectedContract == null || price <= 0)
             {
@@ -227,6 +227,29 @@ namespace TradeBot
             Order order = OrderFactory.CreateLimitOrder(action, quantity, price);
             order.Account = TradedAccount;
             clientSocket.placeOrder(nextValidOrderId++, selectedContract, order);
+        }
+
+        public double GetCurrentPositionSize()
+        {
+            if (Portfolio == null || !Portfolio.ContainsKey(TickerSymbol))
+            {
+                return 0;
+            }
+
+            return Portfolio.Get(TickerSymbol).Position;
+        }
+
+        public async Task<double> GetCurrentPositionSizeAsync()
+        {
+            IList<PositionInfo> allPositions = await RequestAllPositionsForAllAccountsAsync();
+
+            PositionInfo currentPosition = allPositions
+                .Where(p =>
+                    p.Contract?.Symbol == TickerSymbol
+                    && p.Account == TradedAccount)
+                .FirstOrDefault();
+
+            return currentPosition?.PositionSize ?? 0;
         }
 
         public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
@@ -271,7 +294,7 @@ namespace TradeBot
             return TickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
         }
 
-        public Task<bool> HasTicksAsync(params int[] tickTypes)
+        public Task<bool> AwaitTicksAsync(params int[] tickTypes)
         {
             // If we already have the tick data, then there is no need 
             // to wait for the next round of tick updates.

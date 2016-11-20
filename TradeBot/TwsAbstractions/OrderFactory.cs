@@ -4,7 +4,7 @@ namespace TradeBot.TwsAbstractions
 {
     public static class OrderFactory
     {
-        public static Order CreateLimitOrder(OrderActions action, int quantity, double limitPrice)
+        public static Order CreateLimitOrder(OrderActions action, double quantity, double limitPrice)
         {
             return new Order()
             {
