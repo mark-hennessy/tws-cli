@@ -247,9 +247,11 @@ namespace TradeBot
             return selectedPosition?.PositionSize ?? 0;
         }
 
-        public async Task<IDictionary<string, PositionInfo>> RequestPositionsForTradedAccountAsync()
+        public async Task<IDictionary<string, PositionInfo>> RequestPositionsForTradedAccountAsync(Func<PositionInfo, bool> selector = null)
         {
-            IEnumerable<PositionInfo> positions = await RequestPositionsForAllAccountsAsync((p => p.Account == TradedAccount));
+            IEnumerable<PositionInfo> positions = await RequestPositionsForAllAccountsAsync(
+                (p => p.Account == TradedAccount && (selector == null || selector(p)))
+            );
             return positions.ToDictionary((p => p.Contract.Symbol), (p => p));
         }
 
