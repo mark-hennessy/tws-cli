@@ -262,37 +262,43 @@ namespace TradeBot
         private void ListPositionsCommand()
         {
             Portfolio portfolio = service.Portfolio;
-            if (portfolio != null)
-            {
-                StringBuilder builder = new StringBuilder();
-                var portfolioEntries = portfolio.ToList();
-                int lastIndex = portfolioEntries.LastIndex();
-                for (int i = 0; i < portfolioEntries.Count; i++)
-                {
-                    var portfolioEntry = portfolioEntries[i];
-                    string tickerSymbol = portfolioEntry.Key;
-                    PortfolioInfo position = portfolioEntry.Value;
-
-                    builder.AppendFormat(
-                        Messages.ListPositionsFormat,
-                        position.Position,
-                        position.Contract.Symbol,
-                        position.AverageCost.ToCurrencyString(),
-                        position.MarketPrice.ToCurrencyString(),
-                        position.UnrealisedPNL.ToCurrencyString(),
-                        position.MarketValue.ToCurrencyString());
-
-                    if (i != lastIndex)
-                    {
-                        builder.AppendLine();
-                    }
-                }
-                IO.ShowMessage(builder.ToString());
-            }
-            else
+            if (portfolio == null)
             {
                 IO.ShowMessage(LogLevel.Error, Messages.PortfolioNotFound);
+                return;
             }
+
+            StringBuilder builder = new StringBuilder();
+            var portfolioEntries = portfolio.ToList();
+            if (portfolioEntries.IsEmpty())
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.NoPositionsFoundError);
+                return;
+            }
+
+            int lastIndex = portfolioEntries.LastIndex();
+            for (int i = 0; i < portfolioEntries.Count; i++)
+            {
+                var portfolioEntry = portfolioEntries[i];
+                string tickerSymbol = portfolioEntry.Key;
+                PortfolioInfo position = portfolioEntry.Value;
+
+                builder.AppendFormat(
+                    Messages.ListPositionsFormat,
+                    position.Position,
+                    position.Contract.Symbol,
+                    position.AverageCost.ToCurrencyString(),
+                    position.MarketPrice.ToCurrencyString(),
+                    position.UnrealisedPNL.ToCurrencyString(),
+                    position.MarketValue.ToCurrencyString());
+
+                if (i != lastIndex)
+                {
+                    builder.AppendLine();
+                }
+            }
+
+            IO.ShowMessage(builder.ToString());
         }
 
         private void ListAllPositionsCommand()
@@ -303,6 +309,12 @@ namespace TradeBot
                 .RequestPositionsForAllAccountsAsync()
                 .Result
                 .ToList();
+
+            if (positions.IsEmpty())
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.NoPositionsFoundError);
+                return;
+            }
 
             int lastIndex = positions.LastIndex();
             for (int i = 0; i < positions.Count; i++)

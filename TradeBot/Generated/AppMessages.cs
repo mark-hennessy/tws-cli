@@ -169,6 +169,9 @@ namespace TradeBot.Generated
         [JsonProperty("listAllPositionsFormat")]
         public string ListAllPositionsFormat { get; set; }
 
+        [JsonProperty("noPositionsFoundError")]
+        public string NoPositionsFoundError { get; set; }
+
         [JsonProperty("loadedStateFormat")]
         public string LoadedStateFormat { get; set; }
 

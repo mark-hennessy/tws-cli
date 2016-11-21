@@ -65,6 +65,7 @@
 
   "listPositionsFormat": "{0} {1}, Bought: {2}, Last: {3}, UnPnL: {4}, Value: {5}",
   "listAllPositionsFormat": "{0} {1}, {2}",
+  "noPositionsFoundError": "No positions found",
 
   "loadedStateFormat": "Loaded state from {0}",
   "savedStateFormat": "Saved state to {0}",
