@@ -229,7 +229,7 @@ namespace TradeBot
             clientSocket.placeOrder(nextValidOrderId++, selectedContract, order);
         }
 
-        public double GetCurrentPositionSize()
+        public double GetSelectedPositionSize()
         {
             if (Portfolio == null || !Portfolio.ContainsKey(TickerSymbol))
             {
@@ -239,27 +239,32 @@ namespace TradeBot
             return Portfolio.Get(TickerSymbol).Position;
         }
 
-        public async Task<double> GetCurrentPositionSizeAsync()
+        public async Task<double> GetSelectedPositionSizeAsync()
         {
-            IList<PositionInfo> allPositions = await RequestAllPositionsForAllAccountsAsync();
-
-            PositionInfo currentPosition = allPositions
-                .Where(p =>
-                    p.Contract?.Symbol == TickerSymbol
-                    && p.Account == TradedAccount)
-                .FirstOrDefault();
-
-            return currentPosition?.PositionSize ?? 0;
+            IDictionary<string, PositionInfo> positions = await RequestPositionsForTradedAccountAsync();
+            PositionInfo selectedPosition;
+            positions.TryGetValue(TickerSymbol, out selectedPosition);
+            return selectedPosition?.PositionSize ?? 0;
         }
 
-        public Task<IList<PositionInfo>> RequestAllPositionsForAllAccountsAsync()
+        public async Task<IDictionary<string, PositionInfo>> RequestPositionsForTradedAccountAsync()
         {
-            var tcs = new TaskCompletionSource<IList<PositionInfo>>();
+            IEnumerable<PositionInfo> positions = await RequestPositionsForAllAccountsAsync((p => p.Account == TradedAccount));
+            return positions.ToDictionary((p => p.Contract.Symbol), (p => p));
+        }
+
+        public Task<IEnumerable<PositionInfo>> RequestPositionsForAllAccountsAsync(Func<PositionInfo, bool> selector = null)
+        {
+            var tcs = new TaskCompletionSource<IEnumerable<PositionInfo>>();
             var positions = new List<PositionInfo>();
 
             var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
             {
-                positions.Add(new PositionInfo(account, contract, position, avgCost));
+                var positionInfo = new PositionInfo(account, contract, position, avgCost);
+                if (selector == null || selector(positionInfo))
+                {
+                    positions.Add(positionInfo);
+                }
             });
 
             var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>

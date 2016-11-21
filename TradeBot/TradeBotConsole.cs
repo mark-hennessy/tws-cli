@@ -226,7 +226,7 @@ namespace TradeBot
         {
             Do(() =>
             {
-                Shares = service.GetCurrentPositionSize();
+                Shares = service.GetSelectedPositionSize();
             },
             IfTickerSet());
         }
@@ -298,7 +298,12 @@ namespace TradeBot
         private void ListAllPositionsCommand()
         {
             StringBuilder builder = new StringBuilder();
-            IList<PositionInfo> positions = service.RequestAllPositionsForAllAccountsAsync().Result;
+
+            IList<PositionInfo> positions = service
+                .RequestPositionsForAllAccountsAsync()
+                .Result
+                .ToList();
+
             int lastIndex = positions.LastIndex();
             for (int i = 0; i < positions.Count; i++)
             {
@@ -315,6 +320,7 @@ namespace TradeBot
                     builder.AppendLine();
                 }
             }
+
             IO.ShowMessage(builder.ToString());
         }
 
