@@ -3,7 +3,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -269,36 +268,6 @@ namespace TradeBot
             ShowPositions(service.RequestPositionsForAllAccountsAsync().Result);
         }
 
-        private void ShowPositions(IDictionary<string, Position> positions)
-        {
-            ShowPositions(positions?.Values);
-        }
-
-        private void ShowPositions(IEnumerable<Position> positions)
-        {
-            if (positions.IsNullOrEmpty())
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.PositionsNotFoundError);
-                return;
-            }
-
-            foreach (var position in positions)
-            {
-                //IO.ShowMessage(
-                //    Messages.ListPositionsFormat,
-                //    position.PositionSize,
-                //    position.Symbol,
-                //    position.AverageCost.ToCurrencyString(),
-                //    position.MarketPrice?.ToCurrencyString(),
-                //    position.MarketValue?.ToCurrencyString(),
-                //    position.UnrealizedPNL?.ToCurrencyString(),
-                //    position.RealizedPNL?.ToCurrencyString(),
-                //    position.Account);
-
-                IO.ShowMessage(position.ToPrettyString());
-            }
-        }
-
         private void LoadStateCommand()
         {
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
@@ -521,6 +490,23 @@ namespace TradeBot
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
         }
 
+        private void ShowPositions(IDictionary<string, Position> positions)
+        {
+            ShowPositions(positions?.Values);
+        }
+
+        private void ShowPositions(IEnumerable<Position> positions)
+        {
+            Do(() =>
+            {
+                foreach (var position in positions)
+                {
+                    IO.ShowMessage(position.ToString());
+                }
+            },
+            IfPositionsExist(positions));
+        }
+
         private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
         {
             messageLogLevel = messageLogLevel ?? LogLevel.Error;
@@ -562,25 +548,20 @@ namespace TradeBot
 
         private string GetTickAsString(int tickType)
         {
-            return GetTickAsFormattedString(tickType, (v) => v.ToString());
+            return GetTickAsFormattedString(tickType, v => v.ToString());
         }
 
         private string GetTickAsCurrencyString(int tickType)
         {
-            return GetTickAsFormattedString(tickType, (v) => v.ToCurrencyString());
+            return GetTickAsFormattedString(tickType, v => v.ToCurrencyString());
         }
 
         private string GetTickAsFormattedString(int tickType, Func<double, string> messageFormatter)
         {
             double? tick = service.GetTick(tickType);
-            if (tick.HasValue && tick.Value >= 0)
-            {
-                return messageFormatter(tick.Value);
-            }
-            else
-            {
-                return Messages.TitleUnavailable;
-            }
+            return tick.HasValue && tick.Value >= 0
+                ? messageFormatter(tick.Value)
+                : Messages.TitleUnavailable;
         }
         #endregion
 
@@ -653,6 +634,13 @@ namespace TradeBot
             return CreateValidator(
                 () => position != null,
                 Messages.PositionNotFoundError);
+        }
+
+        private Validator IfPositionsExist(IEnumerable<Position> positions)
+        {
+            return CreateValidator(
+                () => !positions.IsNullOrEmpty(),
+                Messages.PositionsNotFoundError);
         }
 
         private Validator IfNotNullOrWhiteSpace(string str)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -27,7 +26,7 @@ namespace TradeBot.Extensions
             return string.Format("{0:C}", currencyValue);
         }
 
-        public static string ToPrettyString(this object obj, int indentLevel = 0, int maxIndentLevel = 99)
+        public static string ToPrettyString(this object obj, int maxIndentLevel = 99, int indentLevel = 0)
         {
             // Formatting is not necessary for strings and value types such as bool, int, double, etc.
             Type type = obj.GetType();
@@ -44,7 +43,7 @@ namespace TradeBot.Extensions
             return ToPrettyString(keyValuePairs, indentLevel, maxIndentLevel);
         }
 
-        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs, int indentLevel = 0, int maxIndentLevel = 99)
+        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs, int indentLevel = 0, int maxIndentLevel = 9)
         {
             if (keyValuePairs.Count() == 0)
             {
@@ -64,7 +63,7 @@ namespace TradeBot.Extensions
 
                 if (indentLevel < maxIndentLevel)
                 {
-                    return value.ToPrettyString(indent);
+                    return value.ToPrettyString(indentLevel: indent);
                 }
 
                 return value.ToString();

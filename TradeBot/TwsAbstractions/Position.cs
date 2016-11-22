@@ -1,4 +1,5 @@
 ﻿using IBApi;
+using TradeBot.Extensions;
 
 namespace TradeBot.TwsAbstractions
 {
@@ -21,10 +22,6 @@ namespace TradeBot.TwsAbstractions
             RealizedPNL = realizedPNL;
         }
 
-        public string Account { get; }
-
-        public Contract Contract { get; }
-
         public string Symbol
         {
             get
@@ -32,6 +29,8 @@ namespace TradeBot.TwsAbstractions
                 return Contract?.Symbol;
             }
         }
+
+        public Contract Contract { get; }
 
         public double PositionSize { get; }
 
@@ -44,5 +43,12 @@ namespace TradeBot.TwsAbstractions
         public double? UnrealizedPNL { get; }
 
         public double? RealizedPNL { get; }
+
+        public string Account { get; }
+
+        public override string ToString()
+        {
+            return this.ToPrettyString(maxIndentLevel: 0);
+        }
     }
 }
