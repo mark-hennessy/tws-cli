@@ -282,25 +282,21 @@ namespace TradeBot
                 return;
             }
 
-            StringBuilder builder = new StringBuilder();
-
             foreach (var position in positions)
             {
-                builder
-                    .AppendFormat(
-                        Messages.ListPositionsFormat,
-                        position.PositionSize,
-                        position.Symbol,
-                        position.AverageCost.ToCurrencyString(),
-                        position.MarketPrice?.ToCurrencyString(),
-                        position.MarketValue?.ToCurrencyString(),
-                        position.UnrealizedPNL?.ToCurrencyString(),
-                        position.RealizedPNL?.ToCurrencyString(),
-                        position.Account)
-                    .AppendLine();
-            }
+                //IO.ShowMessage(
+                //    Messages.ListPositionsFormat,
+                //    position.PositionSize,
+                //    position.Symbol,
+                //    position.AverageCost.ToCurrencyString(),
+                //    position.MarketPrice?.ToCurrencyString(),
+                //    position.MarketValue?.ToCurrencyString(),
+                //    position.UnrealizedPNL?.ToCurrencyString(),
+                //    position.RealizedPNL?.ToCurrencyString(),
+                //    position.Account);
 
-            IO.ShowMessage(builder.ToString());
+                IO.ShowMessage(position.ToPrettyString());
+            }
         }
 
         private void LoadStateCommand()

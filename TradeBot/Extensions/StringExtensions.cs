@@ -27,7 +27,7 @@ namespace TradeBot.Extensions
             return string.Format("{0:C}", currencyValue);
         }
 
-        public static string ToPrettyString(this object obj, int indentLevel = 0)
+        public static string ToPrettyString(this object obj, int indentLevel = 0, int maxIndentLevel = 99)
         {
             // Formatting is not necessary for strings and value types such as bool, int, double, etc.
             Type type = obj.GetType();
@@ -41,10 +41,10 @@ namespace TradeBot.Extensions
                 // Exclude indexed properties to avoid Parameter Count Mismatch exceptions.
                 .Where(p => p.GetIndexParameters().Length == 0)
                 .Select(p => new KeyValuePair<string, object>(p.Name, p.GetValue(obj, null)));
-            return ToPrettyString(keyValuePairs, indentLevel);
+            return ToPrettyString(keyValuePairs, indentLevel, maxIndentLevel);
         }
 
-        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs, int indentLevel = 0)
+        public static string ToPrettyString(this IEnumerable<KeyValuePair<string, object>> keyValuePairs, int indentLevel = 0, int maxIndentLevel = 99)
         {
             if (keyValuePairs.Count() == 0)
             {
@@ -54,6 +54,21 @@ namespace TradeBot.Extensions
             string indentString = GetIndentString(indentLevel);
             int bodyIndentLevel = indentLevel + 1;
             string bodyIndentString = GetIndentString(bodyIndentLevel);
+
+            Func<object, int, string> valueFormatter = (value, indent) =>
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+
+                if (indentLevel < maxIndentLevel)
+                {
+                    return value.ToPrettyString(indent);
+                }
+
+                return value.ToString();
+            };
 
             StringBuilder builder = new StringBuilder();
             // Don't indent the opening curly brace. Assume it will be inine.
@@ -66,7 +81,7 @@ namespace TradeBot.Extensions
                     .Append(bodyIndentString)
                     .AppendFormat("{0} : {1}",
                         pair.Key,
-                        pair.Value?.ToPrettyString(bodyIndentLevel));
+                        valueFormatter(pair.Value, bodyIndentLevel));
             }
             builder
                 .AppendLine()
