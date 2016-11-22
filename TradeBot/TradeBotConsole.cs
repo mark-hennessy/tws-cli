@@ -76,11 +76,11 @@ namespace TradeBot
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
-            addMenuOption(entries.SetTickerSymbol, SetTickerSymbolCommand);
+            addMenuOption(entries.SetTickerSymbol, PromptForTickerSymbolCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.SetSharesFromCash, SetSharesFromCashCommand);
-            addMenuOption(entries.SetShares, SetSharesCommand);
+            addMenuOption(entries.SetSharesFromCash, PromptForCashCommand);
+            addMenuOption(entries.SetShares, PromptForSharesCommand);
             addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
             addMenuOptionDivider();
 
@@ -124,7 +124,7 @@ namespace TradeBot
                 service.Connect(clientUrl, clientPort);
                 if (service.IsConnected)
                 {
-                    LoadStateCommand();
+                    SetInitialState();
                     while (service.IsConnected)
                     {
                         menu.PromptForMenuOption().Command();
@@ -179,6 +179,8 @@ namespace TradeBot
             {
                 field = newValue;
 
+                UpdateConsoleTitle();
+
                 if (!message.IsNullOrEmpty())
                 {
                     IO.ShowMessage(message, messageArgs);
@@ -188,17 +190,18 @@ namespace TradeBot
         #endregion
 
         #region Menu commands
-        private void SetTickerSymbolCommand()
+        private void PromptForTickerSymbolCommand()
         {
             string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
             Do(() =>
             {
                 service.TickerSymbol = tickerSymbol;
+                SetSharesFromCash();
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
 
-        private void SetSharesFromCashCommand()
+        private void PromptForCashCommand()
         {
             string cashInput = IO.PromptForInput(Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
@@ -210,7 +213,7 @@ namespace TradeBot
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
 
-        private void SetSharesCommand()
+        private void PromptForSharesCommand()
         {
             string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
@@ -274,14 +277,7 @@ namespace TradeBot
 
             service.TickerSymbol = state.TickerSymbol;
             Cash = state.Cash ?? 0;
-            if (Cash > 0)
-            {
-                SetSharesFromCash();
-            }
-            else
-            {
-                Shares = state.Shares ?? 0;
-            }
+            Shares = state.Shares ?? 0;
 
             IO.ShowMessage(Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
@@ -385,8 +381,6 @@ namespace TradeBot
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
-
-                SetSharesFromCash();
             }
 
             UpdateConsoleTitle();
@@ -418,8 +412,7 @@ namespace TradeBot
             CommissionReport lastReport = reports.Last();
             double lastCommission = lastReport.Commission;
             double totalCommissions = reports.Sum(report => report.Commission);
-            IO.ShowMessage(
-                Messages.CommissionFormat,
+            IO.ShowMessage(Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
                 totalCommissions.ToCurrencyString());
         }
@@ -449,10 +442,22 @@ namespace TradeBot
             {
                 ShowException(exception);
             }
+
+            switch (errorCode)
+            {
+                case ErrorCodes.TICKER_NOT_FOUND:
+                    Shares = 0;
+                    break;
+            }
         }
         #endregion
 
         #region Private helper methods
+        private void SetInitialState()
+        {
+
+        }
+
         private void SetSharesFromCash()
         {
             if (Cash <= 0)
