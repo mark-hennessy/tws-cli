@@ -46,7 +46,7 @@
   "twsConnected": "Connection to TWS established",
   "twsDisconnected": "Connection to TWS closed",
   "multipleAccountsWarningFormat": "Multiple accounts found. Only {0} will be traded.",
-  
+
   "accountTypeLive": "Live Trading",
   "accountTypePaper": "Paper Trading",
   "paperAccountPrefix": "D",
@@ -63,9 +63,7 @@
   "cashPrompt": "Cash: ",
   "cashSetFormat": "Cash set to {0}",
 
-  "listPositionsFormat": "{0} {1}, Bought: {2}, Last: {3}, UnPnL: {4}, Value: {5}",
-  "listAllPositionsFormat": "{0} {1}, {2}",
-  "noPositionsFoundError": "No positions found",
+  "listPositionsFormat": "{0} {1}, AvgCost: {2}, MktPrice: {3}, MktValue: {4}, UnPnL: {5}, RePnL: {6}, A: {7}",
 
   "loadedStateFormat": "Loaded state from {0}",
   "savedStateFormat": "Saved state to {0}",
@@ -76,7 +74,7 @@
 
   "priceDataUnavailableError": "Price data unavailable",
   "positionNotFoundError": "Position not found",
-  "portfolioNotFound": "Portfolio not found",
+  "positionsNotFoundError": "No positions found",
 
   "invalidIntegerInputError": "Expected an integer",
   "invalidDecimalInputError": "Expected a decimal",

@@ -261,76 +261,43 @@ namespace TradeBot
 
         private void ListPositionsCommand()
         {
-            Portfolio portfolio = service.Portfolio;
-            if (portfolio == null)
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.PortfolioNotFound);
-                return;
-            }
-
-            StringBuilder builder = new StringBuilder();
-            var portfolioEntries = portfolio.ToList();
-            if (portfolioEntries.IsEmpty())
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.NoPositionsFoundError);
-                return;
-            }
-
-            int lastIndex = portfolioEntries.LastIndex();
-            for (int i = 0; i < portfolioEntries.Count; i++)
-            {
-                var portfolioEntry = portfolioEntries[i];
-                string tickerSymbol = portfolioEntry.Key;
-                PortfolioInfo position = portfolioEntry.Value;
-
-                builder.AppendFormat(
-                    Messages.ListPositionsFormat,
-                    position.Position,
-                    position.Contract.Symbol,
-                    position.AverageCost.ToCurrencyString(),
-                    position.MarketPrice.ToCurrencyString(),
-                    position.UnrealisedPNL.ToCurrencyString(),
-                    position.MarketValue.ToCurrencyString());
-
-                if (i != lastIndex)
-                {
-                    builder.AppendLine();
-                }
-            }
-
-            IO.ShowMessage(builder.ToString());
+            ShowPositions(service.Portfolio);
         }
 
         private void ListAllPositionsCommand()
         {
-            StringBuilder builder = new StringBuilder();
+            ShowPositions(service.RequestPositionsForAllAccountsAsync().Result);
+        }
 
-            IList<PositionInfo> positions = service
-                .RequestPositionsForAllAccountsAsync()
-                .Result
-                .ToList();
+        private void ShowPositions(IDictionary<string, Position> positions)
+        {
+            ShowPositions(positions?.Values);
+        }
 
-            if (positions.IsEmpty())
+        private void ShowPositions(IEnumerable<Position> positions)
+        {
+            if (positions.IsNullOrEmpty())
             {
-                IO.ShowMessage(LogLevel.Error, Messages.NoPositionsFoundError);
+                IO.ShowMessage(LogLevel.Error, Messages.PositionsNotFoundError);
                 return;
             }
 
-            int lastIndex = positions.LastIndex();
-            for (int i = 0; i < positions.Count; i++)
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var position in positions)
             {
-                var position = positions[i];
-
-                builder.AppendFormat(
-                    Messages.ListAllPositionsFormat,
-                    position.PositionSize,
-                    position.Contract.Symbol,
-                    position.Account);
-
-                if (i != lastIndex)
-                {
-                    builder.AppendLine();
-                }
+                builder
+                    .AppendFormat(
+                        Messages.ListPositionsFormat,
+                        position.PositionSize,
+                        position.Symbol,
+                        position.AverageCost.ToCurrencyString(),
+                        position.MarketPrice?.ToCurrencyString(),
+                        position.MarketValue?.ToCurrencyString(),
+                        position.UnrealizedPNL?.ToCurrencyString(),
+                        position.RealizedPNL?.ToCurrencyString(),
+                        position.Account)
+                    .AppendLine();
             }
 
             IO.ShowMessage(builder.ToString());
@@ -540,10 +507,10 @@ namespace TradeBot
 
         private void ScalePosition(double percent)
         {
-            PortfolioInfo position = service.Portfolio?.Get(service.TickerSymbol);
+            Position position = service.Portfolio?.Get(service.TickerSymbol);
             Do(() =>
             {
-                int orderDelta = (int)Math.Round(position.Position * percent);
+                int orderDelta = (int)Math.Round(position.PositionSize * percent);
                 int orderQuantity = Math.Abs(orderDelta);
 
                 if (orderDelta > 0)
@@ -585,7 +552,7 @@ namespace TradeBot
 
             if (isTickerSet)
             {
-                double position = service.Portfolio?.Get(tickerSymbol)?.Position ?? 0;
+                double position = service.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePosition, position));
                 infoStrings.Add(string.Format(Messages.TitleLastFormat, GetTickAsCurrencyString(TickType.LAST)));
                 infoStrings.Add(string.Format(Messages.TitleBidAskFormat, GetTickAsCurrencyString(TickType.BID), GetTickAsCurrencyString(TickType.ASK)));
@@ -685,7 +652,7 @@ namespace TradeBot
                 Messages.PriceDataUnavailableError);
         }
 
-        private Validator IfPositionExists(PortfolioInfo position)
+        private Validator IfPositionExists(Position position)
         {
             return CreateValidator(
                 () => position != null,

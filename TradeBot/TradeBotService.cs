@@ -236,33 +236,33 @@ namespace TradeBot
                 return 0;
             }
 
-            return Portfolio.Get(TickerSymbol).Position;
+            return Portfolio.Get(TickerSymbol).PositionSize;
         }
 
         public async Task<double> GetSelectedPositionSizeAsync()
         {
-            IDictionary<string, PositionInfo> positions = await RequestPositionsForTradedAccountAsync();
-            PositionInfo selectedPosition;
+            IDictionary<string, Position> positions = await RequestPositionsForTradedAccountAsync();
+            Position selectedPosition;
             positions.TryGetValue(TickerSymbol, out selectedPosition);
             return selectedPosition?.PositionSize ?? 0;
         }
 
-        public async Task<IDictionary<string, PositionInfo>> RequestPositionsForTradedAccountAsync(Func<PositionInfo, bool> selector = null)
+        public async Task<IDictionary<string, Position>> RequestPositionsForTradedAccountAsync(Func<Position, bool> selector = null)
         {
-            IEnumerable<PositionInfo> positions = await RequestPositionsForAllAccountsAsync(
+            IEnumerable<Position> positions = await RequestPositionsForAllAccountsAsync(
                 (p => p.Account == TradedAccount && (selector == null || selector(p)))
             );
             return positions.ToDictionary((p => p.Contract.Symbol), (p => p));
         }
 
-        public Task<IEnumerable<PositionInfo>> RequestPositionsForAllAccountsAsync(Func<PositionInfo, bool> selector = null)
+        public Task<IEnumerable<Position>> RequestPositionsForAllAccountsAsync(Func<Position, bool> selector = null)
         {
-            var tcs = new TaskCompletionSource<IEnumerable<PositionInfo>>();
-            var positions = new List<PositionInfo>();
+            var tcs = new TaskCompletionSource<IEnumerable<Position>>();
+            var positions = new List<Position>();
 
             var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
             {
-                var positionInfo = new PositionInfo(account, contract, position, avgCost);
+                var positionInfo = new Position(account, contract, position, avgCost);
                 if (selector == null || selector(positionInfo))
                 {
                     positions.Add(positionInfo);
@@ -484,7 +484,7 @@ namespace TradeBot
 
         private void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            var info = new PortfolioInfo(contract, position, marketPrice, marketValue, avgCost, unrealisedPNL, realisedPNL, account);
+            var info = new Position(account, contract, position, avgCost, marketPrice, marketValue, unrealisedPNL, realisedPNL);
             Portfolio.Update(info);
             RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
         }

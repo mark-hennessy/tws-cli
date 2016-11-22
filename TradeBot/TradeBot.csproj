@@ -115,8 +115,7 @@
     <Compile Include="MenuFramework\MenuTitle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="TwsAbstractions\Portfolio.cs" />
-    <Compile Include="TwsAbstractions\PortfolioInfo.cs" />
-    <Compile Include="TwsAbstractions\PositionInfo.cs" />
+    <Compile Include="TwsAbstractions\Position.cs" />
     <Compile Include="TwsAbstractions\TickData.cs" />
     <Compile Include="FileIO\PropertySerializer.cs" />
     <Compile Include="FileIO\CustomJsonClassGenerator.cs" />

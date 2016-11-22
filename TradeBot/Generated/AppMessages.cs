@@ -166,12 +166,6 @@ namespace TradeBot.Generated
         [JsonProperty("listPositionsFormat")]
         public string ListPositionsFormat { get; set; }
 
-        [JsonProperty("listAllPositionsFormat")]
-        public string ListAllPositionsFormat { get; set; }
-
-        [JsonProperty("noPositionsFoundError")]
-        public string NoPositionsFoundError { get; set; }
-
         [JsonProperty("loadedStateFormat")]
         public string LoadedStateFormat { get; set; }
 
@@ -190,8 +184,8 @@ namespace TradeBot.Generated
         [JsonProperty("positionNotFoundError")]
         public string PositionNotFoundError { get; set; }
 
-        [JsonProperty("portfolioNotFound")]
-        public string PortfolioNotFound { get; set; }
+        [JsonProperty("positionsNotFoundError")]
+        public string PositionsNotFoundError { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }

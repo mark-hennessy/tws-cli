@@ -2,24 +2,24 @@
 
 namespace TradeBot.TwsAbstractions
 {
-    public class Portfolio : Dictionary<string, PortfolioInfo>
+    public class Portfolio : Dictionary<string, Position>
     {
-        public PortfolioInfo Get(string tickerSymbol)
+        public Position Get(string tickerSymbol)
         {
             if (tickerSymbol == null)
             {
                 return null;
             }
 
-            PortfolioInfo result;
+            Position result;
             TryGetValue(tickerSymbol, out result);
             return result;
         }
 
-        public void Update(PortfolioInfo info)
+        public void Update(Position position)
         {
-            string tickerSymbol = info.Contract.Symbol;
-            if (info.Position == 0)
+            string tickerSymbol = position.Contract.Symbol;
+            if (position.PositionSize == 0)
             {
                 Remove(tickerSymbol);
             }
@@ -27,11 +27,11 @@ namespace TradeBot.TwsAbstractions
             {
                 if (ContainsKey(tickerSymbol))
                 {
-                    this[tickerSymbol] = info;
+                    this[tickerSymbol] = position;
                 }
                 else
                 {
-                    Add(tickerSymbol, info);
+                    Add(tickerSymbol, position);
                 }
             }
         }
