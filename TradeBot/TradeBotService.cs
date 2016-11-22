@@ -231,12 +231,9 @@ namespace TradeBot
 
         public double GetSelectedPositionSize()
         {
-            if (Portfolio == null || !Portfolio.ContainsKey(TickerSymbol))
-            {
-                return 0;
-            }
-
-            return Portfolio.Get(TickerSymbol).PositionSize;
+            Position position = null;
+            Portfolio?.TryGetValue(TickerSymbol, out position);
+            return position?.PositionSize ?? 0;
         }
 
         public async Task<double> GetSelectedPositionSizeAsync()
