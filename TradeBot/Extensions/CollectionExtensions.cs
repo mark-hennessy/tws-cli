@@ -5,45 +5,26 @@ namespace TradeBot.Extensions
 {
     public static class CollectionExtensions
     {
-        // <summary>
-        /// Determines whether the collection is null or contains no elements.
-        /// </summary>
-        /// <typeparam name="T">The IEnumerable type.</typeparam>
-        /// <param name="enumerable">The enumerable, which may be null or empty.</param>
-        /// <returns>
-        ///     <c>true</c> if the IEnumerable is null or empty; otherwise, <c>false</c>.
-        /// </returns>
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> enumerable)
         {
-            if (enumerable == null)
-            {
-                return true;
-            }
-
-            var collection = enumerable as ICollection<T>;
-            return collection?.IsEmpty() ?? enumerable.IsEmpty();
-        }
-
-        public static bool IsEmpty<T>(this ICollection<T> collection)
-        {
-            // Use the Count property for efficiency. 
-            // The Count property is O(1) while IEnumerable.Count() is O(N). 
-            return collection.Count == 0;
+            return enumerable?.IsEmpty() ?? true;
         }
 
         public static bool IsEmpty<T>(this IEnumerable<T> enumerable)
         {
-            return !enumerable.Any();
-        }
-
-        public static int LastIndex<T>(this ICollection<T> collection)
-        {
-            return collection.Count - 1;
+            return enumerable.Size() == 0;
         }
 
         public static int LastIndex<T>(this IEnumerable<T> enumerable)
         {
-            return enumerable.Count() - 1;
+            return enumerable.Size() - 1;
+        }
+
+        private static int Size<T>(this IEnumerable<T> enumerable)
+        {
+            // The Count property is O(1) while IEnumerable.Count() is O(N)
+            var collection = enumerable as ICollection<T>;
+            return collection?.Count ?? enumerable.Count();
         }
     }
 }
