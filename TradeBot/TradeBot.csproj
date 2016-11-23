@@ -129,7 +129,6 @@
     <Compile Include="TwsAbstractions\ContractFactory.cs" />
     <Compile Include="TwsAbstractions\OrderFactory.cs" />
     <Compile Include="TwsAbstractions\TwsApiConstants.cs" />
-    <Compile Include="Gui\Screen.cs" />
     <Compile Include="Gui\IO.cs" />
     <Compile Include="MenuFramework\Menu.cs" />
     <Compile Include="MenuFramework\MenuOption.cs" />
