@@ -124,7 +124,6 @@ namespace TradeBot
                 service.Connect(clientUrl, clientPort);
                 if (service.IsConnected)
                 {
-                    SetInitialState();
                     while (service.IsConnected)
                     {
                         menu.PromptForMenuOption().Command();
@@ -364,6 +363,8 @@ namespace TradeBot
                 {
                     IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
                 }
+
+                //SelectLargestPosition();
             }
         }
 
@@ -453,9 +454,27 @@ namespace TradeBot
         #endregion
 
         #region Private helper methods
-        private void SetInitialState()
+        private void SelectLargestPosition()
         {
+            Position largestPosition = service
+                .RequestPositionsForTradedAccountAsync()
+                .Result
+                .OrderByDescending(p => p.Value.PositionSize)
+                .Select(p => p.Value)
+                .FirstOrDefault();
 
+            SelectPosition(largestPosition);
+        }
+
+        private void SelectPosition(Position position)
+        {
+            if (position == null)
+            {
+                return;
+            }
+
+            service.TickerSymbol = position.Symbol;
+            Shares = position.PositionSize;
         }
 
         private void SetSharesFromCash()

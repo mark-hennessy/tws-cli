@@ -64,17 +64,15 @@
   "cashSetFormat": "Cash set to {0}",
 
   "listPositionsFormat": "{0} {1}, AvgCost: {2}, MktPrice: {3}, MktValue: {4}, UnPnL: {5}, RePnL: {6}, A: {7}",
+  "positionNotFoundError": "Position not found",
+  "positionsNotFoundError": "No positions found",
 
   "loadedStateFormat": "Loaded state from {0}",
   "savedStateFormat": "Saved state to {0}",
 
   "commissionFormat": "Commission: {0}, Total: {1}",
 
-  "pressAnyKeyToExit": "Press any key to exit...",
-
   "priceDataUnavailableError": "Price data unavailable",
-  "positionNotFoundError": "Position not found",
-  "positionsNotFoundError": "No positions found",
 
   "invalidIntegerInputError": "Expected an integer",
   "invalidDecimalInputError": "Expected a decimal",
@@ -83,5 +81,7 @@
 
   "twsErrorFormat": "{0}",
   "appExceptionMessageFormat": "{0}",
-  "appExceptionStackTraceFormat": "{0}"
+  "appExceptionStackTraceFormat": "{0}",
+
+  "pressAnyKeyToExit": "Press any key to exit..."
 }
