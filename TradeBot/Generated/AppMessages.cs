@@ -39,8 +39,8 @@ namespace TradeBot.Generated
         [JsonProperty("listPositions")]
         public IList<string> ListPositions { get; set; }
 
-        [JsonProperty("listAllPositions")]
-        public IList<string> ListAllPositions { get; set; }
+        [JsonProperty("listPositionsForAllAccounts")]
+        public IList<string> ListPositionsForAllAccounts { get; set; }
 
         [JsonProperty("loadState")]
         public IList<string> LoadState { get; set; }
@@ -166,6 +166,12 @@ namespace TradeBot.Generated
         [JsonProperty("listPositionsFormat")]
         public string ListPositionsFormat { get; set; }
 
+        [JsonProperty("positionNotFoundError")]
+        public string PositionNotFoundError { get; set; }
+
+        [JsonProperty("positionsNotFoundError")]
+        public string PositionsNotFoundError { get; set; }
+
         [JsonProperty("loadedStateFormat")]
         public string LoadedStateFormat { get; set; }
 
@@ -175,17 +181,8 @@ namespace TradeBot.Generated
         [JsonProperty("commissionFormat")]
         public string CommissionFormat { get; set; }
 
-        [JsonProperty("pressAnyKeyToExit")]
-        public string PressAnyKeyToExit { get; set; }
-
         [JsonProperty("priceDataUnavailableError")]
         public string PriceDataUnavailableError { get; set; }
-
-        [JsonProperty("positionNotFoundError")]
-        public string PositionNotFoundError { get; set; }
-
-        [JsonProperty("positionsNotFoundError")]
-        public string PositionsNotFoundError { get; set; }
 
         [JsonProperty("invalidIntegerInputError")]
         public string InvalidIntegerInputError { get; set; }
@@ -207,6 +204,9 @@ namespace TradeBot.Generated
 
         [JsonProperty("appExceptionStackTraceFormat")]
         public string AppExceptionStackTraceFormat { get; set; }
+
+        [JsonProperty("pressAnyKeyToExit")]
+        public string PressAnyKeyToExit { get; set; }
     }
 
 }

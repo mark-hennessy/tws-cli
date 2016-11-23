@@ -31,7 +31,7 @@
     "closePosition": [ "c", "Place limit order to Close position" ],
 
     "listPositions": [ "a", "List positions for the traded account" ],
-    "listAllPositions": [ "A", "List all positions for all accounts" ],
+    "listPositionsForAllAccounts": [ "A", "List positions for all accounts" ],
 
     "loadState": [ "l", "Load default state" ],
     "saveState": [ "p", "Save current state as default state" ],

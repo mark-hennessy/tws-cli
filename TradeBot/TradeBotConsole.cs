@@ -91,7 +91,7 @@ namespace TradeBot
             addMenuOptionDivider();
 
             addMenuOption(entries.ListPositions, ListPositionsCommand);
-            addMenuOption(entries.ListAllPositions, ListAllPositionsCommand);
+            addMenuOption(entries.ListPositionsForAllAccounts, ListPositionsForAllAccountsCommand);
             addMenuOptionDivider();
 
             addMenuOption(entries.LoadState, LoadStateCommand);
@@ -265,7 +265,7 @@ namespace TradeBot
             ShowPositions(service.Portfolio);
         }
 
-        private void ListAllPositionsCommand()
+        private void ListPositionsForAllAccountsCommand()
         {
             ShowPositions(service.RequestPositionsForAllAccountsAsync().Result);
         }
@@ -364,7 +364,8 @@ namespace TradeBot
                     IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
                 }
 
-                //SelectLargestPosition();
+                //Thread.Sleep(2000);
+                SelectLargestPosition();
             }
         }
 
@@ -457,10 +458,9 @@ namespace TradeBot
         private void SelectLargestPosition()
         {
             Position largestPosition = service
-                .RequestPositionsForTradedAccountAsync()
+                .RequestPositionsAsync()
                 .Result
-                .OrderByDescending(p => p.Value.PositionSize)
-                .Select(p => p.Value)
+                .OrderByDescending(p => p.PositionSize)
                 .FirstOrDefault();
 
             SelectPosition(largestPosition);
