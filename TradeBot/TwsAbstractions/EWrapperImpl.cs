@@ -174,11 +174,11 @@ namespace TradeBot.TwsAbstractions
 
         public event Action<Contract, double, double, double, double, double, double, string> UpdatePortfolio;
 
-        void EWrapper.updatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string accountName)
+        void EWrapper.updatePortfolio(Contract contract, double positionSize, double marketPrice, double marketValue, double averageCost, double unrealisedPNL, double realisedPNL, string accountName)
         {
-            ShowDebugMessage(contract, position, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
+            ShowDebugMessage(contract, positionSize, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
 
-            UpdatePortfolio?.Invoke(contract, position, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
+            UpdatePortfolio?.Invoke(contract, positionSize, marketPrice, marketValue, averageCost, unrealisedPNL, realisedPNL, accountName);
         }
 
         public event Action<string> UpdateAccountTime;

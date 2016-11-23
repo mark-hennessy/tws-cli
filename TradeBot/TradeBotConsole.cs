@@ -91,7 +91,6 @@ namespace TradeBot
             addMenuOptionDivider();
 
             addMenuOption(entries.ListPositions, ListPositionsCommand);
-            addMenuOption(entries.ListPositionsForAllAccounts, ListPositionsForAllAccountsCommand);
             addMenuOptionDivider();
 
             addMenuOption(entries.LoadState, LoadStateCommand);
@@ -227,7 +226,14 @@ namespace TradeBot
         {
             Do(() =>
             {
-                Shares = service.GetSelectedPositionSize();
+                Position currentPosition = service
+                    .RequestCurrentPositionAsync()
+                    .Result;
+                Do(() =>
+                {
+                    Shares = currentPosition.PositionSize;
+                },
+                IfPositionExists(currentPosition));
             },
             IfTickerSet());
         }
@@ -262,12 +268,18 @@ namespace TradeBot
 
         private void ListPositionsCommand()
         {
-            ShowPositions(service.Portfolio);
-        }
+            IEnumerable<Position> positions = service
+                .RequestPositionsAsync()
+                .Result;
 
-        private void ListPositionsForAllAccountsCommand()
-        {
-            ShowPositions(service.RequestPositionsForAllAccountsAsync().Result);
+            Do(() =>
+            {
+                foreach (var position in positions)
+                {
+                    IO.ShowMessage(position.ToString());
+                }
+            },
+            IfPositionsExist(positions));
         }
 
         private void LoadStateCommand()
@@ -349,12 +361,15 @@ namespace TradeBot
             {
                 string tradedAccount = accounts[0];
                 service.TradedAccount = tradedAccount;
+                SelectLargestPosition();
 
+                // Warn about multiple accounts
                 if (accounts.Length > 1)
                 {
                     IO.ShowMessage(LogLevel.Error, Messages.MultipleAccountsWarningFormat, tradedAccount);
                 }
 
+                // Show account type message
                 if (tradedAccount.StartsWith(Messages.PaperAccountPrefix, StringComparison.InvariantCulture))
                 {
                     IO.ShowMessage(LogLevel.Warn, Messages.AccountTypePaper);
@@ -363,9 +378,6 @@ namespace TradeBot
                 {
                     IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
                 }
-
-                //Thread.Sleep(2000);
-                SelectLargestPosition();
             }
         }
 
@@ -496,7 +508,7 @@ namespace TradeBot
 
         private void ScalePosition(double percent)
         {
-            Position position = service.Portfolio?.Get(service.TickerSymbol);
+            Position position = service.RequestCurrentPositionAsync().Result;
             Do(() =>
             {
                 int orderDelta = (int)Math.Round(position.PositionSize * percent);
@@ -512,23 +524,6 @@ namespace TradeBot
                 }
             },
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
-        }
-
-        private void ShowPositions(IDictionary<string, Position> positions)
-        {
-            ShowPositions(positions?.Values);
-        }
-
-        private void ShowPositions(IEnumerable<Position> positions)
-        {
-            Do(() =>
-            {
-                foreach (var position in positions)
-                {
-                    IO.ShowMessage(position.ToString());
-                }
-            },
-            IfPositionsExist(positions));
         }
 
         private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
@@ -552,14 +547,17 @@ namespace TradeBot
 
             string tickerSymbol = service.TickerSymbol;
             bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
-            string tickerDisplay = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
-            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplay));
+            string tickerDisplayValue = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
+            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplayValue));
+
             infoStrings.Add(string.Format(Messages.TitleShares, Shares));
 
             if (isTickerSet)
             {
-                double position = service.Portfolio?.Get(tickerSymbol)?.PositionSize ?? 0;
-                infoStrings.Add(string.Format(Messages.TitlePosition, position));
+                Position currentPosition = service.RequestCurrentPositionAsync().Result;
+                double positionSize = currentPosition?.PositionSize ?? 0;
+                infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
+
                 infoStrings.Add(string.Format(Messages.TitleLastFormat, GetTickAsCurrencyString(TickType.LAST)));
                 infoStrings.Add(string.Format(Messages.TitleBidAskFormat, GetTickAsCurrencyString(TickType.BID), GetTickAsCurrencyString(TickType.ASK)));
                 infoStrings.Add(string.Format(Messages.TitleVolumeFormat, GetTickAsString(TickType.VOLUME)));

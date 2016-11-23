@@ -16,9 +16,11 @@ namespace TradeBot
     {
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
+        private TaskCompletionSource<string> accountDownloadEndTCS;
 
-        private Contract selectedContract;
-        private int selectedTickerId;
+        private int tickerId;
+        private Contract tickerContract;
+
         private int nextValidOrderId;
 
         public TradeBotService(int clientId)
@@ -50,6 +52,7 @@ namespace TradeBot
             TickSize += OnTickSize;
             TickGeneric += OnTickGeneric;
             UpdatePortfolio += OnUpdatePortfolio;
+            AccountDownloadEnd += OnAccountDownloadEnd;
             CommissionReport += OnCommissionReport;
         }
 
@@ -219,74 +222,32 @@ namespace TradeBot
 
         public void PlaceLimitOrder(OrderActions action, double quantity, double price)
         {
-            if (selectedContract == null || price <= 0)
+            if (tickerContract == null || price <= 0)
             {
                 return;
             }
 
             Order order = OrderFactory.CreateLimitOrder(action, quantity, price);
             order.Account = TradedAccount;
-            clientSocket.placeOrder(nextValidOrderId++, selectedContract, order);
+            clientSocket.placeOrder(nextValidOrderId++, tickerContract, order);
         }
 
-        public double GetSelectedPositionSize()
+        public async Task<Position> RequestCurrentPositionAsync()
         {
-            Position position = null;
-            Portfolio?.TryGetValue(TickerSymbol, out position);
-            return position?.PositionSize ?? 0;
-        }
-
-        public Task<Position> RequestCurrentPositionAsync()
-        {
-            return RequestPositionAsync(TickerSymbol);
-        }
-
-        public async Task<Position> RequestPositionAsync(string tickerSymbol)
-        {
-            var results = await RequestPositionsAsync();
-            return results.Where(p => p.Symbol == tickerSymbol).FirstOrDefault();
+            Portfolio portfolio = await RequestPortfolioAsync();
+            return portfolio.Get(TickerSymbol);
         }
 
         public async Task<IEnumerable<Position>> RequestPositionsAsync()
         {
-            var results = await RequestPositionsForAllAccountsAsync();
-            return results.Where(p => p.Account == TradedAccount);
+            Portfolio portfolio = await RequestPortfolioAsync();
+            return portfolio.Values;
         }
 
-        public Task<IEnumerable<Position>> RequestPositionsForAllAccountsAsync()
+        public async Task<Portfolio> RequestPortfolioAsync()
         {
-            var tcs = new TaskCompletionSource<IEnumerable<Position>>();
-            var positions = new List<Position>();
-
-            var onPosition = new Action<string, Contract, double, double>((account, contract, position, avgCost) =>
-            {
-                positions.Add(new Position(account, contract, position, avgCost));
-            });
-
-            var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
-            {
-                tcs.SafelySetResult(null);
-            });
-
-            var onPositionEnd = new Action(() =>
-            {
-                tcs.SafelySetResult(positions);
-            });
-
-            tcs.Task.ContinueWith(t =>
-            {
-                Position -= onPosition;
-                Error -= onError;
-                PositionEnd -= onPositionEnd;
-            });
-
-            Position += onPosition;
-            Error += onError;
-            PositionEnd += onPositionEnd;
-
-            clientSocket.reqPositions();
-
-            return tcs.Task;
+            await accountDownloadEndTCS.Task;
+            return Portfolio;
         }
 
         public bool HasTicks(params int[] tickTypes)
@@ -377,6 +338,8 @@ namespace TradeBot
             }
 
             Portfolio = new Portfolio();
+            accountDownloadEndTCS = new TaskCompletionSource<string>();
+
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 clientSocket.reqAccountUpdates(true, newValue);
@@ -391,20 +354,20 @@ namespace TradeBot
 
             if (!string.IsNullOrWhiteSpace(oldValue))
             {
-                clientSocket.cancelMktData(selectedTickerId);
+                clientSocket.cancelMktData(tickerId);
             }
 
             TickData = new TickData();
             if (!string.IsNullOrWhiteSpace(newValue))
             {
-                selectedContract = ContractFactory.CreateStockContract(newValue);
-
-                selectedTickerId = NumberGenerator.NextRandomInt();
-                clientSocket.reqMktData(selectedTickerId, selectedContract, "", false, null);
+                tickerId = NumberGenerator.NextRandomInt();
+                tickerContract = ContractFactory.CreateStockContract(newValue);
+                clientSocket.reqMktData(tickerId, tickerContract, "", false, null);
             }
             else
             {
-                selectedContract = null;
+                tickerId = -1;
+                tickerContract = null;
             }
         }
         #endregion
@@ -467,7 +430,7 @@ namespace TradeBot
 
         private void UpdateTickData(int tickerId, int tickType, double value)
         {
-            if (tickerId != selectedTickerId)
+            if (tickerId != this.tickerId)
             {
                 return;
             }
@@ -476,11 +439,16 @@ namespace TradeBot
             TickUpdated?.Invoke(this, tickType, value);
         }
 
-        private void OnUpdatePortfolio(Contract contract, double position, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
+        private void OnUpdatePortfolio(Contract contract, double positionSize, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
-            var info = new Position(account, contract, position, avgCost, marketPrice, marketValue, unrealisedPNL, realisedPNL);
-            Portfolio.Update(info);
+            var position = new Position(account, contract, positionSize, avgCost, marketPrice, marketValue, unrealisedPNL, realisedPNL);
+            Portfolio.Update(position);
             RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
+        }
+
+        private void OnAccountDownloadEnd(string account)
+        {
+            accountDownloadEndTCS.SafelySetResult(account);
         }
 
         private void OnCommissionReport(CommissionReport report)

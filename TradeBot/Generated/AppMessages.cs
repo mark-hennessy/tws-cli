@@ -39,9 +39,6 @@ namespace TradeBot.Generated
         [JsonProperty("listPositions")]
         public IList<string> ListPositions { get; set; }
 
-        [JsonProperty("listPositionsForAllAccounts")]
-        public IList<string> ListPositionsForAllAccounts { get; set; }
-
         [JsonProperty("loadState")]
         public IList<string> LoadState { get; set; }
 
@@ -67,8 +64,8 @@ namespace TradeBot.Generated
         [JsonProperty("titleShares")]
         public string TitleShares { get; set; }
 
-        [JsonProperty("titlePosition")]
-        public string TitlePosition { get; set; }
+        [JsonProperty("titlePositionSize")]
+        public string TitlePositionSize { get; set; }
 
         [JsonProperty("titleLastFormat")]
         public string TitleLastFormat { get; set; }

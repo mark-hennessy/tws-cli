@@ -3,7 +3,7 @@
 
   "titleTickerSymbol": "Symbol: {0}",
   "titleShares": "Shares: {0}",
-  "titlePosition": "Pos: {0}",
+  "titlePositionSize": "Pos: {0}",
   "titleLastFormat": "Last: {0}",
   "titleBidAskFormat": "Bid/Ask: {0} x {1}",
   "titleVolumeFormat": "Vol: {0}",
@@ -30,8 +30,7 @@
     "reversePosition": [ "r", "Place limit order to Reverse position" ],
     "closePosition": [ "c", "Place limit order to Close position" ],
 
-    "listPositions": [ "a", "List positions for the traded account" ],
-    "listPositionsForAllAccounts": [ "A", "List positions for all accounts" ],
+    "listPositions": [ "a", "List positions" ],
 
     "loadState": [ "l", "Load default state" ],
     "saveState": [ "p", "Save current state as default state" ],

@@ -18,7 +18,7 @@ namespace TradeBot.TwsAbstractions
 
         public void Update(Position position)
         {
-            string tickerSymbol = position.Contract.Symbol;
+            string tickerSymbol = position.Symbol;
             if (position.PositionSize == 0)
             {
                 Remove(tickerSymbol);
