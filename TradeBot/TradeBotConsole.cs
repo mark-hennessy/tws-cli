@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.FileIO;
@@ -354,14 +355,13 @@ namespace TradeBot
             }
         }
 
-        private void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
+        private async void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
         {
             string[] accounts = service.Accounts;
             if (accounts != null && accounts.Length > 0)
             {
                 string tradedAccount = accounts[0];
                 service.TradedAccount = tradedAccount;
-                SelectLargestPosition();
 
                 // Warn about multiple accounts
                 if (accounts.Length > 1)
@@ -378,6 +378,8 @@ namespace TradeBot
                 {
                     IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
                 }
+
+                await SelectLargestPositionAsync();
             }
         }
 
@@ -467,11 +469,11 @@ namespace TradeBot
         #endregion
 
         #region Private helper methods
-        private void SelectLargestPosition()
+        private async Task SelectLargestPositionAsync()
         {
-            Position largestPosition = service
-                .RequestPositionsAsync()
-                .Result
+            IEnumerable<Position> positions = await service.RequestPositionsAsync();
+
+            Position largestPosition = positions
                 .OrderByDescending(p => p.PositionSize)
                 .FirstOrDefault();
 
