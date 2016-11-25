@@ -195,7 +195,7 @@ namespace TradeBot
             Do(() =>
             {
                 service.TickerSymbol = tickerSymbol;
-                SetSharesFromCash();
+                var asyncTask = SetInitialSharesAsync();
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
@@ -362,6 +362,7 @@ namespace TradeBot
             {
                 string tradedAccount = accounts[0];
                 service.TradedAccount = tradedAccount;
+                await SelectLargestPositionAsync();
 
                 // Warn about multiple accounts
                 if (accounts.Length > 1)
@@ -378,8 +379,6 @@ namespace TradeBot
                 {
                     IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
                 }
-
-                await SelectLargestPositionAsync();
             }
         }
 
@@ -477,18 +476,27 @@ namespace TradeBot
                 .OrderByDescending(p => p.PositionSize)
                 .FirstOrDefault();
 
-            SelectPosition(largestPosition);
+            SetPosition(largestPosition);
         }
 
-        private void SelectPosition(Position position)
+        private void SetPosition(Position position)
         {
-            if (position == null)
-            {
-                return;
-            }
+            service.TickerSymbol = position?.Symbol ?? null;
+            Shares = position?.PositionSize ?? 0;
+        }
 
-            service.TickerSymbol = position.Symbol;
-            Shares = position.PositionSize;
+        private async Task SetInitialSharesAsync()
+        {
+            Position existingPosition = await service.RequestCurrentPositionAsync();
+            double existingPositionSize = existingPosition?.PositionSize ?? 0;
+            if (existingPositionSize > 0)
+            {
+                Shares = existingPositionSize;
+            }
+            else
+            {
+                SetSharesFromCash();
+            }
         }
 
         private void SetSharesFromCash()
@@ -498,6 +506,7 @@ namespace TradeBot
                 return;
             }
 
+            // TODO: Will this block the UI thread?
             service.AwaitTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
 
             Do(() =>
