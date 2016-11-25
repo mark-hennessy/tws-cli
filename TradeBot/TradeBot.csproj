@@ -137,6 +137,7 @@
     <Compile Include="Gui\OS.cs" />
     <Compile Include="Utils\NumberGenerator.cs" />
     <Compile Include="TwsAbstractions\EWrapperImpl.cs" />
+    <Compile Include="Events\PositionUpdatedEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icons\uptrend_icon.ico" />

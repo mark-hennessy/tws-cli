@@ -1,6 +1,6 @@
 ﻿namespace TradeBot.Events
 {
-    public delegate void PropertyChangedEventHandler(object sender, PropertyChangedEventArgs e);
+    public delegate void PropertyChangedEventHandler(PropertyChangedEventArgs e);
 
     public class PropertyChangedEventArgs
     {

@@ -60,6 +60,7 @@ namespace TradeBot
 
             service.PropertyChanged += OnPropertyChanged;
             service.TickUpdated += OnTickUpdated;
+            service.PositionUpdated += OnPositionUpdated;
             service.Error += OnError;
         }
 
@@ -320,7 +321,7 @@ namespace TradeBot
         #endregion
 
         #region Event handlers
-        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        private void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
             {
@@ -332,12 +333,6 @@ namespace TradeBot
                     break;
                 case nameof(service.TickerSymbol):
                     OnTickerSymbolChanged(eventArgs);
-                    break;
-                case nameof(service.TickData):
-                    OnTickDataChanged(eventArgs);
-                    break;
-                case nameof(service.Portfolio):
-                    OnPortfolioChanged(eventArgs);
                     break;
                 case nameof(service.CommissionReports):
                     OnCommissionReportsChanged(eventArgs);
@@ -403,21 +398,6 @@ namespace TradeBot
             UpdateConsoleTitle();
         }
 
-        private void OnTickDataChanged(PropertyChangedEventArgs eventArgs)
-        {
-            UpdateConsoleTitle();
-        }
-
-        private void OnTickUpdated(object sender, int tickType, double value)
-        {
-            UpdateConsoleTitle();
-        }
-
-        private void OnPortfolioChanged(PropertyChangedEventArgs eventArgs)
-        {
-            UpdateConsoleTitle();
-        }
-
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
         {
             IList<CommissionReport> reports = service.CommissionReports;
@@ -432,6 +412,16 @@ namespace TradeBot
             IO.ShowMessage(Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
                 totalCommissions.ToCurrencyString());
+        }
+
+        private void OnTickUpdated(int tickType, double value)
+        {
+            UpdateConsoleTitle();
+        }
+
+        private void OnPositionUpdated(Position position)
+        {
+            UpdateConsoleTitle();
         }
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)

@@ -20,6 +20,8 @@ namespace TradeBot
 
         private int tickerId;
         private Contract tickerContract;
+        private TickData tickData;
+        private Portfolio portfolio;
 
         private int nextValidOrderId;
 
@@ -59,6 +61,7 @@ namespace TradeBot
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
         public event TickUpdatedEventHandler TickUpdated;
+        public event PositionUpdatedEventHandler PositionUpdated;
         #endregion
 
         #region Properties
@@ -103,19 +106,6 @@ namespace TradeBot
             }
         }
 
-        private Portfolio _portfolio;
-        public Portfolio Portfolio
-        {
-            get
-            {
-                return _portfolio;
-            }
-            private set
-            {
-                SetPropertyAndRaiseValueChangedEvent(ref _portfolio, value);
-            }
-        }
-
         private string _tickerSymbol;
         public string TickerSymbol
         {
@@ -126,19 +116,6 @@ namespace TradeBot
             set
             {
                 SetPropertyAndRaiseValueChangedEvent(ref _tickerSymbol, value?.Trim().ToUpper());
-            }
-        }
-
-        private TickData _tickData;
-        public TickData TickData
-        {
-            get
-            {
-                return _tickData;
-            }
-            private set
-            {
-                SetPropertyAndRaiseValueChangedEvent(ref _tickData, value);
             }
         }
 
@@ -157,7 +134,7 @@ namespace TradeBot
 
         protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyValueChangedEventArgs<T>(propertyName, value, value));
+            PropertyChanged?.Invoke(new PropertyValueChangedEventArgs<T>(propertyName, value, value));
         }
 
         protected void SetPropertyAndRaiseValueChangedEvent<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
@@ -166,7 +143,7 @@ namespace TradeBot
             if (!Equals(oldValue, newValue))
             {
                 field = newValue;
-                PropertyChanged?.Invoke(this, new PropertyValueChangedEventArgs<T>(propertyName, oldValue, newValue));
+                PropertyChanged?.Invoke(new PropertyValueChangedEventArgs<T>(propertyName, oldValue, newValue));
             }
         }
         #endregion
@@ -234,26 +211,26 @@ namespace TradeBot
 
         public async Task<Position> RequestCurrentPositionAsync()
         {
-            Portfolio portfolio = await RequestPortfolioAsync();
-            return portfolio.Get(TickerSymbol);
+            Portfolio positions = await RequestPortfolioAsync();
+            return positions.Get(TickerSymbol);
         }
 
         public async Task<IEnumerable<Position>> RequestPositionsAsync()
         {
-            Portfolio portfolio = await RequestPortfolioAsync();
-            return portfolio.Values;
+            Portfolio positions = await RequestPortfolioAsync();
+            return positions.Values;
         }
 
         public async Task<Portfolio> RequestPortfolioAsync()
         {
             await accountDownloadEndTCS.Task;
-            return Portfolio;
+            return portfolio;
         }
 
         public bool HasTicks(params int[] tickTypes)
         {
             var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
-            return TickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
+            return tickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
         }
 
         public Task<bool> AwaitTicksAsync(params int[] tickTypes)
@@ -268,7 +245,7 @@ namespace TradeBot
             // Otherwise, proceed with fancy asynchronous code!
             var tcs = new TaskCompletionSource<bool>();
 
-            var onTickUpdated = new TickUpdatedEventHandler((sender, tickType, value) =>
+            var onTickUpdated = new TickUpdatedEventHandler((tickType, value) =>
             {
                 if (HasTicks(tickTypes))
                 {
@@ -276,11 +253,11 @@ namespace TradeBot
                 }
             });
 
-            var onPropertyChanged = new PropertyChangedEventHandler((sender, eventArgs) =>
+            var onPropertyChanged = new PropertyChangedEventHandler((eventArgs) =>
             {
                 switch (eventArgs.PropertyName)
                 {
-                    case nameof(TickData):
+                    case nameof(tickData):
                         // If the TickData collection was re-assigned, then abort.
                         tcs.SafelySetResult(false);
                         break;
@@ -308,12 +285,12 @@ namespace TradeBot
 
         public double? GetTick(int tickType)
         {
-            return TickData?.Get(tickType);
+            return tickData?.Get(tickType);
         }
         #endregion
 
         #region PropertyChanged callbacks
-        private void OnPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        private void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
             {
@@ -337,7 +314,7 @@ namespace TradeBot
                 clientSocket.reqAccountUpdates(false, oldValue);
             }
 
-            Portfolio = new Portfolio();
+            portfolio = new Portfolio();
             accountDownloadEndTCS = new TaskCompletionSource<string>();
 
             if (!string.IsNullOrWhiteSpace(newValue))
@@ -357,7 +334,7 @@ namespace TradeBot
                 clientSocket.cancelMktData(tickerId);
             }
 
-            TickData = new TickData();
+            tickData = new TickData();
             if (!string.IsNullOrWhiteSpace(newValue))
             {
                 tickerId = NumberGenerator.NextRandomInt();
@@ -435,15 +412,15 @@ namespace TradeBot
                 return;
             }
 
-            TickData.Update(tickType, value);
-            TickUpdated?.Invoke(this, tickType, value);
+            tickData.Update(tickType, value);
+            TickUpdated?.Invoke(tickType, value);
         }
 
         private void OnUpdatePortfolio(Contract contract, double positionSize, double marketPrice, double marketValue, double avgCost, double unrealisedPNL, double realisedPNL, string account)
         {
             var position = new Position(account, contract, positionSize, avgCost, marketPrice, marketValue, unrealisedPNL, realisedPNL);
-            Portfolio.Update(position);
-            RaisePropertyValueChangedEvent(Portfolio, nameof(Portfolio));
+            portfolio.Update(position);
+            PositionUpdated?.Invoke(position);
         }
 
         private void OnAccountDownloadEnd(string account)
