@@ -413,24 +413,24 @@ namespace TradeBot
             nextValidOrderId = orderId;
         }
 
-        private void OnTickPrice(int tickerId, int field, double price, int canAutoExecute)
+        private void OnTickPrice(int tickId, int field, double price, int canAutoExecute)
         {
-            UpdateTickData(tickerId, field, price);
+            UpdateTickData(tickId, field, price);
         }
 
-        private void OnTickSize(int tickerId, int field, int size)
+        private void OnTickSize(int tickId, int field, int size)
         {
-            UpdateTickData(tickerId, field, size);
+            UpdateTickData(tickId, field, size);
         }
 
-        private void OnTickGeneric(int tickerId, int field, double value)
+        private void OnTickGeneric(int tickId, int field, double value)
         {
-            UpdateTickData(tickerId, field, value);
+            UpdateTickData(tickId, field, value);
         }
 
-        private void UpdateTickData(int tickerId, int tickType, double value)
+        private void UpdateTickData(int tickId, int tickType, double value)
         {
-            if (tickerId != this.tickerId)
+            if (tickId != tickerId)
             {
                 return;
             }
