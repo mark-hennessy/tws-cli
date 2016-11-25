@@ -195,7 +195,7 @@ namespace TradeBot
             Do(() =>
             {
                 service.TickerSymbol = tickerSymbol;
-                var asyncTask = SetInitialSharesAsync();
+                Task asyncTask = SetInitialSharesAsync();
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
@@ -207,7 +207,7 @@ namespace TradeBot
             Do(() =>
             {
                 Cash = cash.Value;
-                SetSharesFromCash();
+                Task asyncTask = SetSharesFromCashAsync();
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
@@ -495,19 +495,18 @@ namespace TradeBot
             }
             else
             {
-                SetSharesFromCash();
+                await SetSharesFromCashAsync();
             }
         }
 
-        private void SetSharesFromCash()
+        private async Task SetSharesFromCashAsync()
         {
             if (Cash <= 0)
             {
                 return;
             }
 
-            // TODO: Will this block the UI thread?
-            service.AwaitTicksAsync(COMMON_TICKS).Wait(REQUEST_TIMEOUT);
+            await service.AwaitTicksAsync(COMMON_TICKS).TimeoutAfter(REQUEST_TIMEOUT);
 
             Do(() =>
             {
