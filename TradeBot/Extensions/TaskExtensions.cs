@@ -9,6 +9,9 @@ namespace TradeBot.Extensions
         {
             if (task == await Task.WhenAny(task, Task.Delay(millisecondsTimeout)))
             {
+                // Task completed within timeout.
+                // Consider that the task may have faulted or been canceled.
+                // We re-await the task so that any exceptions/cancellation is rethrown.
                 await task;
             }
             else
