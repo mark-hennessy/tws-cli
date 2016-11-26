@@ -11,9 +11,9 @@ namespace TradeBot.TwsAbstractions
                 return null;
             }
 
-            Position result;
-            TryGetValue(tickerSymbol, out result);
-            return result;
+            Position position;
+            TryGetValue(tickerSymbol, out position);
+            return position;
         }
 
         public void Update(Position position)

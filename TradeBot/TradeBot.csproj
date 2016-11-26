@@ -110,6 +110,7 @@
     <Compile Include="Events\TickUpdatedEvent.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="MenuFramework\MenuCommand.cs" />
     <Compile Include="MenuFramework\MenuItem.cs" />
     <Compile Include="MenuFramework\MenuDivider.cs" />
     <Compile Include="MenuFramework\MenuTitle.cs" />

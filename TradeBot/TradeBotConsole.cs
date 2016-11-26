@@ -71,7 +71,7 @@ namespace TradeBot
             var titleDivider = new MenuDivider();
             menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, titleDivider));
 
-            var addMenuOption = new Action<IList<string>, Action>((entry, command)
+            var addMenuOption = new Action<IList<string>, MenuCommand>((entry, command)
                 => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command)));
 
             var menuOptionDivider = new MenuDivider();
@@ -125,12 +125,9 @@ namespace TradeBot
             try
             {
                 service.Connect(clientUrl, clientPort);
-                if (service.IsConnected)
+                while (service.IsConnected)
                 {
-                    while (service.IsConnected)
-                    {
-                        menu.PromptForMenuOption().Command();
-                    }
+                    HandleMenuOptionInput(PromptForMenuOptionInput());
                 }
             }
             catch (Exception e)
@@ -143,6 +140,26 @@ namespace TradeBot
                 {
                     IO.PromptForChar(Messages.PressAnyKeyToExit);
                 }
+            }
+        }
+
+        private string[] PromptForMenuOptionInput()
+        {
+            return IO.PromptForInput().Split();
+        }
+
+        private void HandleMenuOptionInput(string[] input)
+        {
+            string key = input.FirstOrDefault();
+            MenuOption menuOption = menu.getMenuOption(key);
+            if (menuOption != null)
+            {
+                string[] args = input.Skip(1).ToArray();
+                menuOption.Command(args);
+            }
+            else
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.InvalidMenuOption);
             }
         }
         #endregion
@@ -192,9 +209,10 @@ namespace TradeBot
         #endregion
 
         #region Menu commands
-        private void PromptForTickerSymbolCommand()
+        private void PromptForTickerSymbolCommand(string[] args)
         {
-            string tickerSymbol = IO.PromptForInput(Messages.SelectTickerPrompt);
+            string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
+
             Do(() =>
             {
                 service.TickerSymbol = tickerSymbol;
@@ -203,10 +221,11 @@ namespace TradeBot
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
 
-        private void PromptForCashCommand()
+        private void PromptForCashCommand(string[] args)
         {
-            string cashInput = IO.PromptForInput(Messages.CashPrompt);
+            string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
+
             Do(() =>
             {
                 Cash = cash.Value;
@@ -215,10 +234,11 @@ namespace TradeBot
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
 
-        private void PromptForSharesCommand()
+        private void PromptForSharesCommand(string[] args)
         {
-            string sharesInput = IO.PromptForInput(Messages.SharesPrompt);
+            string sharesInput = IO.PromptForInputIfNecessary(args, 0, Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
+
             Do(() =>
             {
                 Shares = shares.Value;
@@ -226,7 +246,7 @@ namespace TradeBot
             IfHasValue(shares), IfPositive(shares ?? -1));
         }
 
-        private void SetSharesFromPositionCommand()
+        private void SetSharesFromPositionCommand(string[] args)
         {
             Do(() =>
             {
@@ -242,7 +262,7 @@ namespace TradeBot
             IfTickerSet());
         }
 
-        private void BuyCommand()
+        private void BuyCommand(string[] args)
         {
             Do(() =>
             {
@@ -251,7 +271,7 @@ namespace TradeBot
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
-        private void SellCommand()
+        private void SellCommand(string[] args)
         {
             Do(() =>
             {
@@ -260,17 +280,17 @@ namespace TradeBot
             IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
         }
 
-        private void ReversePositionCommand()
+        private void ReversePositionCommand(string[] args)
         {
             ScalePosition(-2);
         }
 
-        private void ClosePositionCommand()
+        private void ClosePositionCommand(string[] args)
         {
             ScalePosition(-1);
         }
 
-        private void ListPositionsCommand()
+        private void ListPositionsCommand(string[] args)
         {
             IEnumerable<Position> positions = service
                 .RequestPositionsAsync()
@@ -286,7 +306,7 @@ namespace TradeBot
             IfPositionsExist(positions));
         }
 
-        private void LoadStateCommand()
+        private void LoadStateCommand(string[] args)
         {
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
@@ -297,7 +317,7 @@ namespace TradeBot
             IO.ShowMessage(Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
         }
 
-        private void SaveStateCommand()
+        private void SaveStateCommand(string[] args)
         {
             AppState state = new AppState();
             state.TickerSymbol = service.TickerSymbol;
@@ -309,12 +329,12 @@ namespace TradeBot
             IO.ShowMessage(Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
         }
 
-        private void ClearScreenCommand()
+        private void ClearScreenCommand(string[] args)
         {
             Console.Clear();
         }
 
-        private void ShowMenuCommand()
+        private void ShowMenuCommand(string[] args)
         {
             IO.ShowMessage(menu.Render());
         }

@@ -21,8 +21,8 @@
 
     "setTickerSymbol": [ "f", "Set ticker symbol to trade" ],
 
-    "setSharesFromCash": [ "j", "Set shares to trade based on a cash value and the current share price" ],
-    "setShares": [ "J", "Set shares to trade to a fixed value" ],
+    "setSharesFromCash": [ "m", "Set shares to trade based on a cash value and the current share price" ],
+    "setShares": [ "j", "Set shares to trade to a fixed value" ],
     "setSharesFromPosition": [ "u", "Set shares to trade equal to your current position" ],
 
     "buy": [ "b", "Place limit order to Buy at ask price" ],

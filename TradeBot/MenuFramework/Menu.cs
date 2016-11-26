@@ -1,18 +1,12 @@
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TradeBot.Extensions;
-using TradeBot.Gui;
-using static TradeBot.AppProperties;
 
 namespace TradeBot.MenuFramework
 {
     public class Menu : MenuItem
     {
-        private readonly MenuOption NULL_MENU_OPTION
-            = new MenuOption(null, string.Empty, InvalidMenuOptionCommand);
-
         private IList<MenuItem> menuItems;
         private IDictionary<string, MenuOption> menuOptionMap;
 
@@ -37,9 +31,14 @@ namespace TradeBot.MenuFramework
 
         public MenuOption getMenuOption(string key)
         {
-            return key != null && menuOptionMap.ContainsKey(key)
-                ? menuOptionMap[key]
-                : NULL_MENU_OPTION;
+            if (key == null)
+            {
+                return null;
+            }
+
+            MenuOption menuOption;
+            menuOptionMap.TryGetValue(key, out menuOption);
+            return menuOption;
         }
 
         public int GetLongestMenuEntryLength()
@@ -57,22 +56,11 @@ namespace TradeBot.MenuFramework
                 .Length;
         }
 
-        public MenuOption PromptForMenuOption()
-        {
-            string input = IO.PromptForInput();
-            return getMenuOption(input);
-        }
-
         public string Render()
         {
             IEnumerable<string> renderedMenuItems = menuItems
                 .Select(item => item.Render());
             return string.Join(Environment.NewLine, renderedMenuItems); ;
-        }
-
-        private static void InvalidMenuOptionCommand()
-        {
-            IO.ShowMessage(LogLevel.Error, Messages.InvalidMenuOption);
         }
     }
 }

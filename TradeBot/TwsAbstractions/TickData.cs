@@ -9,34 +9,34 @@ namespace TradeBot.TwsAbstractions
         public double? Get(int tickType)
         {
             double result;
-            return TryGetValue(tickType, out result)
-                ? (double?)result : null;
+            bool success = TryGetValue(tickType, out result);
+            return success ? (double?)result : null;
         }
 
-        public bool ContainsKeys(params int[] keys)
+        public bool HasTicks(params int[] tickTypes)
         {
-            return ContainsKeys(null, keys);
+            return HasTicks(null, tickTypes);
         }
 
-        public bool ContainsKeys(Func<int, double, bool> criteria, params int[] keys)
+        public bool HasTicks(Func<int, double, bool> criteria, params int[] tickTypes)
         {
-            return keys.All(key =>
+            return tickTypes.All(key =>
             {
                 double value;
-                bool containsKey = TryGetValue(key, out value);
-                return containsKey && (criteria?.Invoke(key, value) ?? true);
+                bool success = TryGetValue(key, out value);
+                return success && (criteria == null || criteria.Invoke(key, value));
             });
         }
 
-        public void Update(int field, double value)
+        public void Update(int tickType, double value)
         {
-            if (ContainsKey(field))
+            if (ContainsKey(tickType))
             {
-                this[field] = value;
+                this[tickType] = value;
             }
             else
             {
-                Add(field, value);
+                Add(tickType, value);
             }
         }
     }

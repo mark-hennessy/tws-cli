@@ -1,11 +1,10 @@
-using System;
 using static TradeBot.AppProperties;
 
 namespace TradeBot.MenuFramework
 {
     public class MenuOption : MenuItem
     {
-        public MenuOption(string key, string description, Action command)
+        public MenuOption(string key, string description, MenuCommand command)
         {
             Key = key;
             Description = description;
@@ -14,7 +13,7 @@ namespace TradeBot.MenuFramework
 
         public string Key { get; }
         public string Description { get; set; }
-        public Action Command { get; set; }
+        public MenuCommand Command { get; set; }
 
         public string Render()
         {

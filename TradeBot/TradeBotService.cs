@@ -231,7 +231,7 @@ namespace TradeBot
         public bool HasTicks(params int[] tickTypes)
         {
             var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
-            return tickData?.ContainsKeys(withPositiveValue, tickTypes) ?? false;
+            return tickData?.HasTicks(withPositiveValue, tickTypes) ?? false;
         }
 
         public Task<bool> AwaitTicksAsync(params int[] tickTypes)

@@ -10,22 +10,27 @@ namespace TradeBot.Gui
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static string PromptForInput(string message = null)
+        public static string PromptForInputIfNecessary(string[] args, int argIndex, string promptMessage = null)
         {
-            if (!string.IsNullOrEmpty(message))
+            return args.Length > argIndex ? args[argIndex] : PromptForInput(promptMessage);
+        }
+
+        public static string PromptForInput(string promptMessage = null)
+        {
+            if (!string.IsNullOrEmpty(promptMessage))
             {
-                ShowInlineMessage(message);
+                ShowInlineMessage(promptMessage);
             }
             string input = Console.ReadLine() ?? string.Empty;
             ShowMessage(LogLevel.Trace, input);
             return input;
         }
 
-        public static char PromptForChar(string message = null)
+        public static char PromptForChar(string promptMessage = null)
         {
-            if (!string.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(promptMessage))
             {
-                ShowInlineMessage(message);
+                ShowInlineMessage(promptMessage);
             }
             char input = Console.ReadKey().KeyChar;
             ShowMessage(LogLevel.Trace, input.ToString());
