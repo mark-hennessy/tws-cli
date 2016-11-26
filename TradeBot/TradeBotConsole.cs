@@ -216,7 +216,7 @@ namespace TradeBot
             Do(() =>
             {
                 service.TickerSymbol = tickerSymbol;
-                SetInitialSharesAsync();
+                SetInitialSharesAsync().Wait();
             },
             IfNotNullOrWhiteSpace(tickerSymbol));
         }
@@ -229,7 +229,7 @@ namespace TradeBot
             Do(() =>
             {
                 Cash = cash.Value;
-                SetSharesFromCashAsync();
+                SetSharesFromCashAsync().Wait();
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
@@ -514,12 +514,18 @@ namespace TradeBot
 
         private async Task SetSharesFromCashAsync()
         {
-            if (Cash <= 0)
+            if (Cash < 0)
             {
                 return;
             }
 
-            await service.AwaitTicksAsync(COMMON_TICKS).TimeoutAfter(REQUEST_TIMEOUT);
+            try
+            {
+                await service.AwaitTicksAsync(COMMON_TICKS)
+                    .TimeoutAfter(REQUEST_TIMEOUT)
+                    .ConfigureAwait(false);
+            }
+            catch (TimeoutException) { };
 
             Do(() =>
             {
