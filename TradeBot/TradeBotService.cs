@@ -16,12 +16,13 @@ namespace TradeBot
     {
         private EReaderSignal readerSignal;
         private EClientSocket clientSocket;
+
+        private Portfolio portfolio;
         private TaskCompletionSource<string> accountDownloadEndTCS;
 
         private int tickerId;
         private Contract tickerContract;
         private TickData tickData;
-        private Portfolio portfolio;
 
         private int nextValidOrderId;
 

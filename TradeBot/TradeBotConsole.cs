@@ -408,10 +408,11 @@ namespace TradeBot
 
             CommissionReport lastReport = reports.Last();
             double lastCommission = lastReport.Commission;
-            double totalCommissions = reports.Sum(report => report.Commission);
+            double totalCommission = reports.Sum(report => report.Commission);
+
             IO.ShowMessage(Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
-                totalCommissions.ToCurrencyString());
+                totalCommission.ToCurrencyString());
         }
 
         private void OnTickUpdated(int tickType, double value)
