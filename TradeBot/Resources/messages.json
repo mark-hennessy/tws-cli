@@ -79,8 +79,10 @@
   "invalidNonEmptyStringInputError": "Expected non-empty text",
 
   "twsErrorFormat": "{0}",
-  "appExceptionMessageFormat": "{0}",
-  "appExceptionStackTraceFormat": "{0}",
+  "timeoutErrorFormat": "Timed out after {0} seconds",
+
+  "exceptionMessageFormat": "{0}",
+  "exceptionStackTraceFormat": "{0}",
 
   "pressAnyKeyToExit": "Press any key to exit..."
 }

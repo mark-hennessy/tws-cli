@@ -19,7 +19,7 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        private const int REQUEST_TIMEOUT = 1 * 1000;
+        private const int REQUEST_TIMEOUT = 10 * 1000;
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
         private TradeBotService service;
@@ -519,13 +519,7 @@ namespace TradeBot
                 return;
             }
 
-            try
-            {
-                await service.AwaitTicksAsync(COMMON_TICKS)
-                    .TimeoutAfter(REQUEST_TIMEOUT)
-                    .ConfigureAwait(false);
-            }
-            catch (TimeoutException) { };
+            await Timeout(service.AwaitTicksAsync(COMMON_TICKS));
 
             Do(() =>
             {
@@ -533,6 +527,19 @@ namespace TradeBot
                 Shares = (int)Math.Floor(Cash / sharePrice.Value);
             },
             IfCommonTickDataAvailable());
+        }
+
+        private async Task Timeout(Task task)
+        {
+            try
+            {
+                await task.TimeoutAfter(REQUEST_TIMEOUT).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.TimeoutErrorFormat,
+                               TimeSpan.FromMilliseconds(REQUEST_TIMEOUT).TotalSeconds);
+            }
         }
 
         private void ScalePosition(double percent)
@@ -555,13 +562,22 @@ namespace TradeBot
             IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
         }
 
-        private void ShowException(Exception exception, LogLevel messageLogLevel = null, LogLevel stackTraceLogLevel = null)
+        private void ShowException(Exception exception, LogLevel logLevel = null)
         {
-            messageLogLevel = messageLogLevel ?? LogLevel.Error;
-            stackTraceLogLevel = stackTraceLogLevel ?? LogLevel.Trace;
+            if (logLevel == null)
+            {
+                logLevel = LogLevel.Error;
+            }
 
-            IO.ShowMessage(messageLogLevel, Messages.AppExceptionMessageFormat, exception.Message);
-            IO.ShowMessage(stackTraceLogLevel, Messages.AppExceptionStackTraceFormat, exception.StackTrace);
+            var aggregateException = exception as AggregateException;
+            if (aggregateException != null)
+            {
+                IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, aggregateException.Message);
+            }
+
+            var baseException = aggregateException?.GetBaseException() ?? exception;
+            IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, baseException.Message);
+            IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
         }
 
         private void UpdateConsoleTitle()

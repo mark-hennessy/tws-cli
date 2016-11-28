@@ -230,12 +230,19 @@ namespace TradeBot
 
         public bool HasTicks(params int[] tickTypes)
         {
+            if (tickData == null)
+            {
+                return false;
+            }
+
             var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
-            return tickData?.HasTicks(withPositiveValue, tickTypes) ?? false;
+            return tickData.HasTicks(withPositiveValue, tickTypes);
         }
 
         public Task<bool> AwaitTicksAsync(params int[] tickTypes)
         {
+            tickData?.Clear();
+
             // If we already have the tick data, then there is no need 
             // to wait for the next round of tick updates.
             if (HasTicks(tickTypes))
@@ -250,7 +257,7 @@ namespace TradeBot
             {
                 if (HasTicks(tickTypes))
                 {
-                    tcs.SafelySetResult(true);
+                    tcs.TrySetResult(true);
                 }
             });
 
@@ -260,14 +267,14 @@ namespace TradeBot
                 {
                     case nameof(tickData):
                         // If the TickData collection was re-assigned, then abort.
-                        tcs.SafelySetResult(false);
+                        tcs.TrySetResult(false);
                         break;
                 }
             });
 
             var onError = new Action<int, int, string, Exception>((id, code, msg, ex) =>
             {
-                tcs.SafelySetResult(false);
+                tcs.TrySetResult(false);
             });
 
             tcs.Task.ContinueWith(t =>
@@ -426,7 +433,7 @@ namespace TradeBot
 
         private void OnAccountDownloadEnd(string account)
         {
-            accountDownloadEndTCS.SafelySetResult(account);
+            accountDownloadEndTCS.TrySetResult(account);
         }
 
         private void OnCommissionReport(CommissionReport report)
