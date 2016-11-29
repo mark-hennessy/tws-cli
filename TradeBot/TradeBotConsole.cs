@@ -19,7 +19,7 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        private const int REQUEST_TIMEOUT = 10 * 1000;
+        private const int REQUEST_TIMEOUT = (int)(4.5 * 1000);
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
         private TradeBotService service;
@@ -229,7 +229,11 @@ namespace TradeBot
             Do(() =>
             {
                 Cash = cash.Value;
-                SetSharesFromCashAsync().Wait();
+
+                if (service.HasTickerSymbol)
+                {
+                    SetSharesFromCashAsync().Wait();
+                }
             },
             IfHasValue(cash), IfPositive(cash ?? -1));
         }
@@ -500,13 +504,18 @@ namespace TradeBot
 
         private async Task SetInitialSharesAsync()
         {
+            if (!service.HasTickerSymbol)
+            {
+                return;
+            }
+
             Position existingPosition = await service.RequestCurrentPositionAsync();
             double existingPositionSize = existingPosition?.PositionSize ?? 0;
             if (existingPositionSize > 0)
             {
                 Shares = existingPositionSize;
             }
-            else
+            else if (Cash > 0)
             {
                 await SetSharesFromCashAsync();
             }
@@ -514,19 +523,18 @@ namespace TradeBot
 
         private async Task SetSharesFromCashAsync()
         {
-            if (Cash < 0)
-            {
-                return;
-            }
-
             await Timeout(service.AwaitTicksAsync(COMMON_TICKS));
 
+            int tickType = TickType.LAST;
             Do(() =>
             {
-                double? sharePrice = service.GetTick(TickType.LAST);
-                Shares = (int)Math.Floor(Cash / sharePrice.Value);
+                double sharePrice = service.GetTick(tickType).Value;
+                if (sharePrice > 0)
+                {
+                    Shares = (int)Math.Floor(Cash / sharePrice);
+                }
             },
-            IfCommonTickDataAvailable());
+            IfTickDataAvailable(tickType));
         }
 
         private async Task Timeout(Task task)
@@ -590,14 +598,14 @@ namespace TradeBot
                 infoStrings.Add(appName);
             }
 
+            bool hasTickerSymbol = service.HasTickerSymbol;
             string tickerSymbol = service.TickerSymbol;
-            bool isTickerSet = !string.IsNullOrWhiteSpace(tickerSymbol);
-            string tickerDisplayValue = isTickerSet ? tickerSymbol : Messages.TitleUnavailable;
+            string tickerDisplayValue = hasTickerSymbol ? tickerSymbol : Messages.TitleUnavailable;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplayValue));
 
             infoStrings.Add(string.Format(Messages.TitleShares, Shares));
 
-            if (isTickerSet)
+            if (hasTickerSymbol)
             {
                 Position currentPosition = service.RequestCurrentPositionAsync().Result;
                 double positionSize = currentPosition?.PositionSize ?? 0;
@@ -671,7 +679,7 @@ namespace TradeBot
         private Validator IfTickerSet()
         {
             return CreateValidator(
-                () => service.TickerSymbol != null,
+                () => service.HasTickerSymbol,
                 Messages.TickerSymbolNotSetError);
         }
 
@@ -682,17 +690,15 @@ namespace TradeBot
                 Messages.SharesNotSetError);
         }
 
+        private Validator IfCommonTickDataAvailable()
+        {
+            return IfTickDataAvailable(COMMON_TICKS);
+        }
+
         private Validator IfTickDataAvailable(params int[] tickTypes)
         {
             return CreateValidator(
                 () => service.HasTicks(tickTypes),
-                Messages.PriceDataUnavailableError);
-        }
-
-        private Validator IfCommonTickDataAvailable()
-        {
-            return CreateValidator(
-                () => service.HasTicks(COMMON_TICKS),
                 Messages.PriceDataUnavailableError);
         }
 

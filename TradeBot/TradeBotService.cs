@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using TradeBot.Events;
-using TradeBot.Extensions;
 using TradeBot.TwsAbstractions;
 using TradeBot.Utils;
 
@@ -117,6 +116,14 @@ namespace TradeBot
             set
             {
                 SetPropertyAndRaiseValueChangedEvent(ref _tickerSymbol, value?.Trim().ToUpper());
+            }
+        }
+
+        public bool HasTickerSymbol
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(TickerSymbol);
             }
         }
 
@@ -235,13 +242,14 @@ namespace TradeBot
                 return false;
             }
 
-            var withPositiveValue = new Func<int, double, bool>((key, value) => value >= 0);
+            var withPositiveValue = new Func<int, double, bool>((key, value)
+                => value >= 0);
             return tickData.HasTicks(withPositiveValue, tickTypes);
         }
 
         public Task<bool> AwaitTicksAsync(params int[] tickTypes)
         {
-            tickData?.Clear();
+            //tickData?.Clear();
 
             // If we already have the tick data, then there is no need 
             // to wait for the next round of tick updates.
