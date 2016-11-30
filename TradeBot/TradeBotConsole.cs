@@ -213,12 +213,11 @@ namespace TradeBot
         {
             string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
 
-            Do(() =>
+            if (ValidateNotNullOrWhiteSpace(tickerSymbol))
             {
                 service.TickerSymbol = tickerSymbol;
                 SetInitialSharesAsync().Wait();
-            },
-            IfNotNullOrWhiteSpace(tickerSymbol));
+            }
         }
 
         private void PromptForCashCommand(string[] args)
@@ -226,7 +225,8 @@ namespace TradeBot
             string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
 
-            Do(() =>
+            if (ValidateHasValue(cash)
+                && ValidatePositive(cash ?? -1))
             {
                 Cash = cash.Value;
 
@@ -234,8 +234,7 @@ namespace TradeBot
                 {
                     SetSharesFromCashAsync().Wait();
                 }
-            },
-            IfHasValue(cash), IfPositive(cash ?? -1));
+            }
         }
 
         private void PromptForSharesCommand(string[] args)
@@ -243,45 +242,45 @@ namespace TradeBot
             string sharesInput = IO.PromptForInputIfNecessary(args, 0, Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
 
-            Do(() =>
+            if (ValidateHasValue(shares)
+                && ValidatePositive(shares ?? -1))
             {
                 Shares = shares.Value;
-            },
-            IfHasValue(shares), IfPositive(shares ?? -1));
+            }
         }
 
         private void SetSharesFromPositionCommand(string[] args)
         {
-            Do(() =>
+            if (ValidateTickerSet())
             {
                 Position currentPosition = service
                     .RequestCurrentPositionAsync()
                     .Result;
-                Do(() =>
+                if (ValidatePositionExists(currentPosition))
                 {
                     Shares = currentPosition.PositionSize;
-                },
-                IfPositionExists(currentPosition));
-            },
-            IfTickerSet());
+                }
+            }
         }
 
         private void BuyCommand(string[] args)
         {
-            Do(() =>
+            if (ValidateTickerSet()
+                && ValidateSharesSet()
+                && ValidateCommonTickDataAvailable())
             {
                 service.PlaceBuyLimitOrder(Shares);
-            },
-            IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
+            }
         }
 
         private void SellCommand(string[] args)
         {
-            Do(() =>
+            if (ValidateTickerSet()
+                && ValidateSharesSet()
+                && ValidateCommonTickDataAvailable())
             {
                 service.PlaceSellLimitOrder(Shares);
-            },
-            IfTickerSet(), IfSharesSet(), IfCommonTickDataAvailable());
+            }
         }
 
         private void ReversePositionCommand(string[] args)
@@ -300,14 +299,13 @@ namespace TradeBot
                 .RequestPositionsAsync()
                 .Result;
 
-            Do(() =>
+            if (ValidatePositionsExist(positions))
             {
                 foreach (var position in positions)
                 {
                     IO.ShowMessage(position.ToString());
                 }
-            },
-            IfPositionsExist(positions));
+            }
         }
 
         private void LoadStateCommand(string[] args)
@@ -526,15 +524,14 @@ namespace TradeBot
             await Timeout(service.AwaitTicksAsync(COMMON_TICKS));
 
             int tickType = TickType.LAST;
-            Do(() =>
+            if (ValidateTickDataAvailable(tickType))
             {
                 double sharePrice = service.GetTick(tickType).Value;
                 if (sharePrice > 0)
                 {
                     Shares = (int)Math.Floor(Cash / sharePrice);
                 }
-            },
-            IfTickDataAvailable(tickType));
+            }
         }
 
         private async Task Timeout(Task task)
@@ -553,7 +550,9 @@ namespace TradeBot
         private void ScalePosition(double percent)
         {
             Position position = service.RequestCurrentPositionAsync().Result;
-            Do(() =>
+            if (ValidateTickerSet()
+                && ValidatePositionExists(position)
+                && ValidateCommonTickDataAvailable())
             {
                 int orderDelta = (int)Math.Round(position.PositionSize * percent);
                 int orderQuantity = Math.Abs(orderDelta);
@@ -566,8 +565,7 @@ namespace TradeBot
                 {
                     service.PlaceSellLimitOrder(orderQuantity);
                 }
-            },
-            IfTickerSet(), IfPositionExists(position), IfCommonTickDataAvailable());
+            }
         }
 
         private void ShowException(Exception exception, LogLevel logLevel = null)
@@ -641,131 +639,90 @@ namespace TradeBot
         #endregion
 
         #region Validations
-        /// <summary>
-        /// A closure around an isValid condition
-        /// such as value != null or value >= 0
-        /// </summary>
-        /// <returns>true if valid</returns>
-        private delegate bool Validation();
-
-        /// <summary>
-        /// A closure around a single validation and a corresponding error message.
-        /// If valid, then the given callback will be invoked.
-        /// If not valid, then the enclosed error message will be shown.
-        /// </summary>
-        /// <param name="ifValidCallback">the callback to invoke if valid</param>
-        /// <returns>true if valid</returns>
-        private delegate bool Validator(Action ifValidCallback);
-
-        /// <summary>
-        /// Iterates through the given list of validators and invokes the given ifValidCallback 
-        /// a single time if all validators are valid.
-        /// </summary>
-        /// <param name="ifValidCallback">the callback to invoke if valid</param>
-        /// <param name="validators">the list of validators</param>
-        private void Do(Action ifValidCallback, params Validator[] validators)
+        private bool ValidateTickerSet()
         {
-            bool valid = true;
-            foreach (var validator in validators)
-            {
-                valid &= validator(null);
-            }
-            if (valid)
-            {
-                ifValidCallback();
-            }
-        }
-
-        private Validator IfTickerSet()
-        {
-            return CreateValidator(
-                () => service.HasTickerSymbol,
+            return Validate(
+                service.HasTickerSymbol,
                 Messages.TickerSymbolNotSetError);
         }
 
-        private Validator IfSharesSet()
+        private bool ValidateSharesSet()
         {
-            return CreateValidator(
-                () => Shares > 0,
+            return Validate(
+                Shares > 0,
                 Messages.SharesNotSetError);
         }
 
-        private Validator IfCommonTickDataAvailable()
+        private bool ValidateCommonTickDataAvailable()
         {
-            return IfTickDataAvailable(COMMON_TICKS);
+            return ValidateTickDataAvailable(COMMON_TICKS);
         }
 
-        private Validator IfTickDataAvailable(params int[] tickTypes)
+        private bool ValidateTickDataAvailable(params int[] tickTypes)
         {
-            return CreateValidator(
-                () => service.HasTicks(tickTypes),
+            return Validate(
+                service.HasTicks(tickTypes),
                 Messages.PriceDataUnavailableError);
         }
 
-        private Validator IfPositionExists(Position position)
+        private bool ValidatePositionExists(Position position)
         {
-            return CreateValidator(
-                () => position != null,
+            return Validate(
+                position != null,
                 Messages.PositionNotFoundError);
         }
 
-        private Validator IfPositionsExist(IEnumerable<Position> positions)
+        private bool ValidatePositionsExist(IEnumerable<Position> positions)
         {
-            return CreateValidator(
-                () => !positions.IsNullOrEmpty(),
+            return Validate(
+                !positions.IsNullOrEmpty(),
                 Messages.PositionsNotFoundError);
         }
 
-        private Validator IfNotNullOrWhiteSpace(string str)
+        private bool ValidateNotNullOrWhiteSpace(string str)
         {
-            return CreateValidator(
-                () => !string.IsNullOrWhiteSpace(str),
+            return Validate(
+                !string.IsNullOrWhiteSpace(str),
                 Messages.InvalidNonEmptyStringInputError);
         }
 
-        private Validator IfHasValue(int? value)
+        private bool ValidateHasValue(int? value)
         {
-            return CreateValidator(
-                () => value.HasValue,
+            return Validate(
+                value.HasValue,
                 Messages.InvalidIntegerInputError);
         }
 
-        private Validator IfHasValue(double? value)
+        private bool ValidateHasValue(double? value)
         {
-            return CreateValidator(
-                () => value.HasValue,
+            return Validate(
+                value.HasValue,
                 Messages.InvalidDecimalInputError);
         }
 
-        private Validator IfPositive(int value)
+        private bool ValidatePositive(int value)
         {
-            return CreateValidator(
-                () => value >= 0,
+            return Validate(
+                value >= 0,
                 Messages.InvalidPositiveInputError);
         }
 
-        private Validator IfPositive(double value)
+        private bool ValidatePositive(double value)
         {
-            return CreateValidator(
-                () => value >= 0,
+            return Validate(
+                value >= 0,
                 Messages.InvalidPositiveInputError);
         }
 
-        private Validator CreateValidator(Validation validation, string errorMessage)
+        private bool Validate(bool isValid, string errorMessage)
         {
-            return (ifValidCallback) =>
+            if (!isValid)
             {
-                bool valid = validation();
-                if (valid)
-                {
-                    ifValidCallback?.Invoke();
-                }
-                else
-                {
-                    IO.ShowMessage(LogLevel.Error, errorMessage);
-                }
-                return valid;
-            };
+                IO.ShowMessage(LogLevel.Error, errorMessage);
+                return false;
+            }
+
+            return true;
         }
         #endregion
     }
