@@ -5,15 +5,16 @@ namespace TradeBot.Extensions
 {
     public static class TaskExtensions
     {
-        public static async Task TimeoutAfter(this Task task, int millisecondsTimeout)
+        public static async Task TimeoutAfter(this Task workerTask, int timeoutInMilliseconds)
         {
-            Task timer = Task.Delay(millisecondsTimeout);
-            if (task == await Task.WhenAny(task, timer).ConfigureAwait(false))
+            Task timerTask = Task.Delay(timeoutInMilliseconds);
+            Task firstCompletedTask = await Task.WhenAny(workerTask, timerTask);
+
+            if (workerTask == firstCompletedTask)
             {
-                // Task completed within timeout.
-                // Consider that the task may have faulted or been canceled.
-                // We re-await the task so that any exceptions/cancellation is rethrown.
-                await task.ConfigureAwait(false);
+                // Re-await the task so that any exceptions/cancellations are rethrown.
+                // No need to ConfigureAwait here since the task has already completed.
+                await workerTask;
             }
             else
             {

@@ -19,7 +19,7 @@ namespace TradeBot
 {
     public class TradeBotConsole
     {
-        private const int REQUEST_TIMEOUT = (int)(4.5 * 1000);
+        private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
         private TradeBotService service;
@@ -127,7 +127,8 @@ namespace TradeBot
                 service.Connect(clientUrl, clientPort);
                 while (service.IsConnected)
                 {
-                    HandleMenuOptionInput(PromptForMenuOptionInput());
+                    string[] input = PromptForMenuOptionInput();
+                    Task.Run(() => HandleMenuOptionInput(input));
                 }
             }
             catch (Exception e)
@@ -198,7 +199,7 @@ namespace TradeBot
             {
                 field = newValue;
 
-                UpdateConsoleTitle();
+                UpdateConsoleTitleAsync();
 
                 if (!message.IsNullOrEmpty())
                 {
@@ -209,18 +210,18 @@ namespace TradeBot
         #endregion
 
         #region Menu commands
-        private void PromptForTickerSymbolCommand(string[] args)
+        private async void PromptForTickerSymbolCommand(string[] args)
         {
             string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
 
             if (ValidateNotNullOrWhiteSpace(tickerSymbol))
             {
                 service.TickerSymbol = tickerSymbol;
-                SetInitialSharesAsync().Wait();
+                await SetInitialSharesAsync();
             }
         }
 
-        private void PromptForCashCommand(string[] args)
+        private async void PromptForCashCommand(string[] args)
         {
             string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
@@ -232,7 +233,7 @@ namespace TradeBot
 
                 if (service.HasTickerSymbol)
                 {
-                    SetSharesFromCashAsync().Wait();
+                    await SetSharesFromCashAsync();
                 }
             }
         }
@@ -249,13 +250,12 @@ namespace TradeBot
             }
         }
 
-        private void SetSharesFromPositionCommand(string[] args)
+        private async void SetSharesFromPositionCommand(string[] args)
         {
             if (ValidateTickerSet())
             {
-                Position currentPosition = service
-                    .RequestCurrentPositionAsync()
-                    .Result;
+                Position currentPosition = await service
+                    .RequestCurrentPositionAsync();
                 if (ValidatePositionExists(currentPosition))
                 {
                     Shares = currentPosition.PositionSize;
@@ -285,19 +285,18 @@ namespace TradeBot
 
         private void ReversePositionCommand(string[] args)
         {
-            ScalePosition(-2);
+            ScalePositionAsync(-2);
         }
 
         private void ClosePositionCommand(string[] args)
         {
-            ScalePosition(-1);
+            ScalePositionAsync(-1);
         }
 
-        private void ListPositionsCommand(string[] args)
+        private async void ListPositionsCommand(string[] args)
         {
-            IEnumerable<Position> positions = service
-                .RequestPositionsAsync()
-                .Result;
+            IEnumerable<Position> positions = await service
+                .RequestPositionsAsync();
 
             if (ValidatePositionsExist(positions))
             {
@@ -417,7 +416,7 @@ namespace TradeBot
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
 
-            UpdateConsoleTitle();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
@@ -439,12 +438,12 @@ namespace TradeBot
 
         private void OnTickUpdated(int tickType, double value)
         {
-            UpdateConsoleTitle();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnPositionUpdated(Position position)
         {
-            UpdateConsoleTitle();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
@@ -521,7 +520,7 @@ namespace TradeBot
 
         private async Task SetSharesFromCashAsync()
         {
-            await Timeout(service.AwaitTicksAsync(COMMON_TICKS));
+            await Timeout(service.HasTicksAsync(COMMON_TICKS));
 
             int tickType = TickType.LAST;
             if (ValidateTickDataAvailable(tickType))
@@ -538,7 +537,7 @@ namespace TradeBot
         {
             try
             {
-                await task.TimeoutAfter(REQUEST_TIMEOUT).ConfigureAwait(false);
+                await task.TimeoutAfter(REQUEST_TIMEOUT);
             }
             catch (TimeoutException)
             {
@@ -547,9 +546,9 @@ namespace TradeBot
             }
         }
 
-        private void ScalePosition(double percent)
+        private async Task ScalePositionAsync(double percent)
         {
-            Position position = service.RequestCurrentPositionAsync().Result;
+            Position position = await service.RequestCurrentPositionAsync();
             if (ValidateTickerSet()
                 && ValidatePositionExists(position)
                 && ValidateCommonTickDataAvailable())
@@ -586,7 +585,7 @@ namespace TradeBot
             IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
         }
 
-        private void UpdateConsoleTitle()
+        private async void UpdateConsoleTitleAsync()
         {
             IList<string> infoStrings = new List<string>();
 
@@ -605,7 +604,7 @@ namespace TradeBot
 
             if (hasTickerSymbol)
             {
-                Position currentPosition = service.RequestCurrentPositionAsync().Result;
+                Position currentPosition = await service.RequestCurrentPositionAsync();
                 double positionSize = currentPosition?.PositionSize ?? 0;
                 infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
 

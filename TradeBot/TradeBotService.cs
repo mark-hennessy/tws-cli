@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.TwsAbstractions;
@@ -165,17 +164,21 @@ namespace TradeBot
             // and store them in a queue.
             var reader = new EReader(clientSocket, readerSignal);
             reader.Start();
-            // Once the messages are in the queue, an additional thread is needed to fetch them.
-            var thread = new Thread(() =>
+
+            // Once the messages are in the queue, an additional thread is needed to process them.
+            // This is best accomplished by a dedicated long-running background thread.
+            Task.Factory.StartNew(() =>
             {
                 while (clientSocket.IsConnected())
                 {
                     readerSignal.waitForSignal();
+                    // It's worth noting that message processing is what raises all EWrapper events,
+                    // e.g. NextValidId, TickPrice, Position, PositionEnd, Error, ConnectionClosed, etc.
+                    // Events are handled by the thread that raises them, i.e. this thread!
                     reader.processMsgs();
                 }
-            });
-            thread.IsBackground = true;
-            thread.Start();
+            },
+            TaskCreationOptions.LongRunning);
         }
 
         public void Disconnect()
@@ -247,10 +250,8 @@ namespace TradeBot
             return tickData.HasTicks(withPositiveValue, tickTypes);
         }
 
-        public Task<bool> AwaitTicksAsync(params int[] tickTypes)
+        public Task<bool> HasTicksAsync(params int[] tickTypes)
         {
-            //tickData?.Clear();
-
             // If we already have the tick data, then there is no need 
             // to wait for the next round of tick updates.
             if (HasTicks(tickTypes))
