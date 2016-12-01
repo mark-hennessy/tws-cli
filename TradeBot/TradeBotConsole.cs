@@ -17,7 +17,6 @@ using static TradeBot.AppProperties;
 namespace TradeBot
 {
     // TODO: Move the try/catch to the main method?
-    // TODO: Can the ShowException method simply ToString the exception?
     // TODO: Why was I getting deadlocking if the SynchronizationContext for
     // console applications uses the thread pool?
     public class TradeBotConsole
@@ -475,20 +474,8 @@ namespace TradeBot
 
         private void ShowException(Exception exception, LogLevel logLevel = null)
         {
-            if (logLevel == null)
-            {
-                logLevel = LogLevel.Error;
-            }
-
-            var aggregateException = exception as AggregateException;
-            if (aggregateException != null)
-            {
-                IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, aggregateException.Message);
-            }
-
-            var baseException = aggregateException?.GetBaseException() ?? exception;
-            IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, baseException.Message);
-            IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
+            logLevel = logLevel ?? LogLevel.Error;
+            IO.ShowMessage(logLevel, exception.ToString());
         }
         #endregion
 

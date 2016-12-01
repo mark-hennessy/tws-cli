@@ -199,12 +199,6 @@ namespace TradeBot.Generated
         [JsonProperty("timeoutErrorFormat")]
         public string TimeoutErrorFormat { get; set; }
 
-        [JsonProperty("exceptionMessageFormat")]
-        public string ExceptionMessageFormat { get; set; }
-
-        [JsonProperty("exceptionStackTraceFormat")]
-        public string ExceptionStackTraceFormat { get; set; }
-
         [JsonProperty("pressAnyKeyToExit")]
         public string PressAnyKeyToExit { get; set; }
     }
