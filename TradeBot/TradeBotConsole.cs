@@ -11,7 +11,6 @@ using TradeBot.Extensions;
 using TradeBot.FileIO;
 using TradeBot.Generated;
 using TradeBot.Gui;
-using TradeBot.MenuFramework;
 using TradeBot.TwsAbstractions;
 using static TradeBot.AppProperties;
 
@@ -22,6 +21,9 @@ namespace TradeBot
     // TODO: Why was I getting deadlocking if the SynchronizationContext for
     // console applications uses the thread pool?
     // TODO: Move private methods to the bottom of the file
+    // TODO: Create INotifyPropertyChanged interface, create extension methods for raising events
+    // TODO: Have TradeBotConsole implement INotifyPropertyChanged
+    // TODO: Finish TradeBotHeader
     public class TradeBotConsole
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
@@ -68,11 +70,16 @@ namespace TradeBot
                 nameof(EWrapper.commissionReport)
             };
 
+            PropertyChanged += OnPropertyChanged;
             service.PropertyChanged += OnPropertyChanged;
             service.TickUpdated += OnTickUpdated;
             service.PositionUpdated += OnPositionUpdated;
             service.Error += OnError;
         }
+        #endregion
+
+        #region Events
+        public event PropertyChangedEventHandler PropertyChanged;
         #endregion
 
         #region Properties
@@ -85,7 +92,7 @@ namespace TradeBot
             }
             set
             {
-                SetProperty(ref _shares, value, Messages.SharesSetFormat, value);
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _shares, value);
             }
         }
 
@@ -98,23 +105,7 @@ namespace TradeBot
             }
             set
             {
-                SetProperty(ref _cash, value, Messages.CashSetFormat, value.ToCurrencyString());
-            }
-        }
-
-        protected void SetProperty<T>(ref T field, T newValue, string message = null, params object[] messageArgs)
-        {
-            T oldValue = field;
-            if (!Equals(oldValue, newValue))
-            {
-                field = newValue;
-
-                UpdateConsoleTitleAsync();
-
-                if (!message.IsNullOrEmpty())
-                {
-                    IO.ShowMessage(message, messageArgs);
-                }
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _cash, value);
             }
         }
         #endregion
@@ -297,6 +288,13 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
+                case nameof(Shares):
+                    OnSharesChanged(eventArgs);
+                    break;
+                case nameof(Cash):
+                    OnCashChanged(eventArgs);
+                    break;
+
                 case nameof(service.IsConnected):
                     OnIsConnectedChanged(eventArgs);
                     break;
@@ -310,6 +308,16 @@ namespace TradeBot
                     OnCommissionReportsChanged(eventArgs);
                     break;
             }
+        }
+
+        private void OnSharesChanged(PropertyChangedEventArgs eventArgs)
+        {
+            IO.ShowMessage(Messages.SharesSetFormat, Shares);
+        }
+
+        private void OnCashChanged(PropertyChangedEventArgs eventArgs)
+        {
+            IO.ShowMessage(Messages.CashSetFormat, Cash.ToCurrencyString());
         }
 
         private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)

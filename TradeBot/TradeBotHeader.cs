@@ -1,7 +1,7 @@
-﻿using System;
+﻿using IBApi;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IBApi;
 using TradeBot.Events;
 using TradeBot.Extensions;
 using TradeBot.TwsAbstractions;
@@ -19,6 +19,7 @@ namespace TradeBot
             this.console = console;
             this.service = service;
 
+            console.PropertyChanged += OnPropertyChanged;
             service.PropertyChanged += OnPropertyChanged;
             service.TickUpdated += OnTickUpdated;
             service.PositionUpdated += OnPositionUpdated;
@@ -28,6 +29,8 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
+                case nameof(console.Shares):
+                case nameof(console.Cash):
                 case nameof(service.TickerSymbol):
                     UpdateHeaderAsync();
                     break;

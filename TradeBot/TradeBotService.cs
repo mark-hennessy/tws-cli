@@ -2,7 +2,6 @@ using IBApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TradeBot.Events;
 using TradeBot.TwsAbstractions;
@@ -75,7 +74,7 @@ namespace TradeBot
             }
             private set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _isConnected, value);
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _isConnected, value);
             }
         }
 
@@ -88,7 +87,7 @@ namespace TradeBot
             }
             private set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _accounts, value);
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _accounts, value);
             }
         }
 
@@ -101,7 +100,7 @@ namespace TradeBot
             }
             set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _tradedAccount, value);
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _tradedAccount, value);
             }
         }
 
@@ -114,7 +113,7 @@ namespace TradeBot
             }
             set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _tickerSymbol, value?.Trim().ToUpper());
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _tickerSymbol, value?.Trim().ToUpper());
             }
         }
 
@@ -135,22 +134,7 @@ namespace TradeBot
             }
             private set
             {
-                SetPropertyAndRaiseValueChangedEvent(ref _commissionReports, value);
-            }
-        }
-
-        protected void RaisePropertyValueChangedEvent<T>(T value, [CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(new PropertyValueChangedEventArgs<T>(propertyName, value, value));
-        }
-
-        protected void SetPropertyAndRaiseValueChangedEvent<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
-        {
-            T oldValue = field;
-            if (!Equals(oldValue, newValue))
-            {
-                field = newValue;
-                PropertyChanged?.Invoke(new PropertyValueChangedEventArgs<T>(propertyName, oldValue, newValue));
+                PropertyChanged.SetPropertyAndRaiseEvent(ref _commissionReports, value);
             }
         }
         #endregion
@@ -448,7 +432,7 @@ namespace TradeBot
         private void OnCommissionReport(CommissionReport report)
         {
             CommissionReports.Add(report);
-            RaisePropertyValueChangedEvent(CommissionReports, nameof(CommissionReports));
+            PropertyChanged.RaiseEvent(CommissionReports, nameof(CommissionReports));
         }
         #endregion
     }
