@@ -250,153 +250,6 @@ namespace TradeBot
         }
         #endregion
 
-        #region Event handlers
-        private void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
-        {
-            switch (eventArgs.PropertyName)
-            {
-                case nameof(Shares):
-                    OnSharesChanged(eventArgs);
-                    break;
-                case nameof(Cash):
-                    OnCashChanged(eventArgs);
-                    break;
-
-                case nameof(service.IsConnected):
-                    OnIsConnectedChanged(eventArgs);
-                    break;
-                case nameof(service.Accounts):
-                    OnAccountsChanged(eventArgs);
-                    break;
-                case nameof(service.TickerSymbol):
-                    OnTickerSymbolChanged(eventArgs);
-                    break;
-                case nameof(service.CommissionReports):
-                    OnCommissionReportsChanged(eventArgs);
-                    break;
-            }
-        }
-
-        private void OnSharesChanged(PropertyChangedEventArgs eventArgs)
-        {
-            IO.ShowMessage(Messages.SharesSetFormat, Shares);
-        }
-
-        private void OnCashChanged(PropertyChangedEventArgs eventArgs)
-        {
-            IO.ShowMessage(Messages.CashSetFormat, Cash.ToCurrencyString());
-        }
-
-        private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)
-        {
-            if (service.IsConnected)
-            {
-                IO.ShowMessage(LogLevel.Trace, Messages.TwsConnected);
-            }
-            else
-            {
-                IO.ShowMessage(LogLevel.Fatal, Messages.TwsDisconnected);
-            }
-        }
-
-        private async void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
-        {
-            string[] accounts = service.Accounts;
-            if (accounts != null && accounts.Length > 0)
-            {
-                string tradedAccount = accounts[0];
-                service.TradedAccount = tradedAccount;
-
-                Position largestPosition = await service.RequestLargestPosition();
-                SetPosition(largestPosition);
-
-                // Warn about multiple accounts
-                if (accounts.Length > 1)
-                {
-                    IO.ShowMessage(LogLevel.Error, Messages.MultipleAccountsWarningFormat, tradedAccount);
-                }
-
-                // Show account type message
-                if (tradedAccount.StartsWith(Messages.PaperAccountPrefix, StringComparison.InvariantCulture))
-                {
-                    IO.ShowMessage(LogLevel.Warn, Messages.AccountTypePaper);
-                }
-                else
-                {
-                    IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
-                }
-            }
-        }
-
-        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
-        {
-            var args = eventArgs as PropertyValueChangedEventArgs<string>;
-            var oldValue = args.OldValue;
-            var newValue = args.NewValue;
-
-            if (!string.IsNullOrWhiteSpace(oldValue))
-            {
-                IO.ShowMessage(LogLevel.Trace, Messages.TickerSymbolClearedFormat, oldValue);
-            }
-
-            if (!string.IsNullOrWhiteSpace(newValue))
-            {
-                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
-            }
-        }
-
-        private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
-        {
-            IList<CommissionReport> reports = service.CommissionReports;
-            if (reports.IsNullOrEmpty())
-            {
-                return;
-            }
-
-            CommissionReport lastReport = reports.Last();
-            double lastCommission = lastReport.Commission;
-            double totalCommission = reports.Sum(report => report.Commission);
-
-            IO.ShowMessage(Messages.CommissionFormat,
-                lastCommission.ToCurrencyString(),
-                totalCommission.ToCurrencyString());
-        }
-
-        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
-        {
-            switch (errorCode)
-            {
-                // Ignore common error codes
-                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
-                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
-                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
-                case ErrorCodes.TICKER_ID_NOT_FOUND:
-                case ErrorCodes.CROSS_SIDE_WARNING:
-                    return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
-            }
-
-            if (exception != null)
-            {
-                ShowException(exception);
-            }
-
-            switch (errorCode)
-            {
-                case ErrorCodes.TICKER_NOT_FOUND:
-                    Shares = 0;
-                    break;
-            }
-        }
-        #endregion
-
         #region Private helper methods
         private void SetPosition(Position position)
         {
@@ -564,6 +417,153 @@ namespace TradeBot
             }
 
             return true;
+        }
+        #endregion
+
+        #region Event handlers
+        private void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
+        {
+            switch (eventArgs.PropertyName)
+            {
+                case nameof(Shares):
+                    OnSharesChanged(eventArgs);
+                    break;
+                case nameof(Cash):
+                    OnCashChanged(eventArgs);
+                    break;
+
+                case nameof(service.IsConnected):
+                    OnIsConnectedChanged(eventArgs);
+                    break;
+                case nameof(service.Accounts):
+                    OnAccountsChanged(eventArgs);
+                    break;
+                case nameof(service.TickerSymbol):
+                    OnTickerSymbolChanged(eventArgs);
+                    break;
+                case nameof(service.CommissionReports):
+                    OnCommissionReportsChanged(eventArgs);
+                    break;
+            }
+        }
+
+        private void OnSharesChanged(PropertyChangedEventArgs eventArgs)
+        {
+            IO.ShowMessage(Messages.SharesSetFormat, Shares);
+        }
+
+        private void OnCashChanged(PropertyChangedEventArgs eventArgs)
+        {
+            IO.ShowMessage(Messages.CashSetFormat, Cash.ToCurrencyString());
+        }
+
+        private void OnIsConnectedChanged(PropertyChangedEventArgs eventArgs)
+        {
+            if (service.IsConnected)
+            {
+                IO.ShowMessage(LogLevel.Trace, Messages.TwsConnected);
+            }
+            else
+            {
+                IO.ShowMessage(LogLevel.Fatal, Messages.TwsDisconnected);
+            }
+        }
+
+        private async void OnAccountsChanged(PropertyChangedEventArgs eventArgs)
+        {
+            string[] accounts = service.Accounts;
+            if (accounts != null && accounts.Length > 0)
+            {
+                string tradedAccount = accounts[0];
+                service.TradedAccount = tradedAccount;
+
+                Position largestPosition = await service.RequestLargestPosition();
+                SetPosition(largestPosition);
+
+                // Warn about multiple accounts
+                if (accounts.Length > 1)
+                {
+                    IO.ShowMessage(LogLevel.Error, Messages.MultipleAccountsWarningFormat, tradedAccount);
+                }
+
+                // Show account type message
+                if (tradedAccount.StartsWith(Messages.PaperAccountPrefix, StringComparison.InvariantCulture))
+                {
+                    IO.ShowMessage(LogLevel.Warn, Messages.AccountTypePaper);
+                }
+                else
+                {
+                    IO.ShowMessage(LogLevel.Error, Messages.AccountTypeLive);
+                }
+            }
+        }
+
+        private void OnTickerSymbolChanged(PropertyChangedEventArgs eventArgs)
+        {
+            var args = eventArgs as PropertyValueChangedEventArgs<string>;
+            var oldValue = args.OldValue;
+            var newValue = args.NewValue;
+
+            if (!string.IsNullOrWhiteSpace(oldValue))
+            {
+                IO.ShowMessage(LogLevel.Trace, Messages.TickerSymbolClearedFormat, oldValue);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newValue))
+            {
+                IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
+            }
+        }
+
+        private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
+        {
+            IList<CommissionReport> reports = service.CommissionReports;
+            if (reports.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            CommissionReport lastReport = reports.Last();
+            double lastCommission = lastReport.Commission;
+            double totalCommission = reports.Sum(report => report.Commission);
+
+            IO.ShowMessage(Messages.CommissionFormat,
+                lastCommission.ToCurrencyString(),
+                totalCommission.ToCurrencyString());
+        }
+
+        private void OnError(int id, int errorCode, string errorMessage, Exception exception)
+        {
+            switch (errorCode)
+            {
+                // Ignore common error codes
+                case ErrorCodes.MARKET_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.MARKET_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_DISCONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_CONNECTED:
+                case ErrorCodes.HISTORICAL_DATA_FARM_INACTIVE:
+                case ErrorCodes.MARKET_DATA_FARM_INACTIVE:
+                case ErrorCodes.TICKER_ID_NOT_FOUND:
+                case ErrorCodes.CROSS_SIDE_WARNING:
+                    return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
+            }
+
+            if (exception != null)
+            {
+                ShowException(exception);
+            }
+
+            switch (errorCode)
+            {
+                case ErrorCodes.TICKER_NOT_FOUND:
+                    Shares = 0;
+                    break;
+            }
         }
         #endregion
     }
