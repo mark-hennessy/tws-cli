@@ -12,7 +12,28 @@ namespace TradeBot.TwsAbstractions
 {
     public abstract class EWrapperImpl : EWrapper
     {
-        public string[] IgnoredDebugMessages { get; set; }
+        private static readonly string[] DEBUG_MESSAGE_OPT_IN = {
+            //nameof(EWrapper.error),
+            //nameof(EWrapper.connectAck),
+            //nameof(EWrapper.connectionClosed),
+            //nameof(EWrapper.managedAccounts),
+            //nameof(EWrapper.nextValidId),
+            //nameof(EWrapper.tickPrice),
+            //nameof(EWrapper.tickSize),
+            //nameof(EWrapper.tickString),
+            //nameof(EWrapper.tickGeneric),
+            //nameof(EWrapper.updateAccountValue),
+            //nameof(EWrapper.updateAccountTime),
+            //nameof(EWrapper.accountDownloadEnd),
+            //nameof(EWrapper.updatePortfolio),
+            //nameof(EWrapper.position),
+            //nameof(EWrapper.positionEnd),
+            //nameof(EWrapper.openOrder),
+            //nameof(EWrapper.openOrderEnd),
+            //nameof(EWrapper.orderStatus),
+            //nameof(EWrapper.execDetails),
+            //nameof(EWrapper.commissionReport)
+        };
 
         public event Action<int, int, string, Exception> Error;
 
@@ -540,8 +561,7 @@ namespace TradeBot.TwsAbstractions
             // but we only care about the actual method name, i.e. connectAck
             string methodName = callingMethod.Name.Split('.').Last();
 
-            bool showDebugMessage = IgnoredDebugMessages != null
-                && !IgnoredDebugMessages.Contains(methodName);
+            bool showDebugMessage = DEBUG_MESSAGE_OPT_IN.Contains(methodName);
 
             if (showDebugMessage)
             {

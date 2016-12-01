@@ -20,11 +20,6 @@ namespace TradeBot
     // TODO: Can the ShowException method simply ToString the exception?
     // TODO: Why was I getting deadlocking if the SynchronizationContext for
     // console applications uses the thread pool?
-    // TODO: Move private methods to the bottom of the file
-    // TODO: Create INotifyPropertyChanged interface, create extension methods for raising events
-    // TODO: Have TradeBotConsole implement INotifyPropertyChanged
-    // TODO: Finish TradeBotHeader
-    // TODO: Change IGNORED_DEBUG_MESSAGES to be opt-in instead of opt-out
     public class TradeBotConsole
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
@@ -35,29 +30,6 @@ namespace TradeBot
             TickType.BID
         };
 
-        private static readonly string[] IGNORED_DEBUG_MESSAGES = {
-            nameof(EWrapper.error),
-            nameof(EWrapper.connectAck),
-            nameof(EWrapper.connectionClosed),
-            nameof(EWrapper.managedAccounts),
-            nameof(EWrapper.nextValidId),
-            nameof(EWrapper.tickPrice),
-            nameof(EWrapper.tickSize),
-            nameof(EWrapper.tickString),
-            nameof(EWrapper.tickGeneric),
-            nameof(EWrapper.updateAccountValue),
-            nameof(EWrapper.updateAccountTime),
-            nameof(EWrapper.accountDownloadEnd),
-            nameof(EWrapper.updatePortfolio),
-            nameof(EWrapper.position),
-            nameof(EWrapper.positionEnd),
-            nameof(EWrapper.openOrder),
-            nameof(EWrapper.openOrderEnd),
-            nameof(EWrapper.orderStatus),
-            nameof(EWrapper.execDetails),
-            nameof(EWrapper.commissionReport)
-        };
-
         private TradeBotService service;
         private TradeBotMenu menu;
         private TradeBotHeader header;
@@ -65,7 +37,6 @@ namespace TradeBot
         public TradeBotConsole(int clientId)
         {
             service = new TradeBotService(clientId);
-            service.IgnoredDebugMessages = IGNORED_DEBUG_MESSAGES;
 
             menu = new TradeBotMenu(this);
             header = new TradeBotHeader(this, service);
