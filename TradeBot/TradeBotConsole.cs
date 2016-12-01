@@ -1,6 +1,4 @@
-﻿#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-using IBApi;
+﻿using IBApi;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -534,6 +532,7 @@ namespace TradeBot
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
         {
+            // Pre-output
             switch (errorCode)
             {
                 // Ignore common error codes
@@ -548,16 +547,17 @@ namespace TradeBot
                     return;
             }
 
+            // Output
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 IO.ShowMessage(LogLevel.Error, Messages.TwsErrorFormat, errorMessage);
             }
-
             if (exception != null)
             {
                 ShowException(exception);
             }
 
+            // Post-output
             switch (errorCode)
             {
                 case ErrorCodes.TICKER_NOT_FOUND:
