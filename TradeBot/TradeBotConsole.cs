@@ -24,59 +24,56 @@ namespace TradeBot
     // TODO: Create INotifyPropertyChanged interface, create extension methods for raising events
     // TODO: Have TradeBotConsole implement INotifyPropertyChanged
     // TODO: Finish TradeBotHeader
+    // TODO: Change IGNORED_DEBUG_MESSAGES to be opt-in instead of opt-out
     public class TradeBotConsole
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
-        private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
-        private TradeBotMenu menu;
+        private static readonly int[] COMMON_TICKS = {
+            TickType.LAST,
+            TickType.ASK,
+            TickType.BID
+        };
+
+        private static readonly string[] IGNORED_DEBUG_MESSAGES = {
+            nameof(EWrapper.error),
+            nameof(EWrapper.connectAck),
+            nameof(EWrapper.connectionClosed),
+            nameof(EWrapper.managedAccounts),
+            nameof(EWrapper.nextValidId),
+            nameof(EWrapper.tickPrice),
+            nameof(EWrapper.tickSize),
+            nameof(EWrapper.tickString),
+            nameof(EWrapper.tickGeneric),
+            nameof(EWrapper.updateAccountValue),
+            nameof(EWrapper.updateAccountTime),
+            nameof(EWrapper.accountDownloadEnd),
+            nameof(EWrapper.updatePortfolio),
+            nameof(EWrapper.position),
+            nameof(EWrapper.positionEnd),
+            nameof(EWrapper.openOrder),
+            nameof(EWrapper.openOrderEnd),
+            nameof(EWrapper.orderStatus),
+            nameof(EWrapper.execDetails),
+            nameof(EWrapper.commissionReport)
+        };
+
         private TradeBotService service;
+        private TradeBotMenu menu;
+        private TradeBotHeader header;
 
         public TradeBotConsole(int clientId)
         {
-            InitMenu();
-            InitService(clientId);
-        }
-
-        #region Initialization
-        private void InitMenu()
-        {
-            menu = new TradeBotMenu(this);
-        }
-
-        private void InitService(int clientId)
-        {
             service = new TradeBotService(clientId);
-            service.IgnoredDebugMessages = new string[] {
-                nameof(EWrapper.error),
-                nameof(EWrapper.connectAck),
-                nameof(EWrapper.connectionClosed),
-                nameof(EWrapper.managedAccounts),
-                nameof(EWrapper.nextValidId),
-                nameof(EWrapper.tickPrice),
-                nameof(EWrapper.tickSize),
-                nameof(EWrapper.tickString),
-                nameof(EWrapper.tickGeneric),
-                nameof(EWrapper.updateAccountValue),
-                nameof(EWrapper.updateAccountTime),
-                nameof(EWrapper.accountDownloadEnd),
-                nameof(EWrapper.updatePortfolio),
-                nameof(EWrapper.position),
-                nameof(EWrapper.positionEnd),
-                nameof(EWrapper.openOrder),
-                nameof(EWrapper.openOrderEnd),
-                nameof(EWrapper.orderStatus),
-                nameof(EWrapper.execDetails),
-                nameof(EWrapper.commissionReport)
-            };
+            service.IgnoredDebugMessages = IGNORED_DEBUG_MESSAGES;
+
+            menu = new TradeBotMenu(this);
+            header = new TradeBotHeader(this, service);
 
             PropertyChanged += OnPropertyChanged;
             service.PropertyChanged += OnPropertyChanged;
-            service.TickUpdated += OnTickUpdated;
-            service.PositionUpdated += OnPositionUpdated;
             service.Error += OnError;
         }
-        #endregion
 
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
@@ -374,8 +371,6 @@ namespace TradeBot
             {
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
-
-            UpdateConsoleTitleAsync();
         }
 
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
@@ -393,16 +388,6 @@ namespace TradeBot
             IO.ShowMessage(Messages.CommissionFormat,
                 lastCommission.ToCurrencyString(),
                 totalCommission.ToCurrencyString());
-        }
-
-        private void OnTickUpdated(int tickType, double value)
-        {
-            UpdateConsoleTitleAsync();
-        }
-
-        private void OnPositionUpdated(Position position)
-        {
-            UpdateConsoleTitleAsync();
         }
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
@@ -542,57 +527,6 @@ namespace TradeBot
             var baseException = aggregateException?.GetBaseException() ?? exception;
             IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, baseException.Message);
             IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
-        }
-
-        private async Task UpdateConsoleTitleAsync()
-        {
-            IList<string> infoStrings = new List<string>();
-
-            string appName = Messages.AppName;
-            if (!string.IsNullOrWhiteSpace(appName))
-            {
-                infoStrings.Add(appName);
-            }
-
-            bool hasTickerSymbol = service.HasTickerSymbol;
-            string tickerSymbol = service.TickerSymbol;
-            string tickerDisplayValue = hasTickerSymbol ? tickerSymbol : Messages.TitleUnavailable;
-            infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplayValue));
-
-            infoStrings.Add(string.Format(Messages.TitleShares, Shares));
-
-            if (hasTickerSymbol)
-            {
-                Position currentPosition = await service.RequestCurrentPositionAsync();
-                double positionSize = currentPosition?.PositionSize ?? 0;
-                infoStrings.Add(string.Format(Messages.TitlePositionSize, positionSize));
-
-                infoStrings.Add(string.Format(Messages.TitleLastFormat, GetTickAsCurrencyString(TickType.LAST)));
-                infoStrings.Add(string.Format(Messages.TitleBidAskFormat, GetTickAsCurrencyString(TickType.BID), GetTickAsCurrencyString(TickType.ASK)));
-                infoStrings.Add(string.Format(Messages.TitleVolumeFormat, GetTickAsString(TickType.VOLUME)));
-                infoStrings.Add(string.Format(Messages.TitleCloseFormat, GetTickAsCurrencyString(TickType.CLOSE)));
-                infoStrings.Add(string.Format(Messages.TitleOpenFormat, GetTickAsCurrencyString(TickType.OPEN)));
-            }
-
-            Console.Title = string.Join(Messages.TitleDivider, infoStrings);
-        }
-
-        private string GetTickAsString(int tickType)
-        {
-            return GetTickAsFormattedString(tickType, v => v.ToString());
-        }
-
-        private string GetTickAsCurrencyString(int tickType)
-        {
-            return GetTickAsFormattedString(tickType, v => v.ToCurrencyString());
-        }
-
-        private string GetTickAsFormattedString(int tickType, Func<double, string> messageFormatter)
-        {
-            double? tick = service.GetTick(tickType);
-            return tick.HasValue && tick.Value >= 0
-                ? messageFormatter(tick.Value)
-                : Messages.TitleUnavailable;
         }
         #endregion
 

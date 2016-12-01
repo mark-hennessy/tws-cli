@@ -27,18 +27,9 @@ namespace TradeBot
         {
             ClientId = clientId;
 
-            initClientSocket();
-            initEventHandlers();
-        }
-
-        private void initClientSocket()
-        {
             readerSignal = new EReaderMonitorSignal();
             clientSocket = new EClientSocket(this, readerSignal);
-        }
 
-        private void initEventHandlers()
-        {
             // TradeBot events
             PropertyChanged += OnPropertyChanged;
 
