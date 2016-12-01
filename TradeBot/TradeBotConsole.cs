@@ -17,21 +17,31 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
+    // TODO: Move the try/catch to the main method?
+    // TODO: Can the ShowException method simply ToString the exception?
+    // TODO: Why was I getting deadlocking if the SynchronizationContext for
+    // console applications uses the thread pool?
+    // TODO: Move private methods to the bottom of the file
     public class TradeBotConsole
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
         private static readonly int[] COMMON_TICKS = { TickType.LAST, TickType.ASK, TickType.BID };
 
+        private TradeBotMenu menu;
         private TradeBotService service;
-        private Menu menu;
 
         public TradeBotConsole(int clientId)
         {
-            InitService(clientId);
             InitMenu();
+            InitService(clientId);
         }
 
         #region Initialization
+        private void InitMenu()
+        {
+            menu = new TradeBotMenu(this);
+        }
+
         private void InitService(int clientId)
         {
             service = new TradeBotService(clientId);
@@ -64,76 +74,15 @@ namespace TradeBot
             service.Error += OnError;
         }
 
-        private void InitMenu()
-        {
-            menu = new Menu();
-
-            var titleDivider = new MenuDivider();
-            menu.AddMenuItem(new MenuTitle(Messages.MenuTitle, titleDivider));
-
-            var addMenuOption = new Action<IList<string>, MenuCommand>((entry, command)
-                => menu.AddMenuItem(new MenuOption(entry[0], entry[1], command)));
-
-            var menuOptionDivider = new MenuDivider();
-            var addMenuOptionDivider = new Action(()
-                => menu.AddMenuItem(menuOptionDivider));
-
-            MenuOptionEntries entries = Messages.MenuOptionEntries;
-
-            addMenuOption(entries.SetTickerSymbol, PromptForTickerSymbolCommand);
-            addMenuOptionDivider();
-
-            addMenuOption(entries.SetSharesFromCash, PromptForCashCommand);
-            addMenuOption(entries.SetShares, PromptForSharesCommand);
-            addMenuOption(entries.SetSharesFromPosition, SetSharesFromPositionCommand);
-            addMenuOptionDivider();
-
-            addMenuOption(entries.Buy, BuyCommand);
-            addMenuOption(entries.Sell, SellCommand);
-            addMenuOption(entries.ReversePosition, ReversePositionCommand);
-            addMenuOption(entries.ClosePosition, ClosePositionCommand);
-            addMenuOptionDivider();
-
-            addMenuOption(entries.ListPositions, ListPositionsCommand);
-            addMenuOptionDivider();
-
-            addMenuOption(entries.LoadState, LoadStateCommand);
-            addMenuOption(entries.SaveState, SaveStateCommand);
-            addMenuOptionDivider();
-
-            addMenuOption(entries.ClearScreen, ClearScreenCommand);
-            addMenuOption(entries.ShowMenu, ShowMenuCommand);
-
-            var menuEndDivider = new MenuDivider();
-            menu.AddMenuItem(menuEndDivider);
-
-            int dividerLength = menu.GetLongestMenuEntryLength();
-            var createDividerString = new Func<string, string>((charString) =>
-            {
-                return !string.IsNullOrEmpty(charString)
-                    ? new string(charString.First(), dividerLength)
-                    : string.Empty;
-            });
-            titleDivider.DividerString = createDividerString(Messages.MenuTitleDividerChar);
-            menuOptionDivider.DividerString = createDividerString(Messages.MenuOptionDividerChar);
-            menuEndDivider.DividerString = createDividerString(Messages.MenuEndDividerChar);
-        }
-
         public async Task Run(string clientUrl, int clientPort)
         {
-            IO.ShowMessage(Messages.WelcomeMessage);
-            // TODO: Move the try/catch to the main method?
-            // TODO: Can the ShowException method simply ToString the exception?
-            // TODO: Why was I getting deadlocking if the SynchronizationContext for
-            // console applications uses the thread pool?
-            // TODO: Move private methods to the bottom of the file
             try
             {
+                IO.ShowMessage(Messages.WelcomeMessage);
                 service.Connect(clientUrl, clientPort);
                 while (service.IsConnected)
                 {
-                    string[] input = PromptForMenuOptionInput();
-                    await HandleMenuOptionInputAsync(input);
+                    await menu.Run();
                 }
             }
             catch (Exception e)
@@ -146,26 +95,6 @@ namespace TradeBot
                 {
                     IO.PromptForChar(Messages.PressAnyKeyToExit);
                 }
-            }
-        }
-
-        private string[] PromptForMenuOptionInput()
-        {
-            return IO.PromptForInput().Split();
-        }
-
-        private async Task HandleMenuOptionInputAsync(string[] input)
-        {
-            string key = input.FirstOrDefault();
-            MenuOption menuOption = menu.getMenuOption(key);
-            if (menuOption != null)
-            {
-                string[] args = input.Skip(1).ToArray();
-                await menuOption.Command(args);
-            }
-            else
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.InvalidMenuOption);
             }
         }
         #endregion
@@ -215,7 +144,7 @@ namespace TradeBot
         #endregion
 
         #region Menu commands
-        private async Task PromptForTickerSymbolCommand(string[] args)
+        public async Task PromptForTickerSymbolCommand(string[] args)
         {
             string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
 
@@ -226,7 +155,7 @@ namespace TradeBot
             }
         }
 
-        private async Task PromptForCashCommand(string[] args)
+        public async Task PromptForCashCommand(string[] args)
         {
             string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
@@ -243,7 +172,7 @@ namespace TradeBot
             }
         }
 
-        private Task PromptForSharesCommand(string[] args)
+        public Task PromptForSharesCommand(string[] args)
         {
             string sharesInput = IO.PromptForInputIfNecessary(args, 0, Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
@@ -257,7 +186,7 @@ namespace TradeBot
             return Task.CompletedTask;
         }
 
-        private async Task SetSharesFromPositionCommand(string[] args)
+        public async Task SetSharesFromPositionCommand(string[] args)
         {
             if (ValidateTickerSet())
             {
@@ -271,7 +200,7 @@ namespace TradeBot
             }
         }
 
-        private Task BuyCommand(string[] args)
+        public Task BuyCommand(string[] args)
         {
             if (ValidateTickerSet()
                 && ValidateSharesSet()
@@ -283,7 +212,7 @@ namespace TradeBot
             return Task.CompletedTask;
         }
 
-        private Task SellCommand(string[] args)
+        public Task SellCommand(string[] args)
         {
             if (ValidateTickerSet()
                 && ValidateSharesSet()
@@ -295,17 +224,17 @@ namespace TradeBot
             return Task.CompletedTask;
         }
 
-        private async Task ReversePositionCommand(string[] args)
+        public async Task ReversePositionCommand(string[] args)
         {
             await ScalePositionAsync(-2);
         }
 
-        private async Task ClosePositionCommand(string[] args)
+        public async Task ClosePositionCommand(string[] args)
         {
             await ScalePositionAsync(-1);
         }
 
-        private async Task ListPositionsCommand(string[] args)
+        public async Task ListPositionsCommand(string[] args)
         {
             IEnumerable<Position> positions = await service
                 .RequestPositionsAsync();
@@ -319,7 +248,7 @@ namespace TradeBot
             }
         }
 
-        private Task LoadStateCommand(string[] args)
+        public Task LoadStateCommand(string[] args)
         {
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
@@ -332,7 +261,7 @@ namespace TradeBot
             return Task.CompletedTask;
         }
 
-        private Task SaveStateCommand(string[] args)
+        public Task SaveStateCommand(string[] args)
         {
             AppState state = new AppState();
             state.TickerSymbol = service.TickerSymbol;
@@ -346,14 +275,14 @@ namespace TradeBot
             return Task.CompletedTask;
         }
 
-        private Task ClearScreenCommand(string[] args)
+        public Task ClearScreenCommand(string[] args)
         {
             Console.Clear();
 
             return Task.CompletedTask;
         }
 
-        private Task ShowMenuCommand(string[] args)
+        public Task ShowMenuCommand(string[] args)
         {
             IO.ShowMessage(menu.Render());
 
