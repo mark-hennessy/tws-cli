@@ -73,30 +73,6 @@ namespace TradeBot
             service.PositionUpdated += OnPositionUpdated;
             service.Error += OnError;
         }
-
-        public async Task Run(string clientUrl, int clientPort)
-        {
-            try
-            {
-                IO.ShowMessage(Messages.WelcomeMessage);
-                service.Connect(clientUrl, clientPort);
-                while (service.IsConnected)
-                {
-                    await menu.Run();
-                }
-            }
-            catch (Exception e)
-            {
-                ShowException(e, LogLevel.Fatal);
-            }
-            finally
-            {
-                if (OS.IsWindows())
-                {
-                    IO.PromptForChar(Messages.PressAnyKeyToExit);
-                }
-            }
-        }
         #endregion
 
         #region Properties
@@ -133,11 +109,37 @@ namespace TradeBot
             {
                 field = newValue;
 
-                UpdateConsoleTitleAsync();
+                ScheduleConsoleTitleUpdate();
 
                 if (!message.IsNullOrEmpty())
                 {
                     IO.ShowMessage(message, messageArgs);
+                }
+            }
+        }
+        #endregion
+
+        #region Public methods
+        public async Task Run(string clientUrl, int clientPort)
+        {
+            try
+            {
+                IO.ShowMessage(Messages.WelcomeMessage);
+                service.Connect(clientUrl, clientPort);
+                while (service.IsConnected)
+                {
+                    await menu.Run();
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e, LogLevel.Fatal);
+            }
+            finally
+            {
+                if (OS.IsWindows())
+                {
+                    IO.PromptForChar(Messages.PressAnyKeyToExit);
                 }
             }
         }
@@ -365,7 +367,7 @@ namespace TradeBot
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
 
-            UpdateConsoleTitleAsync();
+            ScheduleConsoleTitleUpdate();
         }
 
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
@@ -387,12 +389,12 @@ namespace TradeBot
 
         private void OnTickUpdated(int tickType, double value)
         {
-            UpdateConsoleTitleAsync();
+            ScheduleConsoleTitleUpdate();
         }
 
         private void OnPositionUpdated(Position position)
         {
-            UpdateConsoleTitleAsync();
+            ScheduleConsoleTitleUpdate();
         }
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
@@ -534,7 +536,13 @@ namespace TradeBot
             IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
         }
 
-        private async void UpdateConsoleTitleAsync()
+        private void ScheduleConsoleTitleUpdate()
+        {
+            // Schedule the title update to run on a background thread.
+            Task.Run(UpdateConsoleTitleAsync);
+        }
+
+        private async Task UpdateConsoleTitleAsync()
         {
             IList<string> infoStrings = new List<string>();
 

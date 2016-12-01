@@ -17,32 +17,6 @@ namespace TradeBot
             InitMenu(console);
         }
 
-        public async Task Run()
-        {
-            string[] input = PromptForMenuOptionInput();
-            await HandleMenuOptionInputAsync(input);
-        }
-
-        private string[] PromptForMenuOptionInput()
-        {
-            return IO.PromptForInput().Split();
-        }
-
-        private async Task HandleMenuOptionInputAsync(string[] input)
-        {
-            string key = input.FirstOrDefault();
-            MenuOption menuOption = getMenuOption(key);
-            if (menuOption != null)
-            {
-                string[] args = input.Skip(1).ToArray();
-                await menuOption.Command(args);
-            }
-            else
-            {
-                IO.ShowMessage(LogLevel.Error, Messages.InvalidMenuOption);
-            }
-        }
-
         private void InitMenu(TradeBotConsole console)
         {
             var titleDivider = new MenuDivider();
@@ -94,6 +68,32 @@ namespace TradeBot
             titleDivider.DividerString = createDividerString(Messages.MenuTitleDividerChar);
             menuOptionDivider.DividerString = createDividerString(Messages.MenuOptionDividerChar);
             menuEndDivider.DividerString = createDividerString(Messages.MenuEndDividerChar);
+        }
+
+        public async Task Run()
+        {
+            string[] input = PromptForMenuOptionInput();
+            await HandleMenuOptionInputAsync(input);
+        }
+
+        private string[] PromptForMenuOptionInput()
+        {
+            return IO.PromptForInput().Split();
+        }
+
+        private async Task HandleMenuOptionInputAsync(string[] input)
+        {
+            string key = input.FirstOrDefault();
+            MenuOption menuOption = getMenuOption(key);
+            if (menuOption != null)
+            {
+                string[] args = input.Skip(1).ToArray();
+                await menuOption.Command(args);
+            }
+            else
+            {
+                IO.ShowMessage(LogLevel.Error, Messages.InvalidMenuOption);
+            }
         }
 
     }
