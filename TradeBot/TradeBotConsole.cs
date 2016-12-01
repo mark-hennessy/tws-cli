@@ -109,7 +109,7 @@ namespace TradeBot
             {
                 field = newValue;
 
-                ScheduleConsoleTitleUpdate();
+                UpdateConsoleTitleAsync();
 
                 if (!message.IsNullOrEmpty())
                 {
@@ -367,7 +367,7 @@ namespace TradeBot
                 IO.ShowMessage(Messages.TickerSymbolSetFormat, newValue);
             }
 
-            ScheduleConsoleTitleUpdate();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnCommissionReportsChanged(PropertyChangedEventArgs eventArgs)
@@ -389,12 +389,12 @@ namespace TradeBot
 
         private void OnTickUpdated(int tickType, double value)
         {
-            ScheduleConsoleTitleUpdate();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnPositionUpdated(Position position)
         {
-            ScheduleConsoleTitleUpdate();
+            UpdateConsoleTitleAsync();
         }
 
         private void OnError(int id, int errorCode, string errorMessage, Exception exception)
@@ -534,12 +534,6 @@ namespace TradeBot
             var baseException = aggregateException?.GetBaseException() ?? exception;
             IO.ShowMessage(logLevel, Messages.ExceptionMessageFormat, baseException.Message);
             IO.ShowMessage(logLevel, Messages.ExceptionStackTraceFormat, baseException.StackTrace);
-        }
-
-        private void ScheduleConsoleTitleUpdate()
-        {
-            // Schedule the title update to run on a background thread.
-            Task.Run(UpdateConsoleTitleAsync);
         }
 
         private async Task UpdateConsoleTitleAsync()
