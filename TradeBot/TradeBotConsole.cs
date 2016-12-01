@@ -77,7 +77,7 @@ namespace TradeBot
 
         #region Properties
         private double _shares;
-        private double Shares
+        public double Shares
         {
             get
             {
@@ -90,7 +90,7 @@ namespace TradeBot
         }
 
         private double _cash;
-        private double Cash
+        public double Cash
         {
             get
             {

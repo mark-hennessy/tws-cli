@@ -140,6 +140,7 @@
     <Compile Include="TwsAbstractions\EWrapperImpl.cs" />
     <Compile Include="Events\PositionUpdatedEvent.cs" />
     <Compile Include="TradeBotMenu.cs" />
+    <Compile Include="TradeBotHeader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icons\uptrend_icon.ico" />
