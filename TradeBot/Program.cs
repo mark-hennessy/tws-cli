@@ -1,4 +1,5 @@
-﻿using static TradeBot.AppProperties;
+﻿using System.Threading.Tasks;
+using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
@@ -6,8 +7,13 @@ namespace TradeBot
     {
         public static void Main()
         {
+            MainAsync().Wait();
+        }
+
+        public static async Task MainAsync()
+        {
             var console = new TradeBotConsole(Preferences.ClientId);
-            console.Connect(Preferences.ClientUrl, Preferences.ClientPort);
+            await console.Run(Preferences.ClientUrl, Preferences.ClientPort);
         }
     }
 }

@@ -119,16 +119,21 @@ namespace TradeBot
             menuEndDivider.DividerString = createDividerString(Messages.MenuEndDividerChar);
         }
 
-        public void Connect(string clientUrl, int clientPort)
+        public async Task Run(string clientUrl, int clientPort)
         {
             IO.ShowMessage(Messages.WelcomeMessage);
+            // TODO: Move the try/catch to the main method?
+            // TODO: Can the ShowException method simply ToString the exception?
+            // TODO: Why was I getting deadlocking if the SynchronizationContext for
+            // console applications uses the thread pool?
+            // TODO: Move private methods to the bottom of the file
             try
             {
                 service.Connect(clientUrl, clientPort);
                 while (service.IsConnected)
                 {
                     string[] input = PromptForMenuOptionInput();
-                    Task.Run(() => HandleMenuOptionInput(input));
+                    await HandleMenuOptionInputAsync(input);
                 }
             }
             catch (Exception e)
@@ -149,14 +154,14 @@ namespace TradeBot
             return IO.PromptForInput().Split();
         }
 
-        private void HandleMenuOptionInput(string[] input)
+        private async Task HandleMenuOptionInputAsync(string[] input)
         {
             string key = input.FirstOrDefault();
             MenuOption menuOption = menu.getMenuOption(key);
             if (menuOption != null)
             {
                 string[] args = input.Skip(1).ToArray();
-                menuOption.Command(args);
+                await menuOption.Command(args);
             }
             else
             {
@@ -210,7 +215,7 @@ namespace TradeBot
         #endregion
 
         #region Menu commands
-        private async void PromptForTickerSymbolCommand(string[] args)
+        private async Task PromptForTickerSymbolCommand(string[] args)
         {
             string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
 
@@ -221,7 +226,7 @@ namespace TradeBot
             }
         }
 
-        private async void PromptForCashCommand(string[] args)
+        private async Task PromptForCashCommand(string[] args)
         {
             string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
@@ -238,7 +243,7 @@ namespace TradeBot
             }
         }
 
-        private void PromptForSharesCommand(string[] args)
+        private Task PromptForSharesCommand(string[] args)
         {
             string sharesInput = IO.PromptForInputIfNecessary(args, 0, Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
@@ -248,14 +253,17 @@ namespace TradeBot
             {
                 Shares = shares.Value;
             }
+
+            return Task.CompletedTask;
         }
 
-        private async void SetSharesFromPositionCommand(string[] args)
+        private async Task SetSharesFromPositionCommand(string[] args)
         {
             if (ValidateTickerSet())
             {
                 Position currentPosition = await service
                     .RequestCurrentPositionAsync();
+
                 if (ValidatePositionExists(currentPosition))
                 {
                     Shares = currentPosition.PositionSize;
@@ -263,7 +271,7 @@ namespace TradeBot
             }
         }
 
-        private void BuyCommand(string[] args)
+        private Task BuyCommand(string[] args)
         {
             if (ValidateTickerSet()
                 && ValidateSharesSet()
@@ -271,9 +279,11 @@ namespace TradeBot
             {
                 service.PlaceBuyLimitOrder(Shares);
             }
+
+            return Task.CompletedTask;
         }
 
-        private void SellCommand(string[] args)
+        private Task SellCommand(string[] args)
         {
             if (ValidateTickerSet()
                 && ValidateSharesSet()
@@ -281,19 +291,21 @@ namespace TradeBot
             {
                 service.PlaceSellLimitOrder(Shares);
             }
+
+            return Task.CompletedTask;
         }
 
-        private void ReversePositionCommand(string[] args)
+        private async Task ReversePositionCommand(string[] args)
         {
-            ScalePositionAsync(-2);
+            await ScalePositionAsync(-2);
         }
 
-        private void ClosePositionCommand(string[] args)
+        private async Task ClosePositionCommand(string[] args)
         {
-            ScalePositionAsync(-1);
+            await ScalePositionAsync(-1);
         }
 
-        private async void ListPositionsCommand(string[] args)
+        private async Task ListPositionsCommand(string[] args)
         {
             IEnumerable<Position> positions = await service
                 .RequestPositionsAsync();
@@ -307,7 +319,7 @@ namespace TradeBot
             }
         }
 
-        private void LoadStateCommand(string[] args)
+        private Task LoadStateCommand(string[] args)
         {
             AppState state = PropertySerializer.Deserialize<AppState>(PropertyFiles.STATE_FILE);
 
@@ -316,9 +328,11 @@ namespace TradeBot
             Shares = state.Shares ?? 0;
 
             IO.ShowMessage(Messages.LoadedStateFormat, PropertyFiles.STATE_FILE);
+
+            return Task.CompletedTask;
         }
 
-        private void SaveStateCommand(string[] args)
+        private Task SaveStateCommand(string[] args)
         {
             AppState state = new AppState();
             state.TickerSymbol = service.TickerSymbol;
@@ -328,16 +342,22 @@ namespace TradeBot
             PropertySerializer.Serialize(state, PropertyFiles.STATE_FILE);
 
             IO.ShowMessage(Messages.SavedStateFormat, PropertyFiles.STATE_FILE);
+
+            return Task.CompletedTask;
         }
 
-        private void ClearScreenCommand(string[] args)
+        private Task ClearScreenCommand(string[] args)
         {
             Console.Clear();
+
+            return Task.CompletedTask;
         }
 
-        private void ShowMenuCommand(string[] args)
+        private Task ShowMenuCommand(string[] args)
         {
             IO.ShowMessage(menu.Render());
+
+            return Task.CompletedTask;
         }
         #endregion
 

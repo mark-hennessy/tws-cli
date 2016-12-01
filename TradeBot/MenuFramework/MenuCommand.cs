@@ -1,4 +1,6 @@
-﻿namespace TradeBot.MenuFramework
+﻿using System.Threading.Tasks;
+
+namespace TradeBot.MenuFramework
 {
-    public delegate void MenuCommand(string[] args);
+    public delegate Task MenuCommand(string[] args);
 }
