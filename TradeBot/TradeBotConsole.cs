@@ -307,7 +307,9 @@ namespace TradeBot
             {
                 string tradedAccount = accounts[0];
                 service.TradedAccount = tradedAccount;
-                await SelectLargestPositionAsync();
+
+                Position largestPosition = await service.RequestLargestPosition();
+                SetPosition(largestPosition);
 
                 // Warn about multiple accounts
                 if (accounts.Length > 1)
@@ -397,17 +399,6 @@ namespace TradeBot
         #endregion
 
         #region Private helper methods
-        private async Task SelectLargestPositionAsync()
-        {
-            IEnumerable<Position> positions = await service.RequestPositionsAsync();
-
-            Position largestPosition = positions
-                .OrderByDescending(p => p.PositionSize)
-                .FirstOrDefault();
-
-            SetPosition(largestPosition);
-        }
-
         private void SetPosition(Position position)
         {
             service.TickerSymbol = position?.Symbol ?? null;

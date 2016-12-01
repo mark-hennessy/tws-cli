@@ -201,6 +201,14 @@ namespace TradeBot
             return positions.Get(TickerSymbol);
         }
 
+        public async Task<Position> RequestLargestPosition()
+        {
+            IEnumerable<Position> positions = await RequestPositionsAsync();
+            return positions
+                .OrderByDescending(p => p.PositionSize)
+                .FirstOrDefault();
+        }
+
         public async Task<IEnumerable<Position>> RequestPositionsAsync()
         {
             Portfolio positions = await RequestPortfolioAsync();
