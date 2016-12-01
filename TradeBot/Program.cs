@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using NLog;
+using System;
+using System.Threading.Tasks;
+using TradeBot.Gui;
 using static TradeBot.AppProperties;
 
 namespace TradeBot
@@ -13,7 +16,21 @@ namespace TradeBot
         public static async Task MainAsync()
         {
             var console = new TradeBotConsole(Preferences.ClientId);
-            await console.Run(Preferences.ClientUrl, Preferences.ClientPort);
+            try
+            {
+                await console.Run(Preferences.ClientUrl, Preferences.ClientPort);
+            }
+            catch (Exception e)
+            {
+                IO.ShowMessage(LogLevel.Fatal, e.ToString());
+            }
+            finally
+            {
+                if (OS.IsWindows())
+                {
+                    IO.PromptForChar(Messages.PressAnyKeyToExit);
+                }
+            }
         }
     }
 }

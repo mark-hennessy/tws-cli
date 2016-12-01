@@ -14,7 +14,6 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
-    // TODO: Move the try/catch to the main method?
     // TODO: Why was I getting deadlocking if the SynchronizationContext for
     // console applications uses the thread pool?
     public class TradeBotConsole
@@ -78,25 +77,11 @@ namespace TradeBot
         #region Public methods
         public async Task Run(string clientUrl, int clientPort)
         {
-            try
+            IO.ShowMessage(Messages.WelcomeMessage);
+            service.Connect(clientUrl, clientPort);
+            while (service.IsConnected)
             {
-                IO.ShowMessage(Messages.WelcomeMessage);
-                service.Connect(clientUrl, clientPort);
-                while (service.IsConnected)
-                {
-                    await menu.Run();
-                }
-            }
-            catch (Exception e)
-            {
-                ShowException(e, LogLevel.Fatal);
-            }
-            finally
-            {
-                if (OS.IsWindows())
-                {
-                    IO.PromptForChar(Messages.PressAnyKeyToExit);
-                }
+                await menu.Run();
             }
         }
         #endregion
@@ -321,12 +306,6 @@ namespace TradeBot
                     service.PlaceSellLimitOrder(orderQuantity);
                 }
             }
-        }
-
-        private void ShowException(Exception exception, LogLevel logLevel = null)
-        {
-            logLevel = logLevel ?? LogLevel.Error;
-            IO.ShowMessage(logLevel, exception.ToString());
         }
         #endregion
 
@@ -554,7 +533,7 @@ namespace TradeBot
             }
             if (exception != null)
             {
-                ShowException(exception);
+                IO.ShowMessage(LogLevel.Error, exception.ToString());
             }
 
             // Post-output
