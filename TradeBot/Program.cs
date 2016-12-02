@@ -15,10 +15,10 @@ namespace TradeBot
 
         public static async Task MainAsync()
         {
-            var controller = new TradeController(Preferences.ClientId);
+            var controller = new TradeController();
             try
             {
-                await controller.Run(Preferences.ClientUrl, Preferences.ClientPort);
+                await controller.Run();
             }
             catch (Exception e)
             {

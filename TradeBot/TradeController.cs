@@ -30,9 +30,9 @@ namespace TradeBot
         private TradeMenu menu;
         private TradeStatusBar statusBar;
 
-        public TradeController(int clientId)
+        public TradeController()
         {
-            service = new TradeService(clientId);
+            service = new TradeService(Preferences.ClientId);
 
             menu = new TradeMenu(this);
             statusBar = new TradeStatusBar(this, service);
@@ -75,10 +75,10 @@ namespace TradeBot
         #endregion
 
         #region Public methods
-        public async Task Run(string clientUrl, int clientPort)
+        public async Task Run()
         {
             IO.ShowMessage(Messages.WelcomeMessage);
-            service.Connect(clientUrl, clientPort);
+            service.Connect(Preferences.ClientUrl, Preferences.ClientPort);
             while (service.IsConnected)
             {
                 await menu.Run();
