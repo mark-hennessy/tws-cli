@@ -33,7 +33,6 @@ namespace TradeBot
         public TradeController()
         {
             service = new TradeService(Preferences.ClientId);
-
             menu = new TradeMenu(this);
             statusBar = new TradeStatusBar(this, service);
 

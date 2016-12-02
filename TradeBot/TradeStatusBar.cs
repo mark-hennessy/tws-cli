@@ -25,26 +25,26 @@ namespace TradeBot
             service.PositionUpdated += OnPositionUpdated;
         }
 
-        private void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
+        private async void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
         {
             switch (eventArgs.PropertyName)
             {
                 case nameof(controller.Shares):
                 case nameof(controller.Cash):
                 case nameof(service.TickerSymbol):
-                    UpdateHeaderAsync();
+                    await UpdateHeaderAsync();
                     break;
             }
         }
 
-        private void OnTickUpdated(int tickType, double value)
+        private async void OnTickUpdated(int tickType, double value)
         {
-            UpdateHeaderAsync();
+            await UpdateHeaderAsync();
         }
 
-        private void OnPositionUpdated(Position position)
+        private async void OnPositionUpdated(Position position)
         {
-            UpdateHeaderAsync();
+            await UpdateHeaderAsync();
         }
 
         private async Task UpdateHeaderAsync()
