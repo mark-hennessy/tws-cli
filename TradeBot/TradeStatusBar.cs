@@ -9,17 +9,17 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
-    public class TradeBotHeader
+    public class TradeStatusBar
     {
-        private TradeBotConsole console;
-        private TradeBotService service;
+        private TradeController controller;
+        private TradeService service;
 
-        public TradeBotHeader(TradeBotConsole console, TradeBotService service)
+        public TradeStatusBar(TradeController controller, TradeService service)
         {
-            this.console = console;
+            this.controller = controller;
             this.service = service;
 
-            console.PropertyChanged += OnPropertyChanged;
+            controller.PropertyChanged += OnPropertyChanged;
             service.PropertyChanged += OnPropertyChanged;
             service.TickUpdated += OnTickUpdated;
             service.PositionUpdated += OnPositionUpdated;
@@ -29,8 +29,8 @@ namespace TradeBot
         {
             switch (eventArgs.PropertyName)
             {
-                case nameof(console.Shares):
-                case nameof(console.Cash):
+                case nameof(controller.Shares):
+                case nameof(controller.Cash):
                 case nameof(service.TickerSymbol):
                     UpdateHeaderAsync();
                     break;
@@ -62,7 +62,7 @@ namespace TradeBot
             string tickerDisplayValue = hasTickerSymbol ? tickerSymbol : Messages.TitleUnavailable;
             infoStrings.Add(string.Format(Messages.TitleTickerSymbol, tickerDisplayValue));
 
-            infoStrings.Add(string.Format(Messages.TitleShares, console.Shares));
+            infoStrings.Add(string.Format(Messages.TitleShares, controller.Shares));
 
             if (hasTickerSymbol)
             {

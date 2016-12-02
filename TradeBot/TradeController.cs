@@ -16,7 +16,7 @@ namespace TradeBot
 {
     // TODO: Why was I getting deadlocking if the SynchronizationContext for
     // console applications uses the thread pool?
-    public class TradeBotConsole
+    public class TradeController
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
 
@@ -26,16 +26,16 @@ namespace TradeBot
             TickType.BID
         };
 
-        private TradeBotService service;
-        private TradeBotMenu menu;
-        private TradeBotHeader header;
+        private TradeService service;
+        private TradeMenu menu;
+        private TradeStatusBar statusBar;
 
-        public TradeBotConsole(int clientId)
+        public TradeController(int clientId)
         {
-            service = new TradeBotService(clientId);
+            service = new TradeService(clientId);
 
-            menu = new TradeBotMenu(this);
-            header = new TradeBotHeader(this, service);
+            menu = new TradeMenu(this);
+            statusBar = new TradeStatusBar(this, service);
 
             PropertyChanged += OnPropertyChanged;
             service.PropertyChanged += OnPropertyChanged;

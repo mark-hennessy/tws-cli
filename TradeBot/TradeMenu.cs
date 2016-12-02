@@ -10,14 +10,14 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
-    public class TradeBotMenu : Menu
+    public class TradeMenu : Menu
     {
-        public TradeBotMenu(TradeBotConsole console)
+        public TradeMenu(TradeController controller)
         {
-            InitMenu(console);
+            InitMenu(controller);
         }
 
-        private void InitMenu(TradeBotConsole console)
+        private void InitMenu(TradeController controller)
         {
             var titleDivider = new MenuDivider();
             AddMenuItem(new MenuTitle(Messages.MenuTitle, titleDivider));
@@ -31,29 +31,29 @@ namespace TradeBot
 
             MenuOptionEntries entries = Messages.MenuOptionEntries;
 
-            addMenuOption(entries.SetTickerSymbol, console.PromptForTickerSymbolCommand);
+            addMenuOption(entries.SetTickerSymbol, controller.PromptForTickerSymbolCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.SetSharesFromCash, console.PromptForCashCommand);
-            addMenuOption(entries.SetShares, console.PromptForSharesCommand);
-            addMenuOption(entries.SetSharesFromPosition, console.SetSharesFromPositionCommand);
+            addMenuOption(entries.SetSharesFromCash, controller.PromptForCashCommand);
+            addMenuOption(entries.SetShares, controller.PromptForSharesCommand);
+            addMenuOption(entries.SetSharesFromPosition, controller.SetSharesFromPositionCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.Buy, console.BuyCommand);
-            addMenuOption(entries.Sell, console.SellCommand);
-            addMenuOption(entries.ReversePosition, console.ReversePositionCommand);
-            addMenuOption(entries.ClosePosition, console.ClosePositionCommand);
+            addMenuOption(entries.Buy, controller.BuyCommand);
+            addMenuOption(entries.Sell, controller.SellCommand);
+            addMenuOption(entries.ReversePosition, controller.ReversePositionCommand);
+            addMenuOption(entries.ClosePosition, controller.ClosePositionCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.ListPositions, console.ListPositionsCommand);
+            addMenuOption(entries.ListPositions, controller.ListPositionsCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.LoadState, console.LoadStateCommand);
-            addMenuOption(entries.SaveState, console.SaveStateCommand);
+            addMenuOption(entries.LoadState, controller.LoadStateCommand);
+            addMenuOption(entries.SaveState, controller.SaveStateCommand);
             addMenuOptionDivider();
 
-            addMenuOption(entries.ClearScreen, console.ClearScreenCommand);
-            addMenuOption(entries.ShowMenu, console.ShowMenuCommand);
+            addMenuOption(entries.ClearScreen, controller.ClearScreenCommand);
+            addMenuOption(entries.ShowMenu, controller.ShowMenuCommand);
 
             var menuEndDivider = new MenuDivider();
             AddMenuItem(menuEndDivider);
