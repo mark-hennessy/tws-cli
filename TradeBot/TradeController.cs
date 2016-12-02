@@ -91,7 +91,7 @@ namespace TradeBot
         {
             string tickerSymbol = IO.PromptForInputIfNecessary(args, 0, Messages.SelectTickerPrompt);
 
-            if (ValidateNotNullOrWhiteSpace(tickerSymbol))
+            if (Validation.NotNullOrWhiteSpace(tickerSymbol))
             {
                 service.TickerSymbol = tickerSymbol;
                 await SetInitialSharesAsync();
@@ -103,8 +103,8 @@ namespace TradeBot
             string cashInput = IO.PromptForInputIfNecessary(args, 0, Messages.CashPrompt);
             double? cash = cashInput.ToDouble();
 
-            if (ValidateHasValue(cash)
-                && ValidatePositive(cash ?? -1))
+            if (Validation.HasValue(cash)
+                && Validation.Positive(cash ?? -1))
             {
                 Cash = cash.Value;
 
@@ -120,8 +120,8 @@ namespace TradeBot
             string sharesInput = IO.PromptForInputIfNecessary(args, 0, Messages.SharesPrompt);
             int? shares = sharesInput.ToInt();
 
-            if (ValidateHasValue(shares)
-                && ValidatePositive(shares ?? -1))
+            if (Validation.HasValue(shares)
+                && Validation.Positive(shares ?? -1))
             {
                 Shares = shares.Value;
             }
@@ -131,12 +131,12 @@ namespace TradeBot
 
         public async Task SetSharesFromPositionCommand(string[] args)
         {
-            if (ValidateTickerSet())
+            if (Validation.TickerSet(service))
             {
                 Position currentPosition = await service
                     .RequestCurrentPositionAsync();
 
-                if (ValidatePositionExists(currentPosition))
+                if (Validation.PositionExists(currentPosition))
                 {
                     Shares = currentPosition.PositionSize;
                 }
@@ -145,9 +145,9 @@ namespace TradeBot
 
         public Task BuyCommand(string[] args)
         {
-            if (ValidateTickerSet()
-                && ValidateSharesSet()
-                && ValidateCommonTickDataAvailable())
+            if (Validation.TickerSet(service)
+                && Validation.SharesSet(Shares)
+                && Validation.TickDataAvailable(service, COMMON_TICKS))
             {
                 service.PlaceBuyLimitOrder(Shares);
             }
@@ -157,9 +157,9 @@ namespace TradeBot
 
         public Task SellCommand(string[] args)
         {
-            if (ValidateTickerSet()
-                && ValidateSharesSet()
-                && ValidateCommonTickDataAvailable())
+            if (Validation.TickerSet(service)
+                && Validation.SharesSet(Shares)
+                && Validation.TickDataAvailable(service, COMMON_TICKS))
             {
                 service.PlaceSellLimitOrder(Shares);
             }
@@ -182,7 +182,7 @@ namespace TradeBot
             IEnumerable<Position> positions = await service
                 .RequestPositionsAsync();
 
-            if (ValidatePositionsExist(positions))
+            if (Validation.PositionsExist(positions))
             {
                 foreach (var position in positions)
                 {
@@ -264,7 +264,7 @@ namespace TradeBot
             await Timeout(service.HasTicksAsync(COMMON_TICKS));
 
             int tickType = TickType.LAST;
-            if (ValidateTickDataAvailable(tickType))
+            if (Validation.TickDataAvailable(service, tickType))
             {
                 double sharePrice = service.GetTick(tickType).Value;
                 if (sharePrice > 0)
@@ -290,9 +290,9 @@ namespace TradeBot
         private async Task ScalePositionAsync(double percent)
         {
             Position position = await service.RequestCurrentPositionAsync();
-            if (ValidateTickerSet()
-                && ValidatePositionExists(position)
-                && ValidateCommonTickDataAvailable())
+            if (Validation.TickerSet(service)
+                && Validation.PositionExists(position)
+                && Validation.TickDataAvailable(service, COMMON_TICKS))
             {
                 int orderDelta = (int)Math.Round(position.PositionSize * percent);
                 int orderQuantity = Math.Abs(orderDelta);
@@ -306,94 +306,6 @@ namespace TradeBot
                     service.PlaceSellLimitOrder(orderQuantity);
                 }
             }
-        }
-        #endregion
-
-        #region Validations
-        private bool ValidateTickerSet()
-        {
-            return Validate(
-                service.HasTickerSymbol,
-                Messages.TickerSymbolNotSetError);
-        }
-
-        private bool ValidateSharesSet()
-        {
-            return Validate(
-                Shares > 0,
-                Messages.SharesNotSetError);
-        }
-
-        private bool ValidateCommonTickDataAvailable()
-        {
-            return ValidateTickDataAvailable(COMMON_TICKS);
-        }
-
-        private bool ValidateTickDataAvailable(params int[] tickTypes)
-        {
-            return Validate(
-                service.HasTicks(tickTypes),
-                Messages.PriceDataUnavailableError);
-        }
-
-        private bool ValidatePositionExists(Position position)
-        {
-            return Validate(
-                position != null,
-                Messages.PositionNotFoundError);
-        }
-
-        private bool ValidatePositionsExist(IEnumerable<Position> positions)
-        {
-            return Validate(
-                !positions.IsNullOrEmpty(),
-                Messages.PositionsNotFoundError);
-        }
-
-        private bool ValidateNotNullOrWhiteSpace(string str)
-        {
-            return Validate(
-                !string.IsNullOrWhiteSpace(str),
-                Messages.InvalidNonEmptyStringInputError);
-        }
-
-        private bool ValidateHasValue(int? value)
-        {
-            return Validate(
-                value.HasValue,
-                Messages.InvalidIntegerInputError);
-        }
-
-        private bool ValidateHasValue(double? value)
-        {
-            return Validate(
-                value.HasValue,
-                Messages.InvalidDecimalInputError);
-        }
-
-        private bool ValidatePositive(int value)
-        {
-            return Validate(
-                value >= 0,
-                Messages.InvalidPositiveInputError);
-        }
-
-        private bool ValidatePositive(double value)
-        {
-            return Validate(
-                value >= 0,
-                Messages.InvalidPositiveInputError);
-        }
-
-        private bool Validate(bool isValid, string errorMessage)
-        {
-            if (!isValid)
-            {
-                IO.ShowMessage(LogLevel.Error, errorMessage);
-                return false;
-            }
-
-            return true;
         }
         #endregion
 

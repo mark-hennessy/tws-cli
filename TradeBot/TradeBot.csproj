@@ -141,6 +141,7 @@
     <Compile Include="Events\PositionUpdatedEvent.cs" />
     <Compile Include="TradeMenu.cs" />
     <Compile Include="TradeStatusBar.cs" />
+    <Compile Include="Validation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icons\uptrend_icon.ico" />
