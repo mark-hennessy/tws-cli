@@ -14,8 +14,6 @@ using static TradeBot.AppProperties;
 
 namespace TradeBot
 {
-    // TODO: Why was I getting deadlocking if the SynchronizationContext for
-    // console applications uses the thread pool?
     public class TradeController
     {
         private const int REQUEST_TIMEOUT = (int)(1.5 * 1000);
