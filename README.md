@@ -57,7 +57,7 @@ Note that live data is only reliable during market hours. If data is unavailable
 
 Use at your own risk. Trading with real money is risky, software is full of bugs, mixing the two equals double the risk.
 
-This app started out as an experiment for personal use. I invested heavily in code quality and re-wrote the app multiple times as I strived for perfection. However, I didn't use Test-Driven-Development and as a result I'm now in a situation where the app is "done" but I can't really be bothered to add tests after the fact. 
+This app started out as an experiment for personal use. I invested heavily in code quality and re-wrote the app multiple times as I strived for perfection. However, I didn't use Test-Driven-Development and as a result I'm now in a situation where the app is "done" but I can't be bothered to add tests after the fact. 
 
 I don't plan on maintaining this repository. I plan to start a new project instead. My next endeavor is to write a more sophisticated UI based trading app using the latest and greatest Javascript technologies (e.g. ECMAScript 6, TypeScript, NodeJS, Electron, ReactJS, Redux, RxJS). I promise I'll use TDD/BDD for this.
 
