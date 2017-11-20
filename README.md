@@ -1,4 +1,4 @@
-# tws-cli
+# TWS CLI
 A C# command-line interface for the IB Trader Workstation trading platform.
 
 I built this app to help me execute trades faster since I found Trader Workstation to be a bit clunky on a laptop. The app tracks a single stock ticker symbol at a time and can calculate the quantity of shares to trade based off of a cash value. The app makes it easy to buy, sell, reverse, and close positions.
@@ -56,7 +56,7 @@ This app started out as an experiment for personal use. I invested heavily in co
 
 I don't plan on maintaining this repository. I plan to start a new project instead. My next endeavor is to write a more sophisticated UI based trading app using the latest and greatest Javascript technologies (e.g. ECMAScript 6, TypeScript, NodeJS, Electron, ReactJS, Redux, RxJS). I promise I'll use TDD/BDD for this.
 
-## License & copyright
+## License & Copyright
 © Mark Hennessy
 
 Licensed under the [MIT License](LICENSE).
